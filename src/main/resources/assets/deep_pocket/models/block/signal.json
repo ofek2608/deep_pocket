@@ -1,0 +1,6 @@
+{
+    "parent": "deep_pocket:block/tinted_cube_all",
+    "textures": {
+        "all": "deep_pocket:block/signal"
+    }
+}

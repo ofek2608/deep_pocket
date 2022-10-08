@@ -4,6 +4,8 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemValue;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.struct.SignalSettings;
+import net.minecraft.core.BlockPos;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
@@ -60,6 +62,8 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, SBPocketExtract.class, SBPocketExtract::encode, SBPocketExtract::new, SBPocketExtract::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBRequestRecipe.class, SBRequestRecipe::encode, SBRequestRecipe::new, SBRequestRecipe::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBClearCraftingGrid.class, SBClearCraftingGrid::encode, SBClearCraftingGrid::new, SBClearCraftingGrid::handle, serverbound);
+
+		CHANNEL.registerMessage(++pid, SBPocketSignalSettings.class, SBPocketSignalSettings::encode, SBPocketSignalSettings::new, SBPocketSignalSettings::handle, serverbound);
 	}
 
 	public static void cbPermitPublicPocket(PacketDistributor.PacketTarget target, boolean value) { CHANNEL.send(target, new CBPermitPublicPocket(value)); }
@@ -97,6 +101,8 @@ public final class DeepPocketPacketHandler {
 	public static void sbPocketExtract(ItemType type, boolean toCarry, byte count) { CHANNEL.send(serverTarget(), new SBPocketExtract(type, toCarry, count)); }
 	public static void sbRequestRecipe(ItemType[] items) { CHANNEL.send(serverTarget(), new SBRequestRecipe(items)); }
 	public static void sbClearCraftingGrid(boolean up) { CHANNEL.send(serverTarget(), new SBClearCraftingGrid(up)); }
+
+	public static void sbPocketSignalSettings(BlockPos pos, SignalSettings settings) { CHANNEL.send(serverTarget(), new SBPocketSignalSettings(pos, settings)); }
 
 	private static PacketDistributor.PacketTarget serverTarget() {
 		return PacketDistributor.SERVER.noArg();

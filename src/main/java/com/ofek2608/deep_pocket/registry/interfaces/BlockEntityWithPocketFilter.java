@@ -50,8 +50,7 @@ public class BlockEntityWithPocketFilter extends BlockEntityWithPocket {
 		ItemStack handItem = player.getItemInHand(hand);
 		if (handItem.isEmpty() || handItem.is(DeepPocketRegistry.POCKET_ITEM.get())) return InteractionResult.PASS;
 		if (level.isClientSide) return InteractionResult.CONSUME;
-		Pocket pocket = blockEntity.getServerPocket();
-		if (pocket != null && !pocket.canAccess(player)) return InteractionResult.CONSUME;
+		if (!blockEntity.canAccess(player)) return InteractionResult.CONSUME;
 		blockEntity.setFilter(new ItemType(handItem));
 		return InteractionResult.CONSUME;
 	}

@@ -4,6 +4,7 @@
 	"deep_pocket:passive_importer",
 	"deep_pocket:passive_exporter",
 	"deep_pocket:active_importer",
-	"deep_pocket:active_exporter"
+	"deep_pocket:active_exporter",
+	"deep_pocket:signal"
   ]
  }

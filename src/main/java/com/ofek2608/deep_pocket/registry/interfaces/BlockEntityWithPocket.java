@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
+import com.ofek2608.deep_pocket.api.DeepPocketApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Pocket;
@@ -9,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -47,6 +49,16 @@ public class BlockEntityWithPocket extends BlockEntity {
 	protected void sendBlockUpdate() {
 		if (level != null)
 			level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+	}
+
+	public boolean canAccess(Player player) {
+		if (level == null)
+			return false;
+		DeepPocketApi api = DeepPocketApi.get(level);
+		if (api == null)
+			return false;
+		Pocket pocket = api.getPocket(pocketId);
+		return pocket == null || pocket.canAccess(player);
 	}
 
 	@Override

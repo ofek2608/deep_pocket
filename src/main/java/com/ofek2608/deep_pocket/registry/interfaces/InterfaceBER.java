@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class InterfaceBER<BE extends BlockEntityWithPocket> implements BlockEntityRenderer<BE> {
 	private final BlockEntityRendererProvider.Context ctx;
@@ -24,7 +25,11 @@ public class InterfaceBER<BE extends BlockEntityWithPocket> implements BlockEnti
 	@Override
 	public void render(BE blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		float time = ctx.getBlockEntityRenderDispatcher().level.getGameTime() + partialTick;
-		ItemStack displayItem = blockEntity instanceof BlockEntityWithPocketFilter filter ? filter.getFilter().create() : ItemStack.EMPTY;
+		ItemStack displayItem = ItemStack.EMPTY;
+		if (blockEntity instanceof BlockEntityWithPocketFilter filter)
+			displayItem = filter.getFilter().create();
+		if (blockEntity instanceof SignalBlock.Ent ent)
+			displayItem = new ItemStack(ent.getOutput() ? Items.REDSTONE_BLOCK : Items.COAL_BLOCK);
 
 		this.renderCube(poseStack.last().pose(), bufferSource.getBuffer(RenderType.endPortal()));
 		if (!displayItem.isEmpty())

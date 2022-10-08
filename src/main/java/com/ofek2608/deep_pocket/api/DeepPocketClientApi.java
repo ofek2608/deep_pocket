@@ -4,8 +4,11 @@ import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import com.ofek2608.deep_pocket.impl.DeepPocketManager;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
@@ -37,4 +40,5 @@ public interface DeepPocketClientApi extends DeepPocketApi {
 	void openScreenSettingsEdit(Pocket pocket);
 	void openScreenSelectPocket();
 	void openScreenSelectItem(Component title, int color, Consumer<ItemStack> onSelect, Runnable onCancel);
+	void openScreenConfigureSignalBlock(int color, BlockPos pos, SignalSettings settings);
 }

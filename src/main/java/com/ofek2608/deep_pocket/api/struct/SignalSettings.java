@@ -2,7 +2,6 @@ package com.ofek2608.deep_pocket.api.struct;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.enums.NumberRelation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -12,32 +11,29 @@ import java.util.UUID;
 
 public final class SignalSettings {
 	public @Nonnull ItemType first;
-	public @Nonnull NumberRelation operator;
+	public boolean bigger;
 	public @Nullable ItemType secondItem;
-	public double secondCount;
+	public int secondCount;
 
 	public SignalSettings() {
-		first = ItemType.EMPTY;
-		operator = NumberRelation.BT;
-		secondItem = null;
-		secondCount = 0;
+		this(ItemType.EMPTY, false, 0);
 	}
 
-	public SignalSettings(ItemType first, NumberRelation operator, ItemType second) {
-		this(first, operator, second, 0);
+	public SignalSettings(ItemType first, boolean bigger, ItemType second) {
+		this(first, bigger, second, 0);
 	}
 
-	public SignalSettings(ItemType first, NumberRelation operator, double second) {
-		this(first, operator, null, second);
+	public SignalSettings(ItemType first, boolean bigger, int second) {
+		this(first, bigger, null, second);
 	}
 
 	public SignalSettings(SignalSettings copy) {
-		this(copy.first, copy.operator, copy.secondItem, copy.secondCount);
+		this(copy.first, copy.bigger, copy.secondItem, copy.secondCount);
 	}
 
-	private SignalSettings(ItemType first, NumberRelation operator, @Nullable ItemType secondItem, double secondCount) {
+	private SignalSettings(ItemType first, boolean bigger, @Nullable ItemType secondItem, int secondCount) {
 		this.first = first;
-		this.operator = operator;
+		this.bigger = bigger;
 		this.secondItem = secondItem;
 		this.secondCount = secondCount;
 	}
@@ -49,26 +45,22 @@ public final class SignalSettings {
 		if (pocket == null) return false;
 		double firstNum = api.getMaxExtract(pocket, first);
 		double secondNum = secondItem == null ? secondCount : api.getMaxExtract(pocket, secondItem);
-		return operator.check(firstNum, secondNum);
+		return bigger ? firstNum > secondNum : secondNum > firstNum;
 	}
 
 	public void load(CompoundTag tag) {
 		first = tag.contains("first", 10) ? ItemType.load(tag.getCompound("first")) : ItemType.EMPTY;
-		try {
-			operator = NumberRelation.valueOf(tag.getString("operator"));
-		} catch (Exception e) {
-			operator = NumberRelation.BT;
-		}
+		bigger = tag.getBoolean("bigger");
 		secondItem = tag.contains("second", 10) ? ItemType.load(tag.getCompound("second")) : null;
-		secondCount = tag.contains("second", 99) ? tag.getDouble("second") : 0;
+		secondCount = tag.contains("second", 99) ? tag.getInt("second") : 0;
 	}
 
 	public CompoundTag save() {
 		CompoundTag tag = new CompoundTag();
 		tag.put("first", first.save());
-		tag.putString("operator", operator.name());
+		tag.putBoolean("bigger", bigger);
 		if (secondItem == null)
-			tag.putDouble("second", secondCount);
+			tag.putInt("second", secondCount);
 		else
 			tag.put("second", secondItem.save());
 		return tag;
@@ -79,17 +71,17 @@ public final class SignalSettings {
 		boolean hasSecondItem = settings.secondItem != null;
 		buf.writeBoolean(hasSecondItem);
 		ItemType.encode(buf, settings.first);
-		buf.writeEnum(settings.operator);
+		buf.writeBoolean(settings.bigger);
 		if (hasSecondItem)
 			ItemType.encode(buf, settings.secondItem);
 		else
-			buf.writeDouble(settings.secondCount);
+			buf.writeInt(settings.secondCount);
 	}
 
 	public static SignalSettings decode(FriendlyByteBuf buf) {
 		return buf.readBoolean() ?
-						new SignalSettings(ItemType.decode(buf), buf.readEnum(NumberRelation.class), ItemType.decode(buf)) :
-						new SignalSettings(ItemType.decode(buf), buf.readEnum(NumberRelation.class), buf.readDouble());
+						new SignalSettings(ItemType.decode(buf), buf.readBoolean(), ItemType.decode(buf)) :
+						new SignalSettings(ItemType.decode(buf), buf.readBoolean(), buf.readInt());
 	}
 
 }

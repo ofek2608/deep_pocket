@@ -1,18 +1,25 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
+import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RedstoneTorchBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,6 +37,17 @@ public class SignalBlock extends Block implements EntityBlock {
 	@SuppressWarnings("deprecation")
 	public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction side) {
 		return level.getBlockEntity(pos) instanceof Ent ent && ent.output ? 15 : 0;
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+		if (level.isClientSide && level.getBlockEntity(pos) instanceof Ent ent) {
+			Pocket pocket = ent.getClientPocket();
+			int color = pocket == null ? 0xFFFFFF : pocket.getColor();
+			DeepPocketClientApi.get().openScreenConfigureSignalBlock(color, pos, ent.settings);
+		}
+		return InteractionResult.CONSUME;
 	}
 
 	@Nullable
@@ -55,7 +73,11 @@ public class SignalBlock extends Block implements EntityBlock {
 		}
 
 		public Ent(BlockPos pos, BlockState state) {
-			this(DeepPocketRegistry.ACTIVE_EXPORTER_ENTITY.get(), pos, state);//TODO fix block entity type
+			this(DeepPocketRegistry.SIGNAL_ENTITY.get(), pos, state);
+		}
+
+		public SignalSettings getSettings() {
+			return new SignalSettings(settings);
 		}
 
 		public void setSettings(SignalSettings settings) {
@@ -78,12 +100,27 @@ public class SignalBlock extends Block implements EntityBlock {
 		}
 
 		public void tick() {
-			boolean newOutput = settings.check(getPocketId());
+			setOutput(settings.check(getPocketId()));
+		}
+
+		private void setOutput(boolean newOutput) {
 			if (output == newOutput)
 				return;
 			output = newOutput;
 			setChanged();
 			sendBlockUpdate();
+
+			if (level != null) {
+				BlockPos pos = getBlockPos();
+				Block block = getBlockState().getBlock();
+				level.blockUpdated(pos, block);
+				for (Direction direction : Direction.values())
+					level.updateNeighborsAt(pos.relative(direction), block);
+			}
+		}
+
+		public boolean getOutput() {
+			return output;
 		}
 	}
 }

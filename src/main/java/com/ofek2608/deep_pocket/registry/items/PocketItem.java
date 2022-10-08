@@ -62,7 +62,7 @@ public class PocketItem extends Item {
 		UUID pocketId = getPocketId(context.getItemInHand());
 		Pocket pocket = pocketId == null ? null : api.getPocket(pocketId);
 		Player player = context.getPlayer();
-		if (pocket == null || player == null || !pocket.canAccess(player)) return InteractionResult.CONSUME;
+		if (pocket == null || player == null || !pocket.canAccess(player) || !blockEntity.canAccess(player)) return InteractionResult.CONSUME;
 		blockEntity.setPocket(pocketId);
 		return InteractionResult.CONSUME;
 	}

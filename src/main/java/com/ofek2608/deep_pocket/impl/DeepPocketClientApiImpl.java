@@ -2,12 +2,14 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
+import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -91,5 +93,13 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 		Player player = minecraft.player;
 		if (player != null)
 			minecraft.setScreen(new ItemSelectionScreen(title, color, player.getInventory(), onSelect, onCancel));
+	}
+
+	@Override
+	public void openScreenConfigureSignalBlock(int color, BlockPos pos, SignalSettings settings) {
+		Minecraft minecraft = Minecraft.getInstance();
+		Player player = minecraft.player;
+		if (player != null)
+			minecraft.setScreen(new SignalSettingsScreen(minecraft.screen, player, color, pos, settings));
 	}
 }

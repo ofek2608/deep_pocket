@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RPR",
+    "CLC",
+    "RSR"
+  ],
+  "key": {
+    "R": {"item": "minecraft:redstone"},
+    "C": {"item": "minecraft:comparator"},
+    "S": {"item": "minecraft:spyglass"},
+    "P": {"item": "minecraft:compass"},
+    "L": {"item": "deep_pocket:pocket_link"}
+  },
+  "result": {
+    "item": "deep_pocket:signal"
+  }
+}

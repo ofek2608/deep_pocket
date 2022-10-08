@@ -29,11 +29,6 @@ public class DeepPocketMod
 	/*
 	 * TODO future content
 	 *  - In PocketScreen#renderPocketTooltip add a way to see the conversion
-	 *  - Pocket signal block
-	 *    . should have two modes, first is compare item count to number, second is compare item count to another item count
-	 *    . the one prob should show if the signal is on, the number, and the operation
-	 *    . remember to add a recipe for the item
-	 *    . remember to add the block to mine-able tags
 	 *  - Bulk crafting button, screen, packet and handler
 	 *  - Maybe add custom tooltip with ItemTooltipEvent
 	 *  - Maybe a way to set filter to allow nbt variants
@@ -41,5 +36,7 @@ public class DeepPocketMod
 	 *  - Improve the look of the importers and exporters
 	 *  - Add a way to manage pockets as admin
 	 *  - Maybe integrate with ftb chunks to prevent pockets from being used in forgotten places (or in houses of old team members)
+	 *  - Add new jei category that shows conversions
+	 *  - Move conversions to a separate class
 	 */
 }
