@@ -29,7 +29,6 @@ import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketServerApi {
 	private static final Logger LOGGER = LogUtils.getLogger();

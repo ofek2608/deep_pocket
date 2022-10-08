@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.impl;
+package com.ofek2608.deep_pocket.client_screens;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -6,8 +6,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -19,7 +19,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
@@ -123,7 +122,7 @@ class PocketSettingsScreen extends Screen {
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 		if (hoverIcon) {
 			DeepPocketUtils.playClickSound();
-			DeepPocketClientApi.get().openScreenSelectItem(Component.literal("Select Icon"), pocketInfo.color, this::onSelectIcon, this::onSelectIconCancel);
+			ClientScreens.openScreenSelectItem(Component.literal("Select Icon"), pocketInfo.color, this::onSelectIcon, this::onSelectIconCancel);
 			return true;
 		}
 		if (hoverName) {

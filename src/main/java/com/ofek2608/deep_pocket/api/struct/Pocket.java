@@ -8,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class Pocket {
 	private final UUID pocketId;

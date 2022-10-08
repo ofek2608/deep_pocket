@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.registry.items;
 
-import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.client_screens.ClientScreens;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -17,7 +17,7 @@ public class PocketLinkItem extends Item {
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (level.isClientSide)
-			DeepPocketClientApi.get().openScreenSelectPocket();
+			ClientScreens.openScreenSelectPocket();
 		return InteractionResultHolder.success(stack);
 	}
 }

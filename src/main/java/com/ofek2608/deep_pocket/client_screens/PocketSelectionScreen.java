@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.impl;
+package com.ofek2608.deep_pocket.client_screens;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;

@@ -11,6 +11,7 @@ import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
+import com.ofek2608.deep_pocket.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import net.minecraft.ChatFormatting;
@@ -512,7 +513,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			case 0 -> {
 				Pocket pocket = menu.getPocket();
 				if (pocket != null && pocket.getOwner().equals(menu.playerInventory.player.getUUID()))
-					DeepPocketClientApi.get().openScreenSettingsEdit(pocket);
+					ClientScreens.openScreenSettingsEdit(pocket);
 			}
 			case 1 -> toggleSearchMode();
 			case 2 -> toggleSortingOrder();

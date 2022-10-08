@@ -1,11 +1,10 @@
-package com.ofek2608.deep_pocket.impl;
+package com.ofek2608.deep_pocket.client_screens;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -112,7 +111,7 @@ class SignalSettingsScreen extends Screen {
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 		if (hoverFirst) {
 			DeepPocketUtils.playClickSound();
-			DeepPocketClientApi.get().openScreenSelectItem(Component.literal("Select First Item"), color, this::onSelectFirst, this::onSelectCancel);
+			ClientScreens.openScreenSelectItem(Component.literal("Select First Item"), color, this::onSelectFirst, this::onSelectCancel);
 			return true;
 		}
 		if (hoverOperator) {
@@ -124,7 +123,7 @@ class SignalSettingsScreen extends Screen {
 		if (hoverSecond) {
 			if (twoItemsMode) {
 				DeepPocketUtils.playClickSound();
-				DeepPocketClientApi.get().openScreenSelectItem(Component.literal("Select Second Item"), color, this::onSelectSecond, this::onSelectCancel);
+				ClientScreens.openScreenSelectItem(Component.literal("Select Second Item"), color, this::onSelectSecond, this::onSelectCancel);
 			} else {
 				focusNumber = true;
 				Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);

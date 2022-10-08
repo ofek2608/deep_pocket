@@ -1,8 +1,8 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
-import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
+import com.ofek2608.deep_pocket.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,7 +44,7 @@ public class SignalBlock extends Block implements EntityBlock {
 		if (level.isClientSide && level.getBlockEntity(pos) instanceof Ent ent) {
 			Pocket pocket = ent.getClientPocket();
 			int color = pocket == null ? 0xFFFFFF : pocket.getColor();
-			DeepPocketClientApi.get().openScreenConfigureSignalBlock(color, pos, ent.settings);
+			ClientScreens.openScreenConfigureSignalBlock(color, pos, ent.settings);
 		}
 		return InteractionResult.CONSUME;
 	}
