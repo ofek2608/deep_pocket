@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SNS",
+    "CLC",
+    "SES"
+  ],
+  "key": {
+    "S": {"item": "minecraft:shulker_shell"},
+    "C": {"item": "minecraft:end_crystal"},
+    "E": {"item": "minecraft:echo_shard"},
+    "N": {"item": "minecraft:netherite_block"},
+    "L": {"item": "deep_pocket:pocket_link"}
+  },
+  "result": {
+    "item": "deep_pocket:pocket_factory"
+  }
+}

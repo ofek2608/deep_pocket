@@ -1,0 +1,11 @@
+{
+    "parent": "deep_pocket:block/tinted_cube",
+    "textures": {
+        "down": "#top",
+        "up": "#top",
+        "north": "#side",
+        "east": "#side",
+        "south": "#side",
+        "west": "#side"
+    }
+}

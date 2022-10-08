@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "deep_pocket:block/passive_exporter"
+    }
+  }
+}

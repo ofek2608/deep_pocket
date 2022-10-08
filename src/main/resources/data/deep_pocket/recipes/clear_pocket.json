@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "deep_pocket:pocket"
+    }
+  ],
+  "result": {
+    "item": "deep_pocket:pocket_link"
+  }
+}

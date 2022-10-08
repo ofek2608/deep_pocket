@@ -1,0 +1,20 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "minecraft:block/obsidian"
+    },
+    "render_type": "cutout",
+    "elements": [
+        {   "from": [ 0, 0, 0 ],
+            "to": [ 16, 16, 16 ],
+            "faces": {
+                "down":  { "tintindex": 0, "texture": "#down" , "cullface": "down"  },
+                "up":    { "tintindex": 0, "texture": "#up"   , "cullface": "up"    },
+                "north": { "tintindex": 0, "texture": "#north", "cullface": "north" },
+                "south": { "tintindex": 0, "texture": "#south", "cullface": "south" },
+                "west":  { "tintindex": 0, "texture": "#west" , "cullface": "west"  },
+                "east":  { "tintindex": 0, "texture": "#east" , "cullface": "east"  }
+            }
+        }
+    ]
+}

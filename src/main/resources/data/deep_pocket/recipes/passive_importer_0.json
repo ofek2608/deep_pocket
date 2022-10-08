@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "010",
+    "1L1",
+    "010"
+  ],
+  "key": {
+    "0": {"item": "minecraft:spyglass"},
+    "1": {"item": "minecraft:fishing_rod"},
+    "L": {"item": "deep_pocket:pocket_link"}
+  },
+  "result": {
+    "item": "deep_pocket:passive_importer"
+  }
+}

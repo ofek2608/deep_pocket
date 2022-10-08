@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "HHH",
+    "HPH",
+    "HHH"
+  ],
+  "key": {
+    "H": {"item": "minecraft:hopper"},
+    "P": {"item": "deep_pocket:passive_importer"}
+  },
+  "result": {
+    "item": "deep_pocket:active_importer"
+  }
+}

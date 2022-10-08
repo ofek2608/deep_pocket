@@ -1,0 +1,13 @@
+{
+	"itemGroup.deep_pocket": "Deep Pockets",
+	"item.deep_pocket.pocket_factory": "Pocket Factory",
+	"item.deep_pocket.pocket": "Pocket",
+	"item.deep_pocket.pocket_link": "Pocket Link",
+	"block.deep_pocket.passive_importer": "Passive Pocket Importer",
+	"block.deep_pocket.passive_exporter": "Passive Pocket Exporter",
+	"block.deep_pocket.active_importer": "Active Pocket Importer",
+	"block.deep_pocket.active_exporter": "Active Pocket Exporter",
+	"deep_pocket.key.pocket": "Open Pocket",
+	"deep_pocket.extra.invalid_pocket": "Invalid Pocket",
+	"curios.identifier.deep_pocket_pocket": "Pocket"
+}
