@@ -1,8 +1,8 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

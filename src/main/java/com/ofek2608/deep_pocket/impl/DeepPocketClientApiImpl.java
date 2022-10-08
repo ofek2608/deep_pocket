@@ -1,12 +1,11 @@
 package com.ofek2608.deep_pocket.impl;
 
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -59,24 +58,19 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	}
 
 	@Override
-	PocketImpl generatePocket(UUID pocketId, UUID owner) {
-		return new PocketImpl(pocketId, owner, false);
-	}
-
-	@Override
-	public void openScreenSettings(@Nullable UUID pocketId, String name, ItemType icon, int color, PocketSecurityMode securityMode) {
+	public void openScreenSettings(@Nullable UUID pocketId, PocketInfo info) {
 		Minecraft minecraft = Minecraft.getInstance();
-		minecraft.setScreen(new PocketSettingsScreen(minecraft.screen, pocketId, name, icon, color, securityMode));
+		minecraft.setScreen(new PocketSettingsScreen(minecraft.screen, pocketId, info));
 	}
 
 	@Override
 	public void openScreenSettingsNew() {
-		openScreenSettings(null, "My new pocket", new ItemType(DeepPocketUtils.randomItem(), null), DeepPocketUtils.randomColor(), PocketSecurityMode.PRIVATE);
+		openScreenSettings(null, new PocketInfo());
 	}
 
 	@Override
 	public void openScreenSettingsEdit(Pocket pocket) {
-		openScreenSettings(pocket.getPocketId(), pocket.getName(), pocket.getIcon(), pocket.getColor(), pocket.getSecurityMode());
+		openScreenSettings(pocket.getPocketId(), pocket.getInfo());
 	}
 
 	@Override

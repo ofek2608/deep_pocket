@@ -1,30 +1,30 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.UUID;
 import java.util.function.Supplier;
 
-class CBPocketSetIcon {
+class CBPocketInfo {
 	private final UUID pocketId;
-	private final ItemType icon;
+	private final PocketInfo info;
 
-	CBPocketSetIcon(UUID pocketId, ItemType icon) {
+	CBPocketInfo(UUID pocketId, PocketInfo info) {
 		this.pocketId = pocketId;
-		this.icon = icon;
+		this.info = info;
 	}
 
-	CBPocketSetIcon(FriendlyByteBuf buf) {
-		this(buf.readUUID(), ItemType.decode(buf));
+	CBPocketInfo(FriendlyByteBuf buf) {
+		this(buf.readUUID(), PocketInfo.decode(buf));
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
-		ItemType.encode(buf, icon);
+		PocketInfo.encode(buf, info);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
@@ -32,7 +32,7 @@ class CBPocketSetIcon {
 			DeepPocketClientApi api = DeepPocketClientApi.get();
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket != null)
-				pocket.setIcon(icon);
+				pocket.setInfo(info);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

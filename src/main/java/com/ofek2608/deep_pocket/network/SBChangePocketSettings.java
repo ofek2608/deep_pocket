@@ -1,9 +1,7 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
@@ -13,29 +11,20 @@ import java.util.function.Supplier;
 
 class SBChangePocketSettings {
 	private final UUID pocketId;
-	private final String name;
-	private final ItemType icon;
-	private final int color;
-	private final PocketSecurityMode securityMode;
+	private final PocketInfo info;
 
-	SBChangePocketSettings(UUID pocketId, String name, ItemType icon, int color, PocketSecurityMode securityMode) {
+	SBChangePocketSettings(UUID pocketId, PocketInfo info) {
 		this.pocketId = pocketId;
-		this.name = name;
-		this.icon = icon;
-		this.color = color & 0xFFFFFF;
-		this.securityMode = securityMode;
+		this.info = info;
 	}
 
 	SBChangePocketSettings(FriendlyByteBuf buf) {
-		this(buf.readUUID(), buf.readUtf(Pocket.MAX_NAME_LENGTH), ItemType.decode(buf), buf.readInt(), buf.readEnum(PocketSecurityMode.class));
+		this(buf.readUUID(), PocketInfo.decode(buf));
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
-		buf.writeUtf(name, Pocket.MAX_NAME_LENGTH);
-		ItemType.encode(buf, icon);
-		buf.writeInt(color);
-		buf.writeEnum(securityMode);
+		PocketInfo.encode(buf, info);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
@@ -44,7 +33,7 @@ class SBChangePocketSettings {
 			DeepPocketServerApi api = DeepPocketServerApi.get();
 			if (player == null || api == null)
 				return;
-			api.changePocketSettingsFrom(player, pocketId, name, icon, color, securityMode);
+			api.changePocketSettingsFrom(player, pocketId, info);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

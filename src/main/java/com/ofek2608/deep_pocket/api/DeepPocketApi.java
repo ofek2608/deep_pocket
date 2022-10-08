@@ -1,7 +1,9 @@
 package com.ofek2608.deep_pocket.api;
 
+import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemValue;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.UnmodifiableView;
@@ -9,6 +11,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface DeepPocketApi {
 	public static @Nullable DeepPocketApi get(boolean isClientSide) { return isClientSide ? DeepPocketClientApi.get() : DeepPocketServerApi.get(); }
@@ -20,13 +23,12 @@ public interface DeepPocketApi {
 	void setItemValue(ItemType type, @Nullable ItemValue value);//!!Do not call setItemValue if you are working with client api unless you know what you are doing!!
 	void clearItemValues();//!!Do not call clearItemValues if you are working with client api unless you know what you are doing!!
 
-	@UnmodifiableView Map<UUID, Pocket> getPockets();
+	Stream<Pocket> getPockets();
 	@Nullable
 	Pocket getPocket(UUID pocketId);
 	@Nullable
-	Pocket createPocket(UUID pocketId, UUID owner);
-	Pocket getOrCreatePocket(UUID pocketId, UUID owner);
-	void destroyPocket(UUID pocketId);
+	Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info);
+	boolean destroyPocket(UUID pocketId);
 	void clearPockets();
 
 	boolean cachePlayerName(UUID id, String name);

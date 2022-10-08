@@ -7,8 +7,8 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import net.minecraft.ChatFormatting;
@@ -31,10 +31,11 @@ class PocketSettingsScreen extends Screen {
 	private static final int VIEW_HEIGHT = 62;
 	private final @Nullable Screen backScreen;
 	private final @Nullable UUID pocketId;
-	private final StringBuilder name;
-	private @Nonnull ItemType icon;
-	private int color;
-	private @Nonnull PocketSecurityMode securityMode;
+	private final PocketInfo pocketInfo;
+//	private final StringBuilder name;
+//	private @Nonnull ItemType icon;
+//	private int color;
+//	private @Nonnull PocketSecurityMode securityMode;
 
 	//Update Fields
 	private int leftPos;
@@ -51,14 +52,11 @@ class PocketSettingsScreen extends Screen {
 	private int focusSlider = -1;
 
 
-	PocketSettingsScreen(@Nullable Screen backScreen, @Nullable UUID pocketId, String name, ItemType icon, int color, PocketSecurityMode securityMode) {
+	PocketSettingsScreen(@Nullable Screen backScreen, @Nullable UUID pocketId, PocketInfo pocketInfo) {
 		super(Component.empty());
 		this.backScreen = backScreen;
 		this.pocketId = pocketId;
-		this.name = new StringBuilder(name);
-		this.icon = icon;
-		this.color = color;
-		this.securityMode = securityMode;
+		this.pocketInfo = pocketInfo;
 	}
 
 	private void updateFields(int mx, int my) {
@@ -83,7 +81,7 @@ class PocketSettingsScreen extends Screen {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);
 
-		DeepPocketUtils.setRenderShaderColor(color);
+		DeepPocketUtils.setRenderShaderColor(pocketInfo.color);
 		Sprites.OUTLINE.blit(stack, leftPos, topPos);
 
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
@@ -93,14 +91,14 @@ class PocketSettingsScreen extends Screen {
 		(hoverCancel ? Sprites.CANCEL_H : Sprites.CANCEL_N).blit(stack, leftPos + 113, topPos + 41);
 		(hoverConfirm ? Sprites.CONFIRM_H : Sprites.CONFIRM_N).blit(stack, leftPos + 133, topPos + 41);
 		for (int channelIndex = 0; channelIndex < 3; channelIndex++) {
-			int sliderY = (0xFF - ((color >> (8 * (2 - channelIndex))) & 0xFF)) * 30 / 0xFF;
+			int sliderY = (0xFF - ((pocketInfo.color >> (8 * (2 - channelIndex))) & 0xFF)) * 30 / 0xFF;
 			(hoverSlider == channelIndex ? Sprites.SLIDER_H : Sprites.SLIDER_N).blit(stack, leftPos + 5 + 8 * channelIndex, topPos + 25 + sliderY);
 		}
 
-		Minecraft.getInstance().getItemRenderer().renderGuiItem(icon.create(), leftPos + 5, topPos + 5);
-		font.draw(stack, name.toString() + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 26, topPos + 9, 0xDDDDDD);
-		int securityOffsetX = (39 - font.width(securityMode.displayName)) / 2;
-		font.draw(stack, securityMode.displayName, leftPos + 42 + securityOffsetX, topPos + 26, securityMode.displayColor);
+		Minecraft.getInstance().getItemRenderer().renderGuiItem(pocketInfo.icon.create(), leftPos + 5, topPos + 5);
+		font.draw(stack, pocketInfo.name + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 26, topPos + 9, 0xDDDDDD);
+		int securityOffsetX = (39 - font.width(pocketInfo.securityMode.displayName)) / 2;
+		font.draw(stack, pocketInfo.securityMode.displayName, leftPos + 42 + securityOffsetX, topPos + 26, pocketInfo.securityMode.displayColor);
 
 		if (hoverIcon)
 			renderTooltip(stack, Component.literal("Change Icon"), mx, my);
@@ -125,7 +123,7 @@ class PocketSettingsScreen extends Screen {
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 		if (hoverIcon) {
 			DeepPocketUtils.playClickSound();
-			DeepPocketClientApi.get().openScreenSelectItem(Component.literal("Select Icon"), color, this::onSelectIcon, this::onSelectIconCancel);
+			DeepPocketClientApi.get().openScreenSelectItem(Component.literal("Select Icon"), pocketInfo.color, this::onSelectIcon, this::onSelectIconCancel);
 			return true;
 		}
 		if (hoverName) {
@@ -141,7 +139,7 @@ class PocketSettingsScreen extends Screen {
 		}
 		if (hoverSecurityMode) {
 			DeepPocketUtils.playClickSound();
-			securityMode = switch (securityMode) {
+			pocketInfo.securityMode = switch (pocketInfo.securityMode) {
 				case PRIVATE -> DeepPocketFTBTeams.hasMod() ? PocketSecurityMode.TEAM : DeepPocketClientApi.get().isPermitPublicPocket() ? PocketSecurityMode.PUBLIC : PocketSecurityMode.PRIVATE;
 				case TEAM -> DeepPocketClientApi.get().isPermitPublicPocket() ? PocketSecurityMode.PUBLIC : PocketSecurityMode.PRIVATE;
 				case PUBLIC -> PocketSecurityMode.PRIVATE;
@@ -168,7 +166,7 @@ class PocketSettingsScreen extends Screen {
 
 	private void onSelectIcon(ItemStack newIcon) {
 		if (!newIcon.isEmpty())
-			icon = new ItemType(newIcon);
+			pocketInfo.icon = new ItemType(newIcon);
 		Minecraft.getInstance().setScreen(this);
 	}
 
@@ -178,9 +176,9 @@ class PocketSettingsScreen extends Screen {
 
 	private void sendEditToServer() {
 		if (pocketId == null)
-			DeepPocketPacketHandler.sbCreatePocket(name.toString(), icon, color, securityMode);
+			DeepPocketPacketHandler.sbCreatePocket(pocketInfo);
 		else
-			DeepPocketPacketHandler.sbChangePocketSettings(pocketId, name.toString(), icon, color, securityMode);
+			DeepPocketPacketHandler.sbChangePocketSettings(pocketId, pocketInfo);
 		onClose();
 	}
 
@@ -213,21 +211,21 @@ class PocketSettingsScreen extends Screen {
 			if (selectedValue < 0x00) selectedValue = 0x00;
 			if (selectedValue > 0xFF) selectedValue = 0xFF;
 			int shift = 8 * (2 - focusSlider);
-			color = color & ~(0xFF << shift) | (selectedValue << shift);
+			pocketInfo.color = pocketInfo.color & ~(0xFF << shift) | (selectedValue << shift);
 		}
 	}
 
 	private void erase() {
 		if (focusSearch)
-			if (name.length() > 0)
-				name.setLength(name.length() - 1);
+			if (pocketInfo.name.length() > 0)
+				pocketInfo.name = pocketInfo.name.substring(0, pocketInfo.name.length() - 1);
 	}
 
 	@Override
 	public boolean charTyped(char codePoint, int modifiers) {
 		if (focusSearch) {
-			if (name.length() < Pocket.MAX_NAME_LENGTH)
-				name.append(codePoint);
+			if (pocketInfo.name.length() < PocketInfo.MAX_NAME_LENGTH)
+				pocketInfo.name += codePoint;
 			return true;
 		}
 		return false;

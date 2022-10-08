@@ -2,10 +2,11 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemValue;
-import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
@@ -13,6 +14,8 @@ import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.Connection;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -22,14 +25,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkHooks;
 import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Stream;
 
 class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketServerApi {
 	private static final Logger LOGGER = LogUtils.getLogger();
+	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
 	private final Map<UUID,PlayerKnowledgeImpl> knowledge = new HashMap<>();
 
 	DeepPocketServerApiImpl() {}
@@ -37,13 +41,11 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 	DeepPocketServerApiImpl(CompoundTag tag) {
 		boolean errors = false;
 		// Loading: Pockets
-		boolean fixPublicPockets = !DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get();
+		boolean allowPublicPockets = DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get();
 		for (Tag savedPocket : tag.getList("pockets", 10)) {
 			try {
-				PocketImpl readPocket = new PocketImpl((CompoundTag)savedPocket);
-				if (fixPublicPockets && readPocket.getSecurityMode() == PocketSecurityMode.PUBLIC)
-					readPocket.setSecurityMode(PocketSecurityMode.TEAM);
-				pockets.put(readPocket.getPocketId(), readPocket);
+				Pocket readPocket = new Pocket((CompoundTag)savedPocket, allowPublicPockets);
+				pocketSnapshots.put(readPocket.getPocketId(), readPocket.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
 			}
@@ -72,8 +74,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 	public CompoundTag save(CompoundTag tag) {
 		// Saving: Pockets
 		ListTag savedPockets = new ListTag();
-		for (PocketImpl pocket : pockets.values())
-			savedPockets.add(pocket.save());
+		getPockets().map(Pocket::save).forEach(savedPockets::add);
 		tag.put("pockets", savedPockets);
 		// Saving: PlayerNameCache
 		ListTag savedPlayerNameCache = new ListTag();
@@ -107,10 +108,21 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		DeepPocketPacketHandler.cbClearItemValues(PacketDistributor.ALL.noArg());
 	}
 
+	@Nullable
 	@Override
-	public void destroyPocket(UUID pocketId) {
-		super.destroyPocket(pocketId);
-		DeepPocketPacketHandler.cbDestroyPocket(PacketDistributor.ALL.noArg(), pocketId);
+	public Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
+		Pocket pocket = super.createPocket(pocketId, owner, info);
+		if (pocket != null)
+			DeepPocketPacketHandler.cbCreatePocket(PacketDistributor.ALL.noArg(), pocketId, owner, info);
+		return pocket;
+	}
+
+	@Override
+	public boolean destroyPocket(UUID pocketId) {
+		boolean changed = super.destroyPocket(pocketId);
+		if (changed)
+			DeepPocketPacketHandler.cbDestroyPocket(PacketDistributor.ALL.noArg(), pocketId);
+		return changed;
 	}
 
 	@Override
@@ -120,18 +132,16 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 	}
 
 	@Override
-	PocketImpl generatePocket(UUID pocketId, UUID owner) {
-		PocketImpl pocket = new PocketImpl(pocketId, owner, true);
-		DeepPocketPacketHandler.cbCreatePocket(PacketDistributor.ALL.noArg(), pocketId, owner, pocket.getName(), pocket.getIcon(), pocket.getColor(), pocket.getSecurityMode());
-		return pocket;
-	}
-
-	@Override
 	public boolean cachePlayerName(UUID id, String name) {
 		boolean changed = super.cachePlayerName(id, name);
 		if (changed)
 			DeepPocketPacketHandler.cbSetPlayersName(PacketDistributor.ALL.noArg(), Map.of(id, name));
 		return changed;
+	}
+
+	@Override
+	public @UnmodifiableView Set<UUID> getViewedPockets(ServerPlayer player) {
+		return Collections.unmodifiableSet(viewedPockets.get(player));
 	}
 
 	@Override
@@ -167,7 +177,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		InteractionHand hand = getHandForItem(player, DeepPocketRegistry.POCKET_LINK_ITEM.get());
 		if (hand == null)
 			return;
-		PocketImpl pocket = getPocket(pocketId);
+		Pocket pocket = getPocket(pocketId);
 		if (pocket == null || !pocket.canAccess(player))
 			return;
 
@@ -189,34 +199,27 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 	}
 
 	@Override
-	public void createPocketFor(ServerPlayer player, String name, ItemType icon, int color, PocketSecurityMode securityMode) {
+	public void createPocketFor(ServerPlayer player, PocketInfo info) {
 		InteractionHand hand = getHandForItem(player, DeepPocketRegistry.POCKET_FACTORY_ITEM.get());
 		if (hand == null)
 			return;
-		if (securityMode == PocketSecurityMode.PUBLIC && DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
-			securityMode = PocketSecurityMode.TEAM;
-		PocketImpl newPocket;
+		if (info.securityMode == PocketSecurityMode.PUBLIC && DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
+			info.securityMode = PocketSecurityMode.TEAM;
+		Pocket newPocket;
 		do {
-			newPocket = createPocket(UUID.randomUUID(), player.getUUID());
+			newPocket = createPocket(UUID.randomUUID(), player.getUUID(), info);
 		} while (newPocket == null);
-		newPocket.setName(name);
-		newPocket.setIcon(icon);
-		newPocket.setColor(color);
-		newPocket.setSecurityMode(securityMode);
 		player.setItemInHand(hand, PocketItem.createStack(newPocket.getPocketId()));
 	}
 
 	@Override
-	public void changePocketSettingsFrom(ServerPlayer player, UUID pocketId, String name, ItemType icon, int color, PocketSecurityMode securityMode) {
-		if (securityMode == PocketSecurityMode.PUBLIC && DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
-			securityMode = PocketSecurityMode.TEAM;
+	public void changePocketSettingsFrom(ServerPlayer player, UUID pocketId, PocketInfo info) {
+		if (info.securityMode == PocketSecurityMode.PUBLIC && DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
+			info.securityMode = PocketSecurityMode.TEAM;
 		Pocket pocket = getPocket(pocketId);
 		if (pocket == null || !player.getUUID().equals(pocket.getOwner()))
 			return;
-		pocket.setName(name);
-		pocket.setIcon(icon);
-		pocket.setColor(color);
-		pocket.setSecurityMode(securityMode);
+		pocket.setInfo(info);
 	}
 
 	@Override
@@ -227,7 +230,133 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		destroyPocket(pocketId);
 	}
 
-	void tickUpdate() {
-		pockets.values().forEach(PocketImpl::sendUpdate);
+
+
+
+
+
+
+	void tickUpdate(MinecraftServer server) {
+		//======
+		// Init
+		//======
+		List<Pocket> pockets = getPockets().toList();
+
+		//remove players that left
+		for (ServerPlayer player : viewedPockets.keySet().toArray(new ServerPlayer[0]))
+			if (player.hasDisconnected())
+				viewedPockets.remove(player);
+		//remembering who needs which data to minimize packet creations
+		List<ServerPlayer> newPlayers = new ArrayList<>();
+		List<Connection> toSendOnUpdate = new ArrayList<>();
+		List<Connection> toSendOnJoin = new ArrayList<>();
+		Map<UUID,List<Connection>> toSendPocketUpdate = new HashMap<>();
+		Map<UUID,List<Connection>> toSendPocketClear = new HashMap<>();
+		Map<UUID,List<Connection>> toSendPocketFill = new HashMap<>();
+
+		//=================================
+		// Sorting players to send packets
+		//=================================
+
+		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+			Connection connection = player.connection.connection;
+			if (viewedPockets.containsKey(player)) {
+				//The player is old
+				toSendOnUpdate.add(connection);
+			} else {
+				//The player is new
+				newPlayers.add(player);
+				toSendOnJoin.add(connection);
+				viewedPockets.put(player, new HashSet<>());
+			}
+			Set<UUID> playerViewedPockets = viewedPockets.get(player);
+			//Clear and Update pockets that the player already viewing
+			for (UUID pocketId : playerViewedPockets.toArray(new UUID[0])) {
+				Pocket pocket = getPocket(pocketId);
+				if (pocket == null)
+					continue;
+				if (pocket.canAccess(player)) {
+					toSendPocketUpdate.computeIfAbsent(pocketId, p -> new ArrayList<>()).add(connection);
+				} else {
+					toSendPocketClear.computeIfAbsent(pocketId, p->new ArrayList<>()).add(connection);
+					playerViewedPockets.remove(pocketId);
+				}
+			}
+			//Fill pockets that the player doesn't view
+			for (Pocket pocket : pockets) {
+				UUID pocketId = pocket.getPocketId();
+				if (!playerViewedPockets.contains(pocketId) && pocket.canAccess(player)) {
+					toSendPocketFill.computeIfAbsent(pocketId, p -> new ArrayList<>()).add(connection);
+					playerViewedPockets.add(pocketId);
+				}
+			}
+		}
+
+		//=================
+		// Sending packets
+		//=================
+
+		//On Update
+		if (toSendOnUpdate.size() > 0) {
+			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(()->toSendOnUpdate);
+			for (Pocket.Snapshot snapshot : pocketSnapshots.values())
+				if (snapshot.didChangedInfo())
+					DeepPocketPacketHandler.cbPocketInfo(packetTarget, snapshot.getPocket().getPocketId(), snapshot.getPocket().getInfo());
+		}
+		//On Join
+		if (toSendOnJoin.size() > 0) {
+			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(()->toSendOnJoin);
+			//permit public key
+			DeepPocketPacketHandler.cbPermitPublicPocket(packetTarget, DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get());
+			//values
+			DeepPocketPacketHandler.cbClearItemValues(packetTarget);
+			DeepPocketPacketHandler.cbSetItemValue(packetTarget, getItemValues());
+			//player name cache
+			DeepPocketPacketHandler.cbSetPlayersName(packetTarget, getPlayerNameCache());
+			//knowledge
+			DeepPocketPacketHandler.cbClearKnowledge(packetTarget);
+			for (ServerPlayer player : newPlayers)
+				DeepPocketPacketHandler.cbAddKnowledge(PacketDistributor.PLAYER.with(() -> player), getKnowledge(player.getUUID()).asSet().toArray(new ItemType[0]));
+			//pockets
+			DeepPocketPacketHandler.cbClearPockets(packetTarget);
+			for (Pocket pocket : pockets) {
+				DeepPocketPacketHandler.cbCreatePocket(packetTarget, pocket.getPocketId(), pocket.getOwner(), pocket.getInfo());
+				List<Connection> playersToSendItems = newPlayers.stream().filter(pocket::canAccess).map(p->p.connection.connection).toList();
+				if (playersToSendItems.size() > 0)
+					DeepPocketPacketHandler.cbPocketSetItemCount(PacketDistributor.NMLIST.with(()->playersToSendItems), pocket.getPocketId(), pocket.getItems());
+			}
+		}
+		//Pocket Update
+		for (var entry : toSendPocketUpdate.entrySet()) {
+			UUID pocketId = entry.getKey();
+			Pocket.Snapshot snapshot = this.pocketSnapshots.get(pocketId);
+			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
+			//Clear items
+			if (snapshot.didClearedItems())
+				DeepPocketPacketHandler.cbPocketClearItems(packetTarget, pocketId);
+			//Changed items
+			Map<ItemType,Double> changedItems = snapshot.getChangedItems();
+			if (!changedItems.isEmpty())
+				DeepPocketPacketHandler.cbPocketSetItemCount(packetTarget, pocketId, changedItems);
+		}
+		//Pocket Clear
+		for (var entry : toSendPocketClear.entrySet())
+			DeepPocketPacketHandler.cbPocketClearItems(PacketDistributor.NMLIST.with(entry::getValue), entry.getKey());
+		//Pocket Fill
+		for (var entry : toSendPocketFill.entrySet()) {
+			UUID pocketId = entry.getKey();
+			Pocket pocket = getPocket(pocketId);
+			if (pocket != null)
+				DeepPocketPacketHandler.cbPocketSetItemCount(PacketDistributor.NMLIST.with(entry::getValue), pocketId, pocket.getItems());
+		}
+
+		//======
+		// Post
+		//======
+
+		for (ServerPlayer newPlayer : newPlayers)
+			cachePlayerName(newPlayer.getUUID(), newPlayer.getGameProfile().getName());
+
+		this.pocketSnapshots.replaceAll((pocketId, pocketSnapshot)->pocketSnapshot.getPocket().createSnapshot());
 	}
 }

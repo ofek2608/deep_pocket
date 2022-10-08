@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.registry.pocket_screen;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;

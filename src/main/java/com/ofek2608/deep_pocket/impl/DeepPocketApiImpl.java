@@ -1,8 +1,10 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemValue;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -11,10 +13,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 abstract class DeepPocketApiImpl implements DeepPocketApi {
 	private final Map<ItemType, ItemValue> itemValues = new HashMap<>();
-	protected final Map<UUID, PocketImpl> pockets = new HashMap<>();
+	protected final Map<UUID, Pocket.Snapshot> pocketSnapshots = new HashMap<>();
 	protected final Map<UUID, String> playerNameCache = new HashMap<>();
 
 	@Override
@@ -41,39 +44,34 @@ abstract class DeepPocketApiImpl implements DeepPocketApi {
 	}
 
 	@Override
-	public Map<UUID, Pocket> getPockets() {
-		return Collections.unmodifiableMap(pockets);
+	public Stream<Pocket> getPockets() {
+		return pocketSnapshots.values().stream().map(Pocket.Snapshot::getPocket);
 	}
 
-	public @Nullable PocketImpl getPocket(UUID pocketId) {
-		return pockets.get(pocketId);
+	public @Nullable Pocket getPocket(UUID pocketId) {
+		Pocket.Snapshot snapshot = pocketSnapshots.get(pocketId);
+		return snapshot == null ? null : snapshot.getPocket();
 	}
 
-	public @Nullable PocketImpl createPocket(UUID pocketId, UUID owner) {
-		if (pockets.containsKey(pocketId))
+	public @Nullable Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
+		if (pocketSnapshots.containsKey(pocketId))
 			return null;
-		PocketImpl newPocket = generatePocket(pocketId, owner);
-		pockets.put(pocketId, newPocket);
+		Pocket newPocket = new Pocket(pocketId, owner, info);
+		pocketSnapshots.put(pocketId, newPocket.createSnapshot());
 		return newPocket;
 	}
 
-	public PocketImpl getOrCreatePocket(UUID pocketId, UUID owner) {
-		return pockets.computeIfAbsent(pocketId, id->generatePocket(id, owner));
-	}
-
 	@Override
-	public void destroyPocket(UUID pocketId) {
-		pockets.remove(pocketId);
+	public boolean destroyPocket(UUID pocketId) {
+		return pocketSnapshots.remove(pocketId) != null;
 	}
 
 	@Override
 	public void clearPockets() {
-		if (pockets.isEmpty())
+		if (pocketSnapshots.isEmpty())
 			return;
-		pockets.clear();
+		pocketSnapshots.clear();
 	}
-
-	abstract PocketImpl generatePocket(UUID pocketId, UUID owner);
 
 	@Override
 	public boolean cachePlayerName(UUID id, String name) {

@@ -3,7 +3,7 @@ package com.ofek2608.deep_pocket.network;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemValue;
-import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import net.minecraft.core.BlockPos;
 import net.minecraftforge.network.NetworkDirection;
@@ -37,10 +37,7 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, CBPocketDestroy.class, CBPocketDestroy::encode, CBPocketDestroy::new, CBPocketDestroy::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBClearPockets.class, CBClearPockets::encode, CBClearPockets::new, CBClearPockets::handle, clientbound);
 
-		CHANNEL.registerMessage(++pid, CBPocketSetName.class, CBPocketSetName::encode, CBPocketSetName::new, CBPocketSetName::handle, clientbound);
-		CHANNEL.registerMessage(++pid, CBPocketSetIcon.class, CBPocketSetIcon::encode, CBPocketSetIcon::new, CBPocketSetIcon::handle, clientbound);
-		CHANNEL.registerMessage(++pid, CBPocketSetColor.class, CBPocketSetColor::encode, CBPocketSetColor::new, CBPocketSetColor::handle, clientbound);
-		CHANNEL.registerMessage(++pid, CBPocketSetSecurity.class, CBPocketSetSecurity::encode, CBPocketSetSecurity::new, CBPocketSetSecurity::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBPocketInfo.class, CBPocketInfo::encode, CBPocketInfo::new, CBPocketInfo::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketSetItemCount.class, CBPocketSetItemCount::encode, CBPocketSetItemCount::new, CBPocketSetItemCount::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketClearItems.class, CBPocketClearItems::encode, CBPocketClearItems::new, CBPocketClearItems::handle, clientbound);
 
@@ -72,14 +69,11 @@ public final class DeepPocketPacketHandler {
 	public static void cbRemoveItemValue(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBRemoveItemValue(types)); }
 	public static void cbClearItemValues(PacketDistributor.PacketTarget target) { CHANNEL.send(target, new CBClearItemValues()); }
 
-	public static void cbCreatePocket(PacketDistributor.PacketTarget target, UUID pocketId, UUID owner, String name, ItemType icon, int color, PocketSecurityMode securityMode) { CHANNEL.send(target, new CBPocketCreate(pocketId, owner, name, icon, color, securityMode)); }
+	public static void cbCreatePocket(PacketDistributor.PacketTarget target, UUID pocketId, UUID owner, PocketInfo info) { CHANNEL.send(target, new CBPocketCreate(pocketId, owner, info)); }
 	public static void cbDestroyPocket(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketDestroy(pocketId)); }
 	public static void cbClearPockets(PacketDistributor.PacketTarget target) { CHANNEL.send(target, new CBClearPockets()); }
 
-	public static void cbPocketSetName(PacketDistributor.PacketTarget target, UUID pocketId, String name) { CHANNEL.send(target, new CBPocketSetName(pocketId, name)); }
-	public static void cbPocketSetIcon(PacketDistributor.PacketTarget target, UUID pocketId, ItemType icon) { CHANNEL.send(target, new CBPocketSetIcon(pocketId, icon)); }
-	public static void cbPocketSetColor(PacketDistributor.PacketTarget target, UUID pocketId, int color) { CHANNEL.send(target, new CBPocketSetColor(pocketId, color)); }
-	public static void cbPocketSetSecurity(PacketDistributor.PacketTarget target, UUID pocketId, PocketSecurityMode mode) { CHANNEL.send(target, new CBPocketSetSecurity(pocketId, mode)); }
+	public static void cbPocketInfo(PacketDistributor.PacketTarget target, UUID pocketId, PocketInfo info) { CHANNEL.send(target, new CBPocketInfo(pocketId, info)); }
 	public static void cbPocketSetItemCount(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Double> counts) { CHANNEL.send(target, new CBPocketSetItemCount(pocketId, counts)); }
 	public static void cbPocketClearItems(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearItems(pocketId)); }
 
@@ -93,8 +87,8 @@ public final class DeepPocketPacketHandler {
 
 	public static void sbOpenPocket() { CHANNEL.send(serverTarget(), new SBOpenPocket()); }
 	public static void sbSelectPocket(UUID pocketId) { CHANNEL.send(serverTarget(), new SBSelectPocket(pocketId)); }
-	public static void sbCreatePocket(String name, ItemType icon, int color, PocketSecurityMode securityMode) { CHANNEL.send(serverTarget(), new SBCreatePocket(name, icon, color, securityMode)); }
-	public static void sbChangePocketSettings(UUID pocketId, String name, ItemType icon, int color, PocketSecurityMode securityMode) { CHANNEL.send(serverTarget(), new SBChangePocketSettings(pocketId, name, icon, color, securityMode)); }
+	public static void sbCreatePocket(PocketInfo info) { CHANNEL.send(serverTarget(), new SBCreatePocket(info)); }
+	public static void sbChangePocketSettings(UUID pocketId, PocketInfo info) { CHANNEL.send(serverTarget(), new SBChangePocketSettings(pocketId, info)); }
 	public static void sbDestroyPocket(UUID pocketId) { CHANNEL.send(serverTarget(), new SBDestroyPocket(pocketId)); }
 
 	public static void sbPocketInsert(byte count) { CHANNEL.send(serverTarget(), new SBPocketInsert(count)); }

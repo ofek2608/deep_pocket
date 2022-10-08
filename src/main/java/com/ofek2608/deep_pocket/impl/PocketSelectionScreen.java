@@ -6,8 +6,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import net.minecraft.client.Minecraft;
@@ -58,7 +59,7 @@ class PocketSelectionScreen extends Screen {
 		mx -= leftPos;
 		my -= topPos;
 
-		List<Pocket> pockets = DeepPocketClientApi.get().getPockets().values().stream().filter(this::filterAccess).filter(this::filterSearch).sorted(this::comparePockets).toList();
+		List<Pocket> pockets = DeepPocketClientApi.get().getPockets().filter(this::filterAccess).filter(this::filterSearch).sorted(this::comparePockets).toList();
 		pageCount = (pockets.size() + 7) / 8;
 		if (pageCount == 0) pageCount = 1;
 		pageIndex = Math.max(Math.min(pageIndex, pageCount - 1), 0);
@@ -90,8 +91,7 @@ class PocketSelectionScreen extends Screen {
 	}
 
 	private boolean filterSearch(Pocket pocket) {
-		String name = pocket.getName();
-		return name.toLowerCase().contains(search.toString().toLowerCase());
+		return pocket.getName().toLowerCase().contains(search.toString().toLowerCase());
 	}
 
 	private int comparePockets(Pocket p0, Pocket p1) {
@@ -223,7 +223,7 @@ class PocketSelectionScreen extends Screen {
 	@Override
 	public boolean charTyped(char codePoint, int modifiers) {
 		if (focusSearch) {
-			if (search.length() < Pocket.MAX_NAME_LENGTH)
+			if (search.length() < PocketInfo.MAX_NAME_LENGTH)
 				search.append(codePoint);
 			return true;
 		}

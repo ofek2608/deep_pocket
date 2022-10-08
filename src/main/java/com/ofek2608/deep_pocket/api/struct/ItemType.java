@@ -22,6 +22,10 @@ public final class ItemType {
 		this.tag = tag == null ? new CompoundTag() : tag.copy();
 	}
 
+	public ItemType(Item item) {
+		this(item, null);
+	}
+
 	public ItemType(ItemStack stack) {
 		this(stack.getItem(), stack.getTag());
 	}
@@ -42,7 +46,8 @@ public final class ItemType {
 		if (count <= 0)
 			return ItemStack.EMPTY;
 		ItemStack newStack = new ItemStack(item, count);
-		newStack.setTag(tag.copy());
+		if (!tag.isEmpty())
+			newStack.setTag(tag.copy());
 		return newStack;
 	}
 

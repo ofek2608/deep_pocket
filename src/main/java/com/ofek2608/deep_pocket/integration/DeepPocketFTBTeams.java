@@ -1,8 +1,8 @@
 package com.ofek2608.deep_pocket.integration;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import dev.ftb.mods.ftbteams.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.data.ClientTeamManager;
@@ -137,7 +137,7 @@ public final class DeepPocketFTBTeams {
 		}
 
 		private static Stream<Pocket> getPocketsForPlayer(DeepPocketServerApi api, UUID player) {
-			return api.getPockets().values().stream().filter(pocket -> pocket.getOwner().equals(player));
+			return api.getPockets().filter(pocket -> pocket.getOwner().equals(player));
 		}
 	}
 
