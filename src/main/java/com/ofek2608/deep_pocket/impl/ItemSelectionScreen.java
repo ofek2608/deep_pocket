@@ -126,6 +126,11 @@ class ItemSelectionScreen extends Screen {
 	@Override
 	public void onClose() {}
 
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
 	private enum Sprites {
 		BASE(0, 0, 154, 98),
 		OUTLINE(0, 98, 154, 98),

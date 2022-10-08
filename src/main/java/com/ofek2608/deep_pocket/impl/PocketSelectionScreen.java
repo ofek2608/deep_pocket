@@ -241,6 +241,11 @@ class PocketSelectionScreen extends Screen {
 		onClose();
 	}
 
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
 	private enum Sprites {
 		TOP(0, 0, 154, 19),
 		BORDERS(0, 19, 154, 22),

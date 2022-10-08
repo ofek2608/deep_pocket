@@ -208,6 +208,11 @@ class SignalSettingsScreen extends Screen {
 			minecraft.setScreen(backScreen);
 	}
 
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
 	private static enum Sprites {
 		BASE_0(0, 0, 154, 26),
 		OUTLINE_0(0, 26, 154, 26),

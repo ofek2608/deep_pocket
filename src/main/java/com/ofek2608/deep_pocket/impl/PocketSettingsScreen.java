@@ -237,6 +237,11 @@ class PocketSettingsScreen extends Screen {
 			minecraft.setScreen(backScreen);
 	}
 
+	@Override
+	public boolean isPauseScreen() {
+		return false;
+	}
+
 	private static enum Sprites {
 		BASE(0, 0, 154, 62),
 		OUTLINE(0, 62, 154, 62),

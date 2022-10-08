@@ -28,7 +28,6 @@ public class DeepPocketMod
 
 	/*
 	 * TODO future content
-	 *  - Fix pause bug
 	 *  - In PocketScreen#renderPocketTooltip add a way to see the conversion
 	 *  - Bulk crafting button, screen, packet and handler
 	 *  - Maybe add custom tooltip with ItemTooltipEvent
