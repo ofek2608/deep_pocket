@@ -139,8 +139,7 @@ public final class ItemConversions {
 						continue;
 					valueCopy.put(entry1.getKey(), entry1.getValue());
 				}
-				if (valueCopy.size() > 0)
-					valuesCopy.put(entry0.getKey(), valueCopy);
+				valuesCopy.put(entry0.getKey(), valueCopy);
 			}
 			return build(valuesCopy);
 		}
@@ -150,8 +149,9 @@ public final class ItemConversions {
 		private static ItemConversions build(Map<ItemType,Map<ItemType,Long>> requirementMap) {
 			Map<ItemType,List<ItemType>> requiredByMap = getRequiredByMap(requirementMap);
 			Map<ItemType,Integer> requirementCountMap = getRequirementCountMap(requirementMap);
-			ItemType[] baseItems = findBaseItems(requirementCountMap);
+			ItemType[] baseItems = findBaseItems(requirementMap, requiredByMap);
 			List<ItemType> toSolveList = new ArrayList<>(Arrays.asList(baseItems));
+			addEmptyToList(toSolveList, requirementCountMap);
 
 			Map<ItemType,long[]> values = new HashMap<>();
 
@@ -159,7 +159,7 @@ public final class ItemConversions {
 			for (int i = 0; i < toSolveList.size(); i++) {
 				ItemType solving = toSolveList.get(i);
 				values.put(solving, i < baseItems.length ? createUnitVector(baseItems.length, i) : buildValue(baseItems.length, values, requirementMap.get(solving)));
-				for (ItemType requiredBy : requiredByMap.get(toSolveList.get(i))) {
+				for (ItemType requiredBy : requiredByMap.getOrDefault(toSolveList.get(i), Collections.emptyList())) {
 					int requiredByRequirementCount = requirementCountMap.get(requiredBy) - 1;
 					requirementCountMap.put(requiredBy, requiredByRequirementCount);
 					//If all requirement are done, now we can solve requiredBy
@@ -191,9 +191,18 @@ public final class ItemConversions {
 			return requirementCountMap;
 		}
 
-		private static ItemType[] findBaseItems(Map<ItemType,Integer> requirementCountMap) {
-			return requirementCountMap.entrySet().stream().filter(entry->entry.getValue() > 0).map(Map.Entry::getKey).unordered().distinct().toArray(ItemType[]::new);
+		private static ItemType[] findBaseItems(Map<ItemType,Map<ItemType,Long>> requirementMap, Map<ItemType,List<ItemType>> requiredByMap) {
+			return requiredByMap.keySet().stream().filter(type->!requirementMap.containsKey(type)).unordered().distinct().toArray(ItemType[]::new);
 		}
+
+		private static void addEmptyToList(List<ItemType> toSolveList, Map<ItemType,Integer> requirementCountMap) {
+			requirementCountMap.forEach((type, count) -> {
+				if (count == 0)
+					toSolveList.add(type);
+			});
+		}
+
+
 
 		private static long[] createUnitVector(int length, int index) {
 			long[] vec = new long[length];

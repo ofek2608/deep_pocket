@@ -49,6 +49,7 @@ public class Pocket {
 				continue;
 			items.put(type, count);
 		}
+		conversions.convertMap(items);
 		this.lastSnapshot = new Snapshot();
 		if (!allowPublicPocket && pocketInfo.securityMode == PocketSecurityMode.PUBLIC)
 			pocketInfo.securityMode = PocketSecurityMode.TEAM;

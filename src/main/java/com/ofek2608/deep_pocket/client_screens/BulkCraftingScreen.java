@@ -144,8 +144,14 @@ class BulkCraftingScreen extends Screen {
 	@Override
 	public boolean charTyped(char codePoint, int modifiers) {
 		if (focusNumber) {
+			if (codePoint == 'i' || codePoint == 'I' || codePoint == '-') {
+				count = -1;
+				return true;
+			}
 			if (codePoint < '0' || '9' < codePoint)
 				return true;
+			if (count < 0)
+				count = 0;
 			int digit = codePoint - '0';
 			//Long.MAX_VALUE == 9223372036854775807
 			count = count <= (digit <= 7 ? 922337203685477580L : 922337203685477579L) ? count * 10 + digit : -1;

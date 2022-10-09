@@ -9,7 +9,10 @@ import java.util.Comparator;
 import java.util.Map;
 
 public enum SortingOrder {
-	COUNT("Count", Comparator.comparingLong(Map.Entry::getValue)),
+	COUNT("Count", Comparator.comparingLong(entry->{
+		long count = entry.getValue();
+		return count < 0 ? Long.MAX_VALUE : count - 1;
+	})),
 	ID("ID", Comparator.comparingInt(e->{
 		//noinspection deprecation
 		return Registry.ITEM.getId(e.getKey().getItem());
