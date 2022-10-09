@@ -4,14 +4,19 @@ import com.ofek2608.deep_pocket.api.DeepPocketApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.integration.DeepPocketCurios;
+import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -44,6 +49,19 @@ public class BlockEntityWithPocket extends BlockEntity {
 		this.pocketId = pocketId;
 		setChanged();
 		sendBlockUpdate();
+	}
+
+	public void setPocketSafely(Player player, @Nullable UUID pocketId) {
+		if (pocketId == null) return;
+		if (player.level.isClientSide) return;
+		DeepPocketServerApi api = DeepPocketServerApi.get();
+		if (api == null) return;
+
+		Pocket pocket = api.getPocket(pocketId);
+		if (pocket == null) return;
+		if (!pocket.canAccess(player)) return;
+		if (!canAccess(player)) return;
+		setPocket(pocketId);
 	}
 
 	protected void sendBlockUpdate() {
@@ -87,6 +105,16 @@ public class BlockEntityWithPocket extends BlockEntity {
 		CompoundTag tag = new CompoundTag();
 		saveAdditional(tag);
 		return tag;
+	}
+
+	public static void onPlace(Level level, BlockPos pos, @Nullable LivingEntity placer) {
+		if (!(placer instanceof Player player))
+			return;
+		UUID pocketId = DeepPocketCurios.getPocket(player);
+		if (pocketId == null)
+			return;
+		if (level.getBlockEntity(pos) instanceof BlockEntityWithPocket blockEntity)
+			blockEntity.setPocketSafely(player, pocketId);
 	}
 
 	public static int getTint(BlockState state, @Nullable BlockAndTintGetter level, @Nullable BlockPos pos, int tintIndex) {

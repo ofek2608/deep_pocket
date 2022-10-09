@@ -9,7 +9,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -63,6 +65,11 @@ public class SignalBlock extends Block implements EntityBlock {
 			if (blockEntity instanceof Ent ent)
 				ent.tick();
 		};
+	}
+
+	@Override
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @org.jetbrains.annotations.Nullable LivingEntity placer, ItemStack stack) {
+		BlockEntityWithPocket.onPlace(level, pos, placer);
 	}
 
 	public static class Ent extends BlockEntityWithPocket {

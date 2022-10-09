@@ -55,15 +55,11 @@ public class PocketItem extends Item {
 	@Override
 	public InteractionResult useOn(UseOnContext context) {
 		Level level = context.getLevel();
-		if (!(level.getBlockEntity(context.getClickedPos()) instanceof BlockEntityWithPocket blockEntity)) return InteractionResult.PASS;
-		if (level.isClientSide) return InteractionResult.CONSUME;
-		DeepPocketServerApi api = DeepPocketServerApi.get();
-		if (api == null) return InteractionResult.CONSUME;
 		UUID pocketId = getPocketId(context.getItemInHand());
-		Pocket pocket = pocketId == null ? null : api.getPocket(pocketId);
 		Player player = context.getPlayer();
-		if (pocket == null || player == null || !pocket.canAccess(player) || !blockEntity.canAccess(player)) return InteractionResult.CONSUME;
-		blockEntity.setPocket(pocketId);
+		if (!(level.getBlockEntity(context.getClickedPos()) instanceof BlockEntityWithPocket blockEntity)) return InteractionResult.PASS;
+		if (player == null) return InteractionResult.CONSUME;
+		blockEntity.setPocketSafely(player, pocketId);
 		return InteractionResult.CONSUME;
 	}
 
