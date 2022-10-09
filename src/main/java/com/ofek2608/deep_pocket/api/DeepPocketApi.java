@@ -29,6 +29,7 @@ public interface DeepPocketApi {
 	@UnmodifiableView Map<UUID, String> getPlayerNameCache();
 
 	void insertItem(Pocket pocket, ItemStack stack);
+	void insertItem(Pocket pocket, ItemType type, long count);
 	ItemStack extractItem(Pocket pocket, ItemStack stack);
 	long getMaxExtract(Pocket pocket, ItemType type);
 

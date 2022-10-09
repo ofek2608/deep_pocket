@@ -114,7 +114,7 @@ class SignalSettingsScreen extends Screen {
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 		if (hoverFirst) {
 			DeepPocketUtils.playClickSound();
-			ClientScreens.openScreenSelectItem(Component.literal("Select First Item"), color, this::onSelectFirst, this::onSelectCancel);
+			ClientScreens.selectItem(Component.literal("Select First Item"), color, this::onSelectFirst, this::onSelectCancel);
 			return true;
 		}
 		if (hoverOperator) {
@@ -126,7 +126,7 @@ class SignalSettingsScreen extends Screen {
 		if (hoverSecond) {
 			if (twoItemsMode) {
 				DeepPocketUtils.playClickSound();
-				ClientScreens.openScreenSelectItem(Component.literal("Select Second Item"), color, this::onSelectSecond, this::onSelectCancel);
+				ClientScreens.selectItem(Component.literal("Select Second Item"), color, this::onSelectSecond, this::onSelectCancel);
 			} else {
 				focusNumber = true;
 				Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);

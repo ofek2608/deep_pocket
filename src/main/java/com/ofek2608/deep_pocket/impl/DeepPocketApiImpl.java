@@ -75,10 +75,14 @@ abstract class DeepPocketApiImpl implements DeepPocketApi {
 
 	@Override
 	public void insertItem(Pocket pocket, ItemStack stack) {
-		if (stack.isEmpty())
+		insertItem(pocket, new ItemType(stack), stack.getCount());
+	}
+
+	@Override
+	public void insertItem(Pocket pocket, ItemType type, long count) {
+		if (type.isEmpty() || count == 0)
 			return;
-		ItemType type = new ItemType(stack);
-		pocket.insertItem(type, stack.getCount());
+		pocket.insertItem(type, count);
 		if (!(this instanceof DeepPocketServerApi server))
 			return;
 		PlayerKnowledge knowledge = server.getKnowledge(pocket.getOwner());

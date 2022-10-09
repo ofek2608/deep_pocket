@@ -17,7 +17,7 @@ public class PocketFactoryItem extends Item {
 	public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (level.isClientSide)
-			ClientScreens.openScreenSettingsNew();
+			ClientScreens.settingsNew();
 		return InteractionResultHolder.success(stack);
 	}
 }

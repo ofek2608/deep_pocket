@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.registry.pocket_screen;
 
+import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
@@ -19,6 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
+import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -342,5 +344,42 @@ public class PocketMenu extends AbstractContainerMenu {
 		if (extracted.isEmpty())
 			return;
 		setCarried(type.create(currentCount + extracted.getCount()));
+	}
+
+	public ItemType[] getCrafting() {
+		ItemType[] result = new ItemType[9];
+		for (int i = 0; i < 9; i++)
+			result[i] = new ItemType(craftSlots.getItem(i));
+		return result;
+	}
+
+	public void bulkCrafting(ServerPlayer player, long count) {
+		DeepPocketServerApi api = DeepPocketServerApi.get();
+		Pocket pocket = getPocket();
+		if (api == null || pocket == null) return;
+
+		Optional<CraftingRecipe> recipe = player.server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftSlots, player.level);
+		if (recipe.isEmpty()) return;
+		CraftingRecipe craftingrecipe = recipe.get();
+		if (!resultSlots.setRecipeUsed(player.level, player, craftingrecipe)) return;
+		ItemStack result = craftingrecipe.assemble(craftSlots);
+		if (result.isEmpty()) return;
+		ForgeHooks.setCraftingPlayer(player);
+		NonNullList<ItemStack> remainingItems = player.level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, player.level);
+		ForgeHooks.setCraftingPlayer(null);
+
+		long max = pocket.getMaxExtract(getCrafting());
+		if (0 <= max && max < count)
+			count = max;
+		if (count == 0)
+			return;
+		for (ItemType type : getCrafting())
+			pocket.extractItem(type, count);
+		api.insertItem(pocket, new ItemType(result), DeepPocketUtils.advancedMul(result.getCount(), count));
+		for (ItemStack remainingItem : remainingItems)
+			api.insertItem(pocket, new ItemType(remainingItem), DeepPocketUtils.advancedMul(remainingItem.getCount(), count));
+
+		if (resultSlot != null)
+			resultSlot.checkTakeAchievements(result);
 	}
 }

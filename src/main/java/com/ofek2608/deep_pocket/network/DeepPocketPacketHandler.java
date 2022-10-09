@@ -54,6 +54,7 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, SBPocketExtract.class, SBPocketExtract::encode, SBPocketExtract::new, SBPocketExtract::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBRequestRecipe.class, SBRequestRecipe::encode, SBRequestRecipe::new, SBRequestRecipe::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBClearCraftingGrid.class, SBClearCraftingGrid::encode, SBClearCraftingGrid::new, SBClearCraftingGrid::handle, serverbound);
+		CHANNEL.registerMessage(++pid, SBBulkCrafting.class, SBBulkCrafting::encode, SBBulkCrafting::new, SBBulkCrafting::handle, serverbound);
 
 		CHANNEL.registerMessage(++pid, SBPocketSignalSettings.class, SBPocketSignalSettings::encode, SBPocketSignalSettings::new, SBPocketSignalSettings::handle, serverbound);
 	}
@@ -87,6 +88,7 @@ public final class DeepPocketPacketHandler {
 	public static void sbPocketExtract(ItemType type, boolean toCarry, byte count) { CHANNEL.send(serverTarget(), new SBPocketExtract(type, toCarry, count)); }
 	public static void sbRequestRecipe(ItemType[] items) { CHANNEL.send(serverTarget(), new SBRequestRecipe(items)); }
 	public static void sbClearCraftingGrid(boolean up) { CHANNEL.send(serverTarget(), new SBClearCraftingGrid(up)); }
+	public static void sbBulkCrafting(long count) { CHANNEL.send(serverTarget(), new SBBulkCrafting(count)); }
 
 	public static void sbPocketSignalSettings(BlockPos pos, SignalSettings settings) { CHANNEL.send(serverTarget(), new SBPocketSignalSettings(pos, settings)); }
 

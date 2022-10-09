@@ -48,7 +48,7 @@ public class SignalBlock extends Block implements EntityBlock {
 		if (level.isClientSide && level.getBlockEntity(pos) instanceof Ent ent) {
 			Pocket pocket = ent.getClientPocket();
 			int color = pocket == null ? 0xFFFFFF : pocket.getColor();
-			ClientScreens.openScreenConfigureSignalBlock(color, pos, ent.settings);
+			ClientScreens.configureSignalBlock(color, pos, ent.settings);
 		}
 		return InteractionResult.CONSUME;
 	}

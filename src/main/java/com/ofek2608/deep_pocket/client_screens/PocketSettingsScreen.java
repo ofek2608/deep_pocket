@@ -122,7 +122,7 @@ class PocketSettingsScreen extends Screen {
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 		if (hoverIcon) {
 			DeepPocketUtils.playClickSound();
-			ClientScreens.openScreenSelectItem(Component.literal("Select Icon"), pocketInfo.color, this::onSelectIcon, this::onSelectIconCancel);
+			ClientScreens.selectItem(Component.literal("Select Icon"), pocketInfo.color, this::onSelectIcon, this::onSelectIconCancel);
 			return true;
 		}
 		if (hoverName) {

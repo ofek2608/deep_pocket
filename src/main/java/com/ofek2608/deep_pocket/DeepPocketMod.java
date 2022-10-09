@@ -27,7 +27,6 @@ public class DeepPocketMod
 	/*
 	 * TODO future content
 	 *  - In PocketScreen#renderPocketTooltip add a way to see the conversion
-	 *  - Bulk crafting button, screen, packet and handler
 	 *  - Maybe add custom tooltip with ItemTooltipEvent
 	 *  - Maybe a way to set filter to allow nbt variants
 	 *  - Maybe a crafting patten

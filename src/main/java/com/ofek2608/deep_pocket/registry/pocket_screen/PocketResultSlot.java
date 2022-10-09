@@ -63,4 +63,9 @@ public class PocketResultSlot extends ResultSlot {
 		}
 		menu.reloadCrafting();
 	}
+
+	@Override
+	public void checkTakeAchievements(ItemStack pStack) {
+		super.checkTakeAchievements(pStack);
+	}
 }

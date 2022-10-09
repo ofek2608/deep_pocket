@@ -165,9 +165,12 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			if (49 <= my && my <= 58) return 4;
 		}
 		my -= 23 + rowCount * 16;
-		if (displayCrafting && 19 <= mx && mx <= 34) {
-			if (0 <= my && my <= 15) return 5;
-			if (32 <= my && my <= 47) return 6;
+		if (displayCrafting) {
+			if (19 <= mx && mx <= 34) {
+				if (0 <= my && my <= 15) return 5;
+				if (32 <= my && my <= 47) return 6;
+			}
+			if (isInSlot(mx - 147, my - 16)) return 7;
 		}
 		return -1;
 	}
@@ -257,6 +260,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			getDisplayAscendingButton(hoverButton == 4).blit(stack, leftPos + 5, topPos + 49);
 			getClearUButton(hoverButton == 5).blit(stack, leftPos + 19, topPos + 23 + 16 * rowCount);
 			getClearDButton(hoverButton == 6).blit(stack, leftPos + 19, topPos + 55 + 16 * rowCount);
+			getBulkCraftButton(menu.getSlot(45).hasItem(), hoverButton == 7).blit(stack, leftPos + 147, topPos + 39 + 16 * rowCount);
 		}
 		{ //Render: Scroll
 			int x = leftPos + 167;
@@ -440,6 +444,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			case 4 -> Component.literal("Display Crafting: ").append(Component.literal(DeepPocketClientApi.get().isDisplayCrafting() ? "True" : "False").withStyle(ChatFormatting.AQUA));
 			case 5 -> Component.literal("Clear To Pocket");
 			case 6 -> Component.literal("Clear To Inventory");
+			case 7 -> Component.literal("Bulk Crafting");
 			default -> null;
 		};
 		if (text == null)
@@ -513,7 +518,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			case 0 -> {
 				Pocket pocket = menu.getPocket();
 				if (pocket != null && pocket.getOwner().equals(menu.playerInventory.player.getUUID()))
-					ClientScreens.openScreenSettingsEdit(pocket);
+					ClientScreens.settingsEdit(pocket);
 			}
 			case 1 -> toggleSearchMode();
 			case 2 -> toggleSortingOrder();
@@ -521,6 +526,11 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			case 4 -> toggleDisplayCrafting();
 			case 5 -> DeepPocketPacketHandler.sbClearCraftingGrid(true);
 			case 6 -> DeepPocketPacketHandler.sbClearCraftingGrid(false);
+			case 7 -> {
+				Pocket pocket = menu.getPocket();
+				if (pocket != null && menu.getSlot(45).hasItem())
+					ClientScreens.bulkCrafting(pocket, menu.getCrafting());
+			}
 			default -> { return false; }
 		}
 		DeepPocketUtils.playClickSound();
@@ -646,6 +656,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		return hover ? Sprites.CLEAR_DH : Sprites.CLEAR_DN;
 	}
 
+	private static Sprites getBulkCraftButton(boolean active, boolean hover) {
+		return active ? hover ? Sprites.BULK_CRAFTING_H : Sprites.BULK_CRAFTING_N : Sprites.BULK_CRAFTING_D;
+	}
+
 	private static void toggleSearchMode() {
 		DeepPocketClientApi.get().setSearchMode(switch (DeepPocketClientApi.get().getSearchMode()) {
 			case NORMAL -> SearchMode.SYNC_JEI;
@@ -715,6 +729,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		SETTINGS_N(216, 60, 10, 10),SETTINGS_H(226, 60, 10, 10),
 		CLEAR_UN(224, 70, 16, 16),CLEAR_UH(240, 70, 16, 16),
 		CLEAR_DN(224, 86, 16, 16),CLEAR_DH(240, 86, 16, 16),
+		BULK_CRAFTING_N(224, 102, 16, 16),BULK_CRAFTING_H(240, 102, 16, 16),BULK_CRAFTING_D(208, 102, 16, 16),
 		;
 
 		private final int u, v, w, h;

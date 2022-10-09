@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.client_screens;
 
+import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
@@ -16,37 +17,44 @@ import java.util.function.Consumer;
 public final class ClientScreens {
 	private ClientScreens() {}
 
-	public  static void openScreenSettings(@Nullable UUID pocketId, PocketInfo info) {
+	public  static void settings(@Nullable UUID pocketId, PocketInfo info) {
 		Minecraft minecraft = Minecraft.getInstance();
 		minecraft.setScreen(new PocketSettingsScreen(minecraft.screen, pocketId, info));
 	}
 
-	public static void openScreenSettingsNew() {
-		openScreenSettings(null, new PocketInfo());
+	public static void settingsNew() {
+		settings(null, new PocketInfo());
 	}
 
-	public static void openScreenSettingsEdit(Pocket pocket) {
-		openScreenSettings(pocket.getPocketId(), pocket.getInfo());
+	public static void settingsEdit(Pocket pocket) {
+		settings(pocket.getPocketId(), pocket.getInfo());
 	}
 
-	public static void openScreenSelectPocket() {
+	public static void selectPocket() {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)
 			minecraft.setScreen(new PocketSelectionScreen(minecraft.screen, player));
 	}
 
-	public static void openScreenSelectItem(Component title, int color, Consumer<ItemStack> onSelect, Runnable onCancel) {
+	public static void selectItem(Component title, int color, Consumer<ItemStack> onSelect, Runnable onCancel) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)
 			minecraft.setScreen(new ItemSelectionScreen(title, color, player.getInventory(), onSelect, onCancel));
 	}
 
-	public static void openScreenConfigureSignalBlock(int color, BlockPos pos, SignalSettings settings) {
+	public static void configureSignalBlock(int color, BlockPos pos, SignalSettings settings) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)
 			minecraft.setScreen(new SignalSettingsScreen(minecraft.screen, player, color, pos, settings));
+	}
+
+	public static void bulkCrafting(Pocket pocket, ItemType[] recipe) {
+		Minecraft minecraft = Minecraft.getInstance();
+		Player player = minecraft.player;
+		if (player != null)
+			minecraft.setScreen(new BulkCraftingScreen(minecraft.screen, pocket, recipe));
 	}
 }
