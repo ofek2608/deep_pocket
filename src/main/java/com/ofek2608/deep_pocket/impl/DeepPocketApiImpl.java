@@ -83,15 +83,15 @@ abstract class DeepPocketApiImpl implements DeepPocketApi {
 		if (type.isEmpty() || count == 0)
 			return;
 		pocket.insertItem(type, count);
-		if (!(this instanceof DeepPocketServerApi server))
-			return;
-		PlayerKnowledge knowledge = server.getKnowledge(pocket.getOwner());
-		knowledge.add(type);
-		long[] value = conversions.getValue(type);
-		if (value == null)
-			return;
-		ItemType[] baseItems = IntStream.range(0, value.length).filter(i->value[i] != 0).mapToObj(conversions::getBaseItem).toArray(ItemType[]::new);
-		knowledge.add(baseItems);
+//		if (!(this instanceof DeepPocketServerApi server))
+//			return;
+//		PlayerKnowledge knowledge = server.getKnowledge(pocket.getOwner());
+//		knowledge.add(type);
+//		long[] value = conversions.getValue(type);
+//		if (value == null)
+//			return;
+//		ItemType[] baseItems = IntStream.range(0, value.length).filter(i->value[i] != 0).mapToObj(conversions::getBaseItem).toArray(ItemType[]::new);
+//		knowledge.add(baseItems);
 	}
 
 	@Override

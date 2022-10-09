@@ -30,9 +30,10 @@ public class DeepPocketMod
 	 *  - Maybe add custom tooltip with ItemTooltipEvent
 	 *  - Maybe a way to set filter to allow nbt variants
 	 *  - Maybe a crafting patten
-	 *  - Improve the look of the importers and exporters
-	 *  - Add a way to manage pockets as admin
+	 *  - Improve the textures of the importers, exporters and signal
 	 *  - Maybe integrate with ftb chunks to prevent pockets from being used in forgotten places (or in houses of old team members)
 	 *  - Add new jei category that shows conversions
+	 *  - Add toast when the player expands his knowledge
+	 *  - Make more commands
 	 */
 }

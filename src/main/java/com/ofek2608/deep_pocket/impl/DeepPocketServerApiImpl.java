@@ -31,7 +31,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 	private static final Logger LOGGER = LogUtils.getLogger();
 	private final MinecraftServer server;
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
-	private final Map<UUID,PlayerKnowledgeImpl> knowledge = new HashMap<>();
+	private final Map<UUID, PlayerKnowledge.Snapshot> knowledge = new HashMap<>();
 
 	DeepPocketServerApiImpl(MinecraftServer server, ItemConversions conversions) {
 		this.server = server;
@@ -62,8 +62,8 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		// Loading: Knowledge
 		for (Tag savedKnowledge : tag.getList("knowledge", 10)) {
 			try {
-				PlayerKnowledgeImpl readKnowledge = new PlayerKnowledgeImpl(this, (CompoundTag)savedKnowledge);
-				knowledge.put(readKnowledge.player, readKnowledge);
+				PlayerKnowledge readKnowledge = new PlayerKnowledge(conversions, (CompoundTag)savedKnowledge);
+				knowledge.put(readKnowledge.getPlayer(), readKnowledge.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
 			}
@@ -88,8 +88,8 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		tag.put("playerNameCache", savedPlayerNameCache);
 		// Saving: Knowledge
 		ListTag savedKnowledge = new ListTag();
-		for (PlayerKnowledgeImpl knowledge : knowledge.values())
-			savedKnowledge.add(knowledge.save());
+		for (PlayerKnowledge.Snapshot snapshot : knowledge.values())
+			savedKnowledge.add(snapshot.getKnowledge().save());
 		tag.put("knowledge", savedKnowledge);
 		return tag;
 	}
@@ -131,8 +131,8 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 	}
 
 	@Override
-	public PlayerKnowledgeImpl getKnowledge(UUID playerId) {
-		return knowledge.computeIfAbsent(playerId, id->new PlayerKnowledgeImpl(this, id));
+	public PlayerKnowledge getKnowledge(UUID playerId) {
+		return knowledge.computeIfAbsent(playerId, id->new PlayerKnowledge(conversions, id).createSnapshot()).getKnowledge();
 	}
 
 	@Override
@@ -220,19 +220,45 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 
 
 
-
+	private PlayerKnowledge.Snapshot getKnowledgeSnapshot(UUID playerId) {
+		PlayerKnowledge.Snapshot snapshot = knowledge.get(playerId);
+		if (snapshot == null) {
+			snapshot = new PlayerKnowledge(conversions, playerId).createSnapshot();
+			knowledge.put(playerId, snapshot);
+		} else {
+			knowledge.put(playerId, snapshot.getKnowledge().createSnapshot());
+		}
+		return snapshot;
+	}
 
 	void tickUpdate() {
 		//======
 		// Init
 		//======
 		List<Pocket> pockets = getPockets().toList();
+		List<ServerPlayer> onlinePLayers = server.getPlayerList().getPlayers();
+
+		//==================
+		// Adding knowledge
+		//==================
+
+		for (ServerPlayer player : onlinePLayers) {
+			PlayerKnowledge knowledge = getKnowledge(player.getUUID());
+			for (ItemStack item : player.getInventory().items)
+				knowledge.add(new ItemType(item));
+			knowledge.add(new ItemType(player.containerMenu.getCarried()));
+		}
+
+		//===============================
+		// Preparing for sorting packets
+		//===============================
 
 		//remove players that left
 		for (ServerPlayer player : viewedPockets.keySet().toArray(new ServerPlayer[0]))
 			if (player.hasDisconnected())
 				viewedPockets.remove(player);
 		//remembering who needs which data to minimize packet creations
+		List<ServerPlayer> oldPlayers = new ArrayList<>();
 		List<ServerPlayer> newPlayers = new ArrayList<>();
 		List<Connection> toSendOnUpdate = new ArrayList<>();
 		List<Connection> toSendOnJoin = new ArrayList<>();
@@ -248,6 +274,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			Connection connection = player.connection.connection;
 			if (viewedPockets.containsKey(player)) {
 				//The player is old
+				oldPlayers.add(player);
 				toSendOnUpdate.add(connection);
 			} else {
 				//The player is new
@@ -288,6 +315,18 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			for (Pocket.Snapshot snapshot : pocketSnapshots.values())
 				if (snapshot.didChangedInfo())
 					DeepPocketPacketHandler.cbPocketInfo(packetTarget, snapshot.getPocket().getPocketId(), snapshot.getPocket().getInfo());
+			for (ServerPlayer player : oldPlayers) {
+				PacketDistributor.PacketTarget playerTarget = PacketDistributor.PLAYER.with(() -> player);
+				PlayerKnowledge.Snapshot snapshot = getKnowledgeSnapshot(player.getUUID());
+				if (snapshot.didClear())
+					DeepPocketPacketHandler.cbClearKnowledge(playerTarget);
+				ItemType[] removed = snapshot.getRemoved();
+				ItemType[] added = snapshot.getAdded();
+				if (removed.length > 0)
+					DeepPocketPacketHandler.cbAddKnowledge(playerTarget, removed);
+				if (added.length > 0)
+					DeepPocketPacketHandler.cbAddKnowledge(playerTarget, added);
+			}
 		}
 		//On Join
 		if (toSendOnJoin.size() > 0) {
@@ -299,9 +338,8 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			//player name cache
 			DeepPocketPacketHandler.cbSetPlayersName(packetTarget, getPlayerNameCache());
 			//knowledge
-			DeepPocketPacketHandler.cbClearKnowledge(packetTarget);
 			for (ServerPlayer player : newPlayers)
-				DeepPocketPacketHandler.cbAddKnowledge(PacketDistributor.PLAYER.with(() -> player), getKnowledge(player.getUUID()).asSet().toArray(new ItemType[0]));
+				DeepPocketPacketHandler.cbAddKnowledge(PacketDistributor.PLAYER.with(() -> player), getKnowledgeSnapshot(player.getUUID()).getKnowledge().asSet().toArray(new ItemType[0]));
 			//pockets
 			DeepPocketPacketHandler.cbClearPockets(packetTarget);
 			for (Pocket pocket : pockets)

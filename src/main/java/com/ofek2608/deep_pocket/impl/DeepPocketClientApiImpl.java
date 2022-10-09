@@ -5,19 +5,25 @@ import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.PlayerKnowledge;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
+import net.minecraft.Util;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketClientApi {
-	private final PlayerKnowledgeImpl knowledge = new PlayerKnowledgeImpl();
+	private PlayerKnowledge knowledge = new PlayerKnowledge(conversions, Util.NIL_UUID);
 	private boolean permitPublicPocket;
 
 	DeepPocketClientApiImpl() {}
 
-	@Override public void setItemConversions(ItemConversions conversions) { this.conversions = conversions; }
+	@Override
+	public void setItemConversions(ItemConversions conversions) {
+		this.conversions = conversions;
+		this.knowledge = new PlayerKnowledge(conversions, Util.NIL_UUID);
+	}
 
 	//Client config
 	@Override public SearchMode getSearchMode() { return DeepPocketConfig.Client.SEARCH_MODE.get(); }
@@ -33,14 +39,14 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	@Override public void setPermitPublicPocket(boolean value) { this.permitPublicPocket = value; }
 
 	@Override
-	public PlayerKnowledgeImpl getKnowledge() {
+	public PlayerKnowledge getKnowledge() {
 		return knowledge;
 	}
 
 	@Override
 	public Stream<Map.Entry<ItemType,Long>> getSortedKnowledge(Pocket pocket) {
 		Map<ItemType,Long> counts = new HashMap<>();
-		for (ItemType type : getKnowledge().asSet()) {
+		for (ItemType type : getKnowledge().getPocketItems(pocket).toList()) {
 			long count = pocket.getMaxExtract(type);
 			if (count > 0)
 				counts.put(type, count);

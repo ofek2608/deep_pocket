@@ -5,9 +5,11 @@ import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.events.DeepPocketBuildConversionsEvent;
 import com.ofek2608.deep_pocket.api.events.DeepPocketServerStartedEvent;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
+import com.ofek2608.deep_pocket.api.struct.ItemType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
@@ -68,6 +70,14 @@ public final class DeepPocketManager {
 			if (event.phase != TickEvent.Phase.END || serverApi == null)
 				return;
 			serverApi.tickUpdate();
+		}
+
+		@SubscribeEvent
+		public static void event(PlayerEvent.ItemCraftedEvent event) {
+			Player player = event.getEntity();
+			if (player == null || player.level.isClientSide || serverApi == null)
+				return;
+			serverApi.getKnowledge(player.getUUID()).add(new ItemType(event.getCrafting()));
 		}
 	}
 
