@@ -4,6 +4,7 @@ import com.ofek2608.deep_pocket.DeepPocketUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -69,6 +70,10 @@ public final class ItemConversions {
 		return baseItems.clone();
 	}
 
+	public @UnmodifiableView Set<ItemType> getKeys() {
+		return Collections.unmodifiableSet(values.keySet());
+	}
+
 	public @Nullable long[] getValue(ItemType type) {
 		long[] value = values.get(type);
 		return value == null ? null : value.clone();
@@ -103,6 +108,8 @@ public final class ItemConversions {
 			}
 		}
 	}
+
+
 
 
 

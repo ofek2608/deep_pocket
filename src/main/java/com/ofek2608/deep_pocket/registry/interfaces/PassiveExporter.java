@@ -78,9 +78,11 @@ public class PassiveExporter extends Block implements EntityBlock {
 				Pocket pocket = getServerPocket();
 				if (api == null || pocket == null) return ItemStack.EMPTY;
 				ItemType filter = getFilter();
+				if (filter.isEmpty()) return ItemStack.EMPTY;
+
 				if (!simulate)
 					return filter.create((int)pocket.extractItem(null, filter, amount));
-				long maxExtract = pocket.extractItem(null, filter, amount);
+				long maxExtract = pocket.getMaxExtract(null, filter);
 				return filter.create(maxExtract < 0 || amount <= maxExtract ? amount : (int)maxExtract);
 			}
 

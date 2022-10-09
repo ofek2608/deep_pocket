@@ -49,7 +49,7 @@ public class PocketResultSlot extends ResultSlot {
 				continue;
 			}
 
-			if (oldItem.getCount() > 1 || pocket.extractItem(api.getKnowledge(player.getUUID()), new ItemType(oldItem), 1) == 1)
+			if (oldItem.getCount() > 1 || pocket.extractItem(api.getKnowledge(player.getUUID()), new ItemType(oldItem), 1) != 1)
 				this.craftSlots.removeItem(i, 1);
 			oldItem = this.craftSlots.getItem(i);
 

@@ -3,11 +3,13 @@ package com.ofek2608.deep_pocket.impl;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
+import com.ofek2608.deep_pocket.api.events.DeepPocketItemConversionsUpdatedEvent;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.PlayerKnowledge;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import net.minecraft.Util;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +25,7 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	public void setItemConversions(ItemConversions conversions) {
 		this.conversions = conversions;
 		this.knowledge = new PlayerKnowledge(conversions, Util.NIL_UUID);
+		MinecraftForge.EVENT_BUS.post(new DeepPocketItemConversionsUpdatedEvent(this, conversions));
 	}
 
 	//Client config

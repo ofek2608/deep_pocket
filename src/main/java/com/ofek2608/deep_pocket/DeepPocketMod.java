@@ -32,7 +32,6 @@ public class DeepPocketMod
 	 *  - Maybe a crafting patten
 	 *  - Improve the textures of the importers, exporters and signal
 	 *  - Maybe integrate with ftb chunks to prevent pockets from being used in forgotten places (or in houses of old team members)
-	 *  - Add new jei category that shows conversions
 	 *  - Add toast when the player expands his knowledge
 	 *  - Make more commands
 	 *  - Cleanup around pocket insertion and extractions

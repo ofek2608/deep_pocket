@@ -92,10 +92,23 @@ public class ActiveExporter extends Block implements EntityBlock {
 			if (api == null || pocket == null) return;
 			ItemType filter = getFilter();
 			if (filter.isEmpty()) return;
-			long extractedCount = pocket.extractItem(null, filter, 64);
-			ItemStack stack = filter.create((int)extractedCount);
-			stack = ItemHandlerHelper.insertItem(itemHandler, stack, false);
-			pocket.insertItem(filter, stack.getCount());
+
+			int slotCount = itemHandler.getSlots();
+			for (int i = 0; i < slotCount; i++) {
+				int transferCount = itemHandler.getSlotLimit(i);
+				if (transferCount <= 0)
+					continue;
+				transferCount -= itemHandler.insertItem(i, filter.create(transferCount), true).getCount();
+				if (transferCount <= 0)
+					continue;
+				transferCount = (int)pocket.extractItem(null, filter, transferCount);
+				if (transferCount <= 0)
+					return;
+				int leftOver = itemHandler.insertItem(i, filter.create(transferCount), false).getCount();
+				if (leftOver <= 0)
+					continue;
+				pocket.insertItem(filter, leftOver);
+			}
 		}
 	}
 }
