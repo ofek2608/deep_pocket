@@ -2,7 +2,6 @@ package com.ofek2608.deep_pocket;
 
 import com.ofek2608.deep_pocket.impl.DeepPocketConfig;
 import com.ofek2608.deep_pocket.integration.DeepPocketCurios;
-import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import com.ofek2608.deep_pocket.integration.DeepPocketTheOneProbe;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;

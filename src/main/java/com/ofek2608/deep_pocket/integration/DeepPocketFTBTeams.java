@@ -1,17 +1,10 @@
 package com.ofek2608.deep_pocket.integration;
 
-import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import dev.ftb.mods.ftbteams.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.data.ClientTeamManager;
 import dev.ftb.mods.ftbteams.data.KnownClientPlayer;
 import dev.ftb.mods.ftbteams.data.Team;
 import dev.ftb.mods.ftbteams.data.TeamBase;
-import dev.ftb.mods.ftbteams.event.PlayerChangedTeamEvent;
-import dev.ftb.mods.ftbteams.event.TeamEvent;
-import net.minecraft.network.Connection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.ModList;
@@ -19,9 +12,10 @@ import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
 import javax.annotation.Nullable;
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.stream.Stream;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public final class DeepPocketFTBTeams {
 	private DeepPocketFTBTeams() {}
@@ -87,10 +81,6 @@ public final class DeepPocketFTBTeams {
 		private static Set<UUID> getTeamMembers(boolean clientSide, UUID teamMember) {
 			TeamBase team = getPlayerTeam(clientSide, teamMember);
 			return team == null ? Set.of(teamMember) : team.getMembers();
-		}
-
-		private static Stream<Pocket> getPocketsForPlayer(DeepPocketServerApi api, UUID player) {
-			return api.getPockets().filter(pocket -> pocket.getOwner().equals(player));
 		}
 	}
 

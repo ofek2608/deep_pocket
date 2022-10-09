@@ -6,8 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.server.ServerLifecycleEvent;
-import net.minecraftforge.event.server.ServerStartingEvent;
-import net.minecraftforge.eventbus.api.Event;
 
 public class DeepPocketBuildConversionsEvent extends ServerLifecycleEvent {
 	private final ItemConversions.Builder builder;

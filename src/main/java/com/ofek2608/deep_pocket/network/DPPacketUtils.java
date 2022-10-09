@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemValue;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.HashMap;
@@ -39,13 +38,5 @@ final class DPPacketUtils {
 		DPPacketUtils.writeItemTypeArray(buf, types);
 		for (ItemType type : types)
 			writer.accept(buf, map.get(type));
-	}
-
-	static ItemValue readItemValue(FriendlyByteBuf buf) {
-		return new ItemValue(readItemTypeMap(buf, FriendlyByteBuf::readDouble));
-	}
-
-	static void writeItemValue(FriendlyByteBuf buf, ItemValue value) {
-		writeItemTypeMap(buf, value.items, FriendlyByteBuf::writeDouble);
 	}
 }

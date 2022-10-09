@@ -3,7 +3,6 @@ package com.ofek2608.deep_pocket.api.events;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.server.ServerLifecycleEvent;
-import net.minecraftforge.eventbus.api.Event;
 
 public class DeepPocketServerStartedEvent extends ServerLifecycleEvent {
 	private final DeepPocketServerApi api;
