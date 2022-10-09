@@ -36,6 +36,5 @@ public class DeepPocketMod
 	 *  - Add a way to manage pockets as admin
 	 *  - Maybe integrate with ftb chunks to prevent pockets from being used in forgotten places (or in houses of old team members)
 	 *  - Add new jei category that shows conversions
-	 *  - Move conversions to a separate class
 	 */
 }

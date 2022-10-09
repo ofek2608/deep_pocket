@@ -88,39 +88,6 @@ public class Pocket {
 		return pocketInfo.securityMode.canAccess(player, getOwner());
 	}
 
-//TODO delete
-//	public double getCount(ItemType type) {
-//		return type.isEmpty() ? 0 : items.getOrDefault(type, 0.0);
-//	}
-//TODO delete
-//	public void setCount(ItemType type, double value) {
-//		if (type.isEmpty())
-//			return;
-//		if (value < 0)
-//			throw new IllegalArgumentException("value");
-//		boolean changed;
-//		if (value == 0)
-//			changed = items.remove(type) != null;
-//		else
-//			changed = !Objects.equals(items.put(type, value), value);
-//		if (changed)
-//			this.lastSnapshot.changedItems.add(type);
-//	}
-//TODO delete
-//	public void addCount(ItemType type, double value) {
-//		setCount(type, getCount(type) + value);
-//	}
-//TODO delete
-//	public @UnmodifiableView Map<ItemType, Double> getItems() {
-//		return Collections.unmodifiableMap(items);
-//	}
-//TODO delete
-//	public void clearItems() {
-//		items.clear();
-//		this.lastSnapshot.clearedItems = true;
-//		this.lastSnapshot.changedItems.clear();
-//	}
-
 	public @UnmodifiableView Map<ItemType,Long> getItems() {
 		return Collections.unmodifiableMap(items);
 	}
