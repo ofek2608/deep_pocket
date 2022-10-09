@@ -133,4 +133,57 @@ public final class DeepPocketUtils {
 	private static String addDot(String text, int index) {
 		return text.substring(0,index) + "." + text.substring(index);
 	}
+
+
+
+
+
+
+
+
+
+
+
+	public static long advancedSum(long a, long b) {
+		if (a < 0 || b < 0) return -1;
+		try {
+			return Math.addExact(a, b);
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+
+	public static long advancedMul(long a, long b) {
+		if (a == 0 || b == 0) return 0;
+		if (a < 0 || b < 0) return -1;
+		try {
+			return Math.multiplyExact(a, b);
+		} catch (Exception e) {
+			return -1;
+		}
+	}
+
+	private static final String[] ADVANCED_NUMBER_SUFFIXES = {"K","M","B","T","Q"};
+	public static String advancedToString(long a) {
+		if (a < 0)
+			return "Inf";
+		if (a < 10000)
+			return a + "";
+		//a >= 10000;
+		a /= 10;
+		//a >= 1000;
+		for (String suffix : ADVANCED_NUMBER_SUFFIXES) {
+			if (a < 1000000) {
+				String str = a + "";
+				return switch (str.length()) {
+					case 3 -> addDot(str, 1);
+					case 4 -> addDot(str.substring(0, 4), 2);
+					case 5 -> addDot(str.substring(0, 4), 3);
+					default -> str.substring(0, 4);
+				} + suffix;
+			}
+			a /= 1000;
+		}
+		return "Inf";
+	}
 }

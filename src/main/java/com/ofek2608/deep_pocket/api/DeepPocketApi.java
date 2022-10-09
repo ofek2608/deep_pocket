@@ -16,12 +16,6 @@ public interface DeepPocketApi {
 
 	ItemConversions getItemConversions();
 
-	@Nullable
-	ItemValue getItemValue(ItemType type);
-	@UnmodifiableView Map<ItemType,ItemValue> getItemValues();
-	void setItemValue(ItemType type, @Nullable ItemValue value);//!!Do not call setItemValue if you are working with client api unless you know what you are doing!!
-	void clearItemValues();//!!Do not call clearItemValues if you are working with client api unless you know what you are doing!!
-
 	Stream<Pocket> getPockets();
 	@Nullable
 	Pocket getPocket(UUID pocketId);
@@ -36,7 +30,7 @@ public interface DeepPocketApi {
 
 	void insertItem(Pocket pocket, ItemStack stack);
 	ItemStack extractItem(Pocket pocket, ItemStack stack);
-	double getMaxExtract(Pocket pocket, ItemType type);
+	long getMaxExtract(Pocket pocket, ItemType type);
 
 
 

@@ -11,40 +11,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 abstract class DeepPocketApiImpl implements DeepPocketApi {
 	protected @Nonnull ItemConversions conversions = ItemConversions.EMPTY;
-	private final Map<ItemType, ItemValue> itemValues = new HashMap<>();
 	protected final Map<UUID, Pocket.Snapshot> pocketSnapshots = new HashMap<>();
 	protected final Map<UUID, String> playerNameCache = new HashMap<>();
 
 	@Override
 	public ItemConversions getItemConversions() {
 		return conversions;
-	}
-
-	@Override
-	public @Nullable ItemValue getItemValue(ItemType type) {
-		return itemValues.get(type);
-	}
-
-	@Override
-	public @UnmodifiableView Map<ItemType, ItemValue> getItemValues() {
-		return Collections.unmodifiableMap(itemValues);
-	}
-
-	@Override
-	public void setItemValue(ItemType type, @Nullable ItemValue value) {
-		if (value == null)
-			itemValues.remove(type);
-		else
-			itemValues.put(type, value);
-	}
-
-	@Override
-	public void clearItemValues() {
-		itemValues.clear();
 	}
 
 	@Override
@@ -100,55 +77,27 @@ abstract class DeepPocketApiImpl implements DeepPocketApi {
 	public void insertItem(Pocket pocket, ItemStack stack) {
 		if (stack.isEmpty())
 			return;
-		PlayerKnowledge knowledge = this instanceof DeepPocketServerApi server ? server.getKnowledge(pocket.getOwner()) : null;
 		ItemType type = new ItemType(stack);
-		ItemValue value = getItemValue(type);
-		if (knowledge != null) knowledge.add(type);
-		if (value == null) {
-			pocket.addCount(type, stack.getCount());
+		pocket.insertItem(type, stack.getCount());
+		if (!(this instanceof DeepPocketServerApi server))
 			return;
-		}
-		value.items.forEach((valueItem,valueCount) -> pocket.addCount(valueItem, valueCount * stack.getCount()));
-		if (knowledge != null) knowledge.add(value.items.keySet().toArray(new ItemType[0]));
+		PlayerKnowledge knowledge = server.getKnowledge(pocket.getOwner());
+		knowledge.add(type);
+		long[] value = conversions.getValue(type);
+		if (value == null)
+			return;
+		ItemType[] baseItems = IntStream.range(0, value.length).filter(i->value[i] != 0).mapToObj(conversions::getBaseItem).toArray(ItemType[]::new);
+		knowledge.add(baseItems);
 	}
 
 	@Override
 	public ItemStack extractItem(Pocket pocket, ItemStack stack) {
 		ItemType type = new ItemType(stack);
-		double count = pocket.getCount(type);
-		double newCount = count - stack.getCount();
-		if (newCount >= 0) {
-			pocket.setCount(type, newCount);
-			return stack;
-		}
-
-		ItemValue value = getItemValue(type);
-		if (value == null) {
-			int extractCount = (int)count;
-			pocket.setCount(type, Math.max(count - extractCount, 0));//max just in case
-			return type.create(extractCount);
-		}
-		double maxCraft = getMaxCraft(pocket, value, 1-newCount);
-		int extractCount = maxCraft >= -newCount ? stack.getCount() : (int)(count + maxCraft);
-		double craftCount = extractCount - count;
-		pocket.setCount(type, 0);
-		for (var entry : value.items.entrySet())
-			pocket.setCount(entry.getKey(), Math.max(pocket.getCount(entry.getKey()) - entry.getValue() * craftCount, 0));//max just in case
-		return type.create(extractCount);
+		return type.create((int)pocket.extractItem(type, stack.getCount()));
 	}
 
 	@Override
-	public double getMaxExtract(Pocket pocket, ItemType type) {
-		double maxExtract = pocket.getCount(type);
-		ItemValue value = getItemValue(type);
-		if (value != null)
-			maxExtract += getMaxCraft(pocket, value, Double.POSITIVE_INFINITY);
-		return maxExtract;
-	}
-
-	protected static double getMaxCraft(Pocket pocket, ItemValue value, double limit) {
-		for (var entry : value.items.entrySet())
-			limit = Math.min(limit, pocket.getCount(entry.getKey()) / entry.getValue());
-		return limit;
+	public long getMaxExtract(Pocket pocket, ItemType type) {
+		return pocket.getMaxExtract(type);
 	}
 }

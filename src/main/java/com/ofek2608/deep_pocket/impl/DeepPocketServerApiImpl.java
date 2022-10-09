@@ -94,21 +94,6 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		return tag;
 	}
 
-	@Override
-	public void setItemValue(ItemType type, @Nullable ItemValue value) {
-		super.setItemValue(type, value);
-		if (value == null)
-			DeepPocketPacketHandler.cbRemoveItemValue(PacketDistributor.ALL.noArg(), type);
-		else
-			DeepPocketPacketHandler.cbSetItemValue(PacketDistributor.ALL.noArg(), Map.of(type, value));
-	}
-
-	@Override
-	public void clearItemValues() {
-		super.clearItemValues();
-		DeepPocketPacketHandler.cbClearItemValues(PacketDistributor.ALL.noArg());
-	}
-
 	@Nullable
 	@Override
 	public Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
@@ -309,9 +294,8 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(()->toSendOnJoin);
 			//permit public key
 			DeepPocketPacketHandler.cbPermitPublicPocket(packetTarget, DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get());
-			//values
-			DeepPocketPacketHandler.cbClearItemValues(packetTarget);
-			DeepPocketPacketHandler.cbSetItemValue(packetTarget, getItemValues());
+			//item conversions
+			DeepPocketPacketHandler.cbItemConversions(packetTarget, conversions);
 			//player name cache
 			DeepPocketPacketHandler.cbSetPlayersName(packetTarget, getPlayerNameCache());
 			//knowledge
@@ -320,12 +304,8 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 				DeepPocketPacketHandler.cbAddKnowledge(PacketDistributor.PLAYER.with(() -> player), getKnowledge(player.getUUID()).asSet().toArray(new ItemType[0]));
 			//pockets
 			DeepPocketPacketHandler.cbClearPockets(packetTarget);
-			for (Pocket pocket : pockets) {
+			for (Pocket pocket : pockets)
 				DeepPocketPacketHandler.cbCreatePocket(packetTarget, pocket.getPocketId(), pocket.getOwner(), pocket.getInfo());
-				List<Connection> playersToSendItems = newPlayers.stream().filter(pocket::canAccess).map(p->p.connection.connection).toList();
-				if (playersToSendItems.size() > 0)
-					DeepPocketPacketHandler.cbPocketSetItemCount(PacketDistributor.NMLIST.with(()->playersToSendItems), pocket.getPocketId(), pocket.getItems());
-			}
 		}
 		//Pocket Update
 		for (var entry : toSendPocketUpdate.entrySet()) {
@@ -336,7 +316,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			if (snapshot.didClearedItems())
 				DeepPocketPacketHandler.cbPocketClearItems(packetTarget, pocketId);
 			//Changed items
-			Map<ItemType,Double> changedItems = snapshot.getChangedItems();
+			Map<ItemType,Long> changedItems = snapshot.getChangedItems();
 			if (!changedItems.isEmpty())
 				DeepPocketPacketHandler.cbPocketSetItemCount(packetTarget, pocketId, changedItems);
 		}

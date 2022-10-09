@@ -12,17 +12,17 @@ public final class SignalSettings {
 	public @Nonnull ItemType first;
 	public boolean bigger;
 	public @Nullable ItemType secondItem;
-	public int secondCount;
+	public long secondCount;
 
 	public SignalSettings() {
-		this(ItemType.EMPTY, false, 0);
+		this(ItemType.EMPTY, false, 0L);
 	}
 
 	public SignalSettings(ItemType first, boolean bigger, ItemType second) {
 		this(first, bigger, second, 0);
 	}
 
-	public SignalSettings(ItemType first, boolean bigger, int second) {
+	public SignalSettings(ItemType first, boolean bigger, long second) {
 		this(first, bigger, null, second);
 	}
 
@@ -30,7 +30,7 @@ public final class SignalSettings {
 		this(copy.first, copy.bigger, copy.secondItem, copy.secondCount);
 	}
 
-	private SignalSettings(ItemType first, boolean bigger, @Nullable ItemType secondItem, int secondCount) {
+	private SignalSettings(ItemType first, boolean bigger, @Nullable ItemType secondItem, long secondCount) {
 		this.first = first;
 		this.bigger = bigger;
 		this.secondItem = secondItem;
@@ -38,20 +38,30 @@ public final class SignalSettings {
 	}
 
 	public boolean check(UUID pocketId) {
+		if (first.isEmpty() || secondItem != null && secondItem.isEmpty())
+			return false;
 		DeepPocketServerApi api = DeepPocketServerApi.get();
 		if (api == null) return false;
 		Pocket pocket = api.getPocket(pocketId);
 		if (pocket == null) return false;
-		double firstNum = api.getMaxExtract(pocket, first);
-		double secondNum = secondItem == null ? secondCount : api.getMaxExtract(pocket, secondItem);
-		return bigger ? firstNum > secondNum : secondNum > firstNum;
+		long firstNum = api.getMaxExtract(pocket, first);
+		long secondNum = secondItem == null ? secondCount : api.getMaxExtract(pocket, secondItem);
+		if (bigger) {
+			long temp = firstNum;
+			firstNum = secondNum;
+			secondNum = temp;
+		}
+		//check if firstNum < secondNum
+		if (firstNum < 0) return false;
+		if (secondNum < 0) return true;
+		return firstNum < secondNum;
 	}
 
 	public void load(CompoundTag tag) {
 		first = tag.contains("first", 10) ? ItemType.load(tag.getCompound("first")) : ItemType.EMPTY;
 		bigger = tag.getBoolean("bigger");
 		secondItem = tag.contains("second", 10) ? ItemType.load(tag.getCompound("second")) : null;
-		secondCount = tag.contains("second", 99) ? tag.getInt("second") : 0;
+		secondCount = tag.contains("second", 99) ? tag.getLong("second") : 0;
 	}
 
 	public CompoundTag save() {
@@ -59,7 +69,7 @@ public final class SignalSettings {
 		tag.put("first", first.save());
 		tag.putBoolean("bigger", bigger);
 		if (secondItem == null)
-			tag.putInt("second", secondCount);
+			tag.putLong("second", secondCount);
 		else
 			tag.put("second", secondItem.save());
 		return tag;
@@ -74,13 +84,13 @@ public final class SignalSettings {
 		if (hasSecondItem)
 			ItemType.encode(buf, settings.secondItem);
 		else
-			buf.writeInt(settings.secondCount);
+			buf.writeLong(settings.secondCount);
 	}
 
 	public static SignalSettings decode(FriendlyByteBuf buf) {
 		return buf.readBoolean() ?
 						new SignalSettings(ItemType.decode(buf), buf.readBoolean(), ItemType.decode(buf)) :
-						new SignalSettings(ItemType.decode(buf), buf.readBoolean(), buf.readInt());
+						new SignalSettings(ItemType.decode(buf), buf.readBoolean(), buf.readLong());
 	}
 
 }

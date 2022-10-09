@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 
 class SignalSettingsScreen extends Screen {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/signal.png");
-	private static final int VIEW_WIDTH = 154;
+	private static final int VIEW_WIDTH = 186;
 	private static final int VIEW_HEIGHT = 26;
 	private final @Nullable Screen backScreen;
 	private final @Nonnull Entity entity;
@@ -49,6 +49,7 @@ class SignalSettingsScreen extends Screen {
 		this.color = color;
 		this.pos = pos;
 		this.settings = settings;
+		this.twoItemsMode = settings.secondItem != null;
 	}
 
 	private void updateFields(int mx, int my) {
@@ -59,15 +60,15 @@ class SignalSettingsScreen extends Screen {
 
 		boolean inRow = 5 <= my && my <= 20;
 		if (twoItemsMode) {
-			hoverFirst = 49 <= mx && mx <= 64 && inRow;
-			hoverOperator = 69 <= mx && mx <= 84 && inRow;
-			hoverSecond = 89 <= mx && mx <= 104 && inRow;
+			hoverFirst = 65 <= mx && mx <= 80 && inRow;
+			hoverOperator = 85 <= mx && mx <= 100 && inRow;
+			hoverSecond = 105 <= mx && mx <= 120 && inRow;
 		} else {
 			hoverFirst = 5 <= mx && mx <= 20 && inRow;
 			hoverOperator = 25 <= mx && mx <= 40 && inRow;
-			hoverSecond = 45 <= mx && mx <= 128 && 8 <= my && my <= 17;
+			hoverSecond = 45 <= mx && mx <= 160 && 8 <= my && my <= 17;
 		}
-		hoverMode = 133 <= mx && mx <= 148 && inRow;
+		hoverMode = 165 <= mx && mx <= 180 && inRow;
 	}
 
 	@Override
@@ -82,21 +83,23 @@ class SignalSettingsScreen extends Screen {
 
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
 		(twoItemsMode ? Sprites.BASE_1 : Sprites.BASE_0).blit(stack, leftPos, topPos);
-		int offsetX = twoItemsMode ? 49 : 5;
+		int offsetX = twoItemsMode ? 65 : 5;
 		(hoverFirst ? Sprites.ITEM_H : Sprites.ITEM_N).blit(stack, leftPos + offsetX, topPos + 5);
 		(settings.bigger ?
 						hoverOperator ? Sprites.BIG_H : Sprites.BIG_N :
 						hoverOperator ? Sprites.SMALL_H : Sprites.SMALL_N
 		).blit(stack, leftPos + offsetX + 20, topPos + 5);
 		if (twoItemsMode)
-			(hoverSecond ? Sprites.ITEM_H : Sprites.ITEM_N).blit(stack, leftPos + 89, topPos + 5);
-		(hoverMode ? Sprites.MODE_H : Sprites.MODE_N).blit(stack, leftPos + 133, topPos + 5);
+			(hoverSecond ? Sprites.ITEM_H : Sprites.ITEM_N).blit(stack, leftPos + offsetX + 40, topPos + 5);
+		(hoverMode ? Sprites.MODE_H : Sprites.MODE_N).blit(stack, leftPos + 165, topPos + 5);
 
 		itemRenderer.renderGuiItem(settings.first.create(), leftPos + offsetX, topPos + 5);
 		if (twoItemsMode && settings.secondItem != null)
-			itemRenderer.renderGuiItem(settings.secondItem.create(), leftPos + 89, topPos + 5);
-		if (!twoItemsMode)
-			font.draw(stack, (settings.secondCount == 0 ? "" : "" + settings.secondCount) + (focusNumber ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 46, topPos + 9, 0xDDDDDD);
+			itemRenderer.renderGuiItem(settings.secondItem.create(), leftPos + offsetX + 40, topPos + 5);
+		if (!twoItemsMode) {
+			boolean displayMark = focusNumber && ("" + settings.secondCount).length() < 19;
+			font.draw(stack, (settings.secondCount == 0 ? "" : "" + settings.secondCount) + (displayMark ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 46, topPos + 9, 0xDDDDDD);
+		}
 
 		if (hoverFirst || twoItemsMode && hoverSecond)
 			renderTooltip(stack, Component.literal("Set Item"), mx, my);
@@ -191,11 +194,9 @@ class SignalSettingsScreen extends Screen {
 			if (codePoint < '0' || '9' < codePoint)
 				return true;
 			int digit = codePoint - '0';
-			//Integer.MAX_VALUE == 2147483647
-			if (settings.secondCount <= (digit <= 7 ? 214748364 : 214748363)) {
-				settings.secondCount = settings.secondCount * 10 + digit;
-				updateOnServer();
-			}
+			//Long.MAX_VALUE == 9223372036854775807
+			settings.secondCount = settings.secondCount <= (digit <= 7 ? 922337203685477580L : 922337203685477579L) ? settings.secondCount * 10 + digit : Long.MAX_VALUE;
+			updateOnServer();
 			return true;
 		}
 		return false;
@@ -213,10 +214,10 @@ class SignalSettingsScreen extends Screen {
 	}
 
 	private static enum Sprites {
-		BASE_0(0, 0, 154, 26),
-		OUTLINE_0(0, 26, 154, 26),
-		BASE_1(0, 52, 154, 26),
-		OUTLINE_1(0, 78, 154, 26),
+		BASE_0(0, 0, 186, 26),
+		OUTLINE_0(0, 26, 186, 26),
+		BASE_1(0, 52, 186, 26),
+		OUTLINE_1(0, 78, 186, 26),
 		MODE_N(192, 0, 16, 16), MODE_H(192, 16, 16, 16),
 		SMALL_N(208, 0, 16, 16), SMALL_H(208, 16, 16, 16),
 		BIG_N(224, 0, 16, 16), BIG_H(224, 16, 16, 16),

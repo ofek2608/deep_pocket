@@ -12,20 +12,20 @@ import java.util.function.Supplier;
 
 class CBPocketSetItemCount {
 	private final UUID pocketId;
-	private final Map<ItemType, Double> counts;
+	private final Map<ItemType, Long> counts;
 
-	CBPocketSetItemCount(UUID pocketId, Map<ItemType, Double> counts) {
+	CBPocketSetItemCount(UUID pocketId, Map<ItemType, Long> counts) {
 		this.pocketId = pocketId;
 		this.counts = counts;
 	}
 
 	CBPocketSetItemCount(FriendlyByteBuf buf) {
-		this(buf.readUUID(), DPPacketUtils.readItemTypeMap(buf, FriendlyByteBuf::readDouble));
+		this(buf.readUUID(), DPPacketUtils.readItemTypeMap(buf, FriendlyByteBuf::readLong));
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
-		DPPacketUtils.writeItemTypeMap(buf, counts, FriendlyByteBuf::writeDouble);
+		DPPacketUtils.writeItemTypeMap(buf, counts, FriendlyByteBuf::writeLong);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
@@ -33,7 +33,7 @@ class CBPocketSetItemCount {
 			DeepPocketClientApi api = DeepPocketClientApi.get();
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket != null)
-				counts.forEach(pocket::setCount);
+				counts.forEach(pocket::setItemCount);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

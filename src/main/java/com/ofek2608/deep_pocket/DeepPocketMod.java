@@ -21,7 +21,6 @@ public class DeepPocketMod
 		DeepPocketPacketHandler.loadClass();
 		DeepPocketRegistry.loadClass();
 		DeepPocketConfig.loadClass();
-		DeepPocketFTBTeams.loadClass();
 		DeepPocketCurios.loadClass();
 		DeepPocketTheOneProbe.loadClass();
 	}

@@ -1,11 +1,18 @@
 package com.ofek2608.deep_pocket.api.struct;
 
+import com.ofek2608.deep_pocket.DeepPocketUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.*;
 
+import static com.ofek2608.deep_pocket.DeepPocketUtils.advancedMul;
+import static com.ofek2608.deep_pocket.DeepPocketUtils.advancedSum;
+
+@Immutable
 public final class ItemConversions {
 	public static final ItemConversions EMPTY = new ItemConversions(new ItemType[0], Collections.emptyMap());
 	private final ItemType[] baseItems;
@@ -50,9 +57,65 @@ public final class ItemConversions {
 		return new ItemConversions(baseItems, values);
 	}
 
-	public ItemType[] getBaseItems() {
-		return Arrays.copyOf(baseItems, baseItems.length);
+	public int getBaseItemCount() {
+		return baseItems.length;
 	}
+
+	public ItemType getBaseItem(int baseItemIndex) {
+		return baseItems[baseItemIndex];
+	}
+
+	public ItemType[] getBaseItems() {
+		return baseItems.clone();
+	}
+
+	public @Nullable long[] getValue(ItemType type) {
+		long[] value = values.get(type);
+		return value == null ? null : value.clone();
+	}
+
+	public @Nullable long[] getValue(ItemType type, long count) {
+		long[] value = values.get(type);
+		if (value == null)
+			return null;
+		value = value.clone();
+		for (int i = 0; i < value.length; i++)
+			value[i] = advancedMul(value[i], count);
+		return value;
+	}
+
+	public void convertMap(Map<ItemType,Long> counts) {
+		for (var entry : new ArrayList<>(counts.entrySet())) {
+			if (entry.getKey().isEmpty()) {
+				counts.remove(entry.getKey());
+				continue;
+			}
+			long[] value = getValue(entry.getKey(), entry.getValue());
+			if (value == null)
+				continue;
+			counts.remove(entry.getKey());
+			for (int i = 0; i < value.length; i++) {
+				long v = value[i];
+				if (v == 0)
+					continue;
+				ItemType baseItem = baseItems[i];
+				counts.put(baseItem, DeepPocketUtils.advancedSum(v, counts.getOrDefault(baseItem, 0L)));
+			}
+		}
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	public static final class Builder {
 		public final Map<ItemType,ItemValueBuilder> values = new HashMap<>();
@@ -143,26 +206,13 @@ public final class ItemConversions {
 			requirements.forEach((requiredItem,requiredCount) -> {
 				long[] requiredValue = values.get(requiredItem);
 				for (int i = 0; i < baseItemCount; i++)
-					result[i] = sumMultiplied(result[i], requiredCount, requiredValue[i]);
+					result[i] = advancedSum(result[i], advancedMul(requiredCount, requiredValue[i]));
 			});
 			//Cleanup
 			for (int i = 0; i < baseItemCount; i++)
 				if (result[i] < 0)
 					result[i] = -1;
 			return result;
-		}
-
-		/**
-		 * @return a + b * c
-		 */
-		private static long sumMultiplied(long a, long b, long c) {
-			if (b == 0 || c == 0) return a;
-			if (a < 0 || b < 0 || c < 0) return -1;
-			try {
-				return a + Math.multiplyExact(b, c);//sum overflow will be negative
-			} catch (Exception e) {
-				return -1;
-			}
 		}
 	}
 

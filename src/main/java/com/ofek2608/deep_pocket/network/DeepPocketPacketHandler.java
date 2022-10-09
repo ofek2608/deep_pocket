@@ -1,10 +1,7 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemValue;
-import com.ofek2608.deep_pocket.api.struct.PocketInfo;
-import com.ofek2608.deep_pocket.api.struct.SignalSettings;
+import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.core.BlockPos;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
@@ -29,9 +26,8 @@ public final class DeepPocketPacketHandler {
 
 		CHANNEL.registerMessage(++pid, CBPermitPublicPocket.class, CBPermitPublicPocket::encode, CBPermitPublicPocket::new, CBPermitPublicPocket::handle, clientbound);
 
-		CHANNEL.registerMessage(++pid, CBSetItemValue.class, CBSetItemValue::encode, CBSetItemValue::new, CBSetItemValue::handle, clientbound);
-		CHANNEL.registerMessage(++pid, CBRemoveItemValue.class, CBRemoveItemValue::encode, CBRemoveItemValue::new, CBRemoveItemValue::handle, clientbound);
-		CHANNEL.registerMessage(++pid, CBClearItemValues.class, CBClearItemValues::encode, CBClearItemValues::new, CBClearItemValues::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBItemConversions.class, CBItemConversions::encode, CBItemConversions::new, CBItemConversions::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBSetPlayersName.class, CBSetPlayersName::encode, CBSetPlayersName::new, CBSetPlayersName::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBPocketCreate.class, CBPocketCreate::encode, CBPocketCreate::new, CBPocketCreate::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketDestroy.class, CBPocketDestroy::encode, CBPocketDestroy::new, CBPocketDestroy::handle, clientbound);
@@ -41,7 +37,6 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, CBPocketSetItemCount.class, CBPocketSetItemCount::encode, CBPocketSetItemCount::new, CBPocketSetItemCount::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketClearItems.class, CBPocketClearItems::encode, CBPocketClearItems::new, CBPocketClearItems::handle, clientbound);
 
-		CHANNEL.registerMessage(++pid, CBSetPlayersName.class, CBSetPlayersName::encode, CBSetPlayersName::new, CBSetPlayersName::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBAddKnowledge.class, CBAddKnowledge::encode, CBAddKnowledge::new, CBAddKnowledge::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBRemoveKnowledge.class, CBRemoveKnowledge::encode, CBRemoveKnowledge::new, CBRemoveKnowledge::handle, clientbound);
@@ -65,19 +60,16 @@ public final class DeepPocketPacketHandler {
 
 	public static void cbPermitPublicPocket(PacketDistributor.PacketTarget target, boolean value) { CHANNEL.send(target, new CBPermitPublicPocket(value)); }
 
-	public static void cbSetItemValue(PacketDistributor.PacketTarget target, Map<ItemType, ItemValue> values) { CHANNEL.send(target, new CBSetItemValue(values)); }
-	public static void cbRemoveItemValue(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBRemoveItemValue(types)); }
-	public static void cbClearItemValues(PacketDistributor.PacketTarget target) { CHANNEL.send(target, new CBClearItemValues()); }
+	public static void cbItemConversions(PacketDistributor.PacketTarget target, ItemConversions conversions) { CHANNEL.send(target, new CBItemConversions(conversions)); }
+	public static void cbSetPlayersName(PacketDistributor.PacketTarget target, Map<UUID,String> names) { CHANNEL.send(target, new CBSetPlayersName(names)); }
 
 	public static void cbCreatePocket(PacketDistributor.PacketTarget target, UUID pocketId, UUID owner, PocketInfo info) { CHANNEL.send(target, new CBPocketCreate(pocketId, owner, info)); }
 	public static void cbDestroyPocket(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketDestroy(pocketId)); }
 	public static void cbClearPockets(PacketDistributor.PacketTarget target) { CHANNEL.send(target, new CBClearPockets()); }
 
 	public static void cbPocketInfo(PacketDistributor.PacketTarget target, UUID pocketId, PocketInfo info) { CHANNEL.send(target, new CBPocketInfo(pocketId, info)); }
-	public static void cbPocketSetItemCount(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Double> counts) { CHANNEL.send(target, new CBPocketSetItemCount(pocketId, counts)); }
+	public static void cbPocketSetItemCount(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Long> counts) { CHANNEL.send(target, new CBPocketSetItemCount(pocketId, counts)); }
 	public static void cbPocketClearItems(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearItems(pocketId)); }
-
-	public static void cbSetPlayersName(PacketDistributor.PacketTarget target, Map<UUID,String> names) { CHANNEL.send(target, new CBSetPlayersName(names)); }
 
 	public static void cbAddKnowledge(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBAddKnowledge(types)); }
 	public static void cbRemoveKnowledge(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBRemoveKnowledge(types)); }

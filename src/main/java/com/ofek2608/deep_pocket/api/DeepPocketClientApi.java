@@ -27,5 +27,5 @@ public interface DeepPocketClientApi extends DeepPocketApi {
 	void setPermitPublicPocket(boolean value);
 
 	PlayerKnowledge getKnowledge();
-	Stream<Map.Entry<ItemType,Double>> getSortedKnowledge(Pocket pocket);
+	Stream<Map.Entry<ItemType,Long>> getSortedKnowledge(Pocket pocket);
 }

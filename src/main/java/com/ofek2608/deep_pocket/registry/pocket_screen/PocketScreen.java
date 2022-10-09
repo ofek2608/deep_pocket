@@ -49,7 +49,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private int hoverButton;
 	private int maxScroll;
 	private int scroll;
-	private List<Map.Entry<ItemType,Double>> visiblePocketSlots = Collections.emptyList();
+	private List<Map.Entry<ItemType,Long>> visiblePocketSlots = Collections.emptyList();
 	//focus fields
 	private boolean focusSearch;
 	private boolean focusScroll;
@@ -94,7 +94,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 		Predicate<ItemStack> searchFilter = DeepPocketUtils.createFilter(search);
 		Pocket pocket = menu.getPocket();
-		List<Map.Entry<ItemType,Double>> sortedKnowledge = pocket == null ?
+		List<Map.Entry<ItemType,Long>> sortedKnowledge = pocket == null ?
 						Collections.emptyList() :
 						api.getSortedKnowledge(pocket).filter(entry->searchFilter.test(entry.getKey().create())).toList();
 		maxScroll = Math.max((sortedKnowledge.size() - 1) / 9 + 1 - rowCount, 0);
@@ -307,10 +307,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 				int displayX = xOffset + x * 16;
 				int displayY = yOffset + y * 16;
 				renderSlotItemSingle(poseStack, displayX, displayY, itemStack);
-				double count = pocketSlot.getValue();
+				long count = pocketSlot.getValue();
 				if (count != 1) {
 					poseStack.pushPose();
-					String displayText = DeepPocketUtils.bigNumberToString(count);
+					String displayText = DeepPocketUtils.advancedToString(count);
 					poseStack.translate(0.0D, 0.0D, Minecraft.getInstance().getItemRenderer().blitOffset + 200.0F);
 					poseStack.scale(0.5f, 0.5f, 1f);
 					MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());

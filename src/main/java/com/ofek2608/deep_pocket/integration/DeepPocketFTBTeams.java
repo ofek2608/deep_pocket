@@ -25,18 +25,12 @@ import java.util.stream.Stream;
 
 public final class DeepPocketFTBTeams {
 	private DeepPocketFTBTeams() {}
-	@SuppressWarnings("EmptyMethod")
-	public static void loadClass() {}
+
 	@SuppressWarnings("SpellCheckingInspection")
 	private static final String MODID = "ftbteams";
 
 	public static boolean hasMod() {
 		return ModList.get().isLoaded(MODID);
-	}
-
-	static {
-		if (hasMod())
-			Integrator.init();
 	}
 
 	//Only for server
@@ -73,10 +67,6 @@ public final class DeepPocketFTBTeams {
 	private static final class Integrator {
 		private Integrator() {}
 
-		private static void init() {
-			TeamEvent.PLAYER_CHANGED.register(Integrator::event);
-		}
-
 		private static @Nullable TeamBase getPlayerTeam(boolean clientSide, UUID teamMember) {
 			if (clientSide) {
 				ClientTeamManager manager = FTBTeamsAPI.getClientManager();
@@ -97,43 +87,6 @@ public final class DeepPocketFTBTeams {
 		private static Set<UUID> getTeamMembers(boolean clientSide, UUID teamMember) {
 			TeamBase team = getPlayerTeam(clientSide, teamMember);
 			return team == null ? Set.of(teamMember) : team.getMembers();
-		}
-
-		private static void event(PlayerChangedTeamEvent event) {
-			ServerPlayer player = event.getPlayer();
-			UUID playerId = event.getPlayerId();
-
-			DeepPocketServerApi api = DeepPocketServerApi.get();
-			if (api == null)
-				return;
-
-			Team newTeam = event.getTeam();
-			Team oldTeam = event.getPreviousTeam().orElse(null);
-			UUID otherTeamMember = newTeam.getMembers().stream().filter(member -> !member.equals(playerId)).findAny().orElse(null);
-
-			syncTeamItems(api, player, playerId, newTeam, (target, pocket) -> DeepPocketPacketHandler.cbPocketSetItemCount(target, pocket.getPocketId(), pocket.getItems()));
-			if (oldTeam != null)
-				syncTeamItems(api, player, playerId, oldTeam, (target, pocket) -> DeepPocketPacketHandler.cbPocketClearItems(target, pocket.getPocketId()));
-			if (otherTeamMember != null)
-				api.getKnowledge(playerId).add(api.getKnowledge(otherTeamMember).asSet().toArray(new ItemType[0]));
-		}
-
-		private static void syncTeamItems(DeepPocketServerApi api, @Nullable ServerPlayer player, UUID playerId, Team team, BiConsumer<PacketDistributor.PacketTarget, Pocket> syncSender) {
-			List<Connection> teamConnections = team.getOnlineMembers()
-							.stream()
-							.filter(member->member != player)
-							.map(member -> member.connection.connection)
-							.toList();
-			PacketDistributor.PacketTarget teamTarget = PacketDistributor.NMLIST.with(()->teamConnections);
-			getPocketsForPlayer(api, playerId).forEach(pocket -> syncSender.accept(teamTarget, pocket));
-			if (player == null)
-				return;
-			PacketDistributor.PacketTarget playerTarget = PacketDistributor.PLAYER.with(()->player);
-			team.getMembers()
-							.stream()
-							.filter(member -> !member.equals(playerId))
-							.flatMap(member -> getPocketsForPlayer(api, member))
-							.forEach(pocket->syncSender.accept(playerTarget, pocket));
 		}
 
 		private static Stream<Pocket> getPocketsForPlayer(DeepPocketServerApi api, UUID player) {

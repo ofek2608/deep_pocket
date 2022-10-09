@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.Map;
 
 public enum SortingOrder {
-	COUNT("Count", Comparator.comparingDouble(Map.Entry::getValue)),
+	COUNT("Count", Comparator.comparingLong(Map.Entry::getValue)),
 	ID("ID", Comparator.comparingInt(e->{
 		//noinspection deprecation
 		return Registry.ITEM.getId(e.getKey().getItem());
@@ -20,16 +20,16 @@ public enum SortingOrder {
 		return loc == null ? new ResourceLocation("") : loc;
 	}, ResourceLocation::compareNamespaced));
 	public final String displayName;
-	private final Comparator<Map.Entry<ItemType,Double>> baseComparator;
-	public final Comparator<Map.Entry<ItemType,Double>> comparator;
+	private final Comparator<Map.Entry<ItemType,Long>> baseComparator;
+	public final Comparator<Map.Entry<ItemType,Long>> comparator;
 
-	SortingOrder(String displayName, Comparator<Map.Entry<ItemType,Double>> baseComparator) {
+	SortingOrder(String displayName, Comparator<Map.Entry<ItemType,Long>> baseComparator) {
 		this.displayName = displayName;
 		this.baseComparator = baseComparator;
 		this.comparator = baseComparator.thenComparing(SortingOrder::arbitraryCompare);
 	}
 
-	public static int arbitraryCompare(Map.Entry<ItemType,Double> e0, Map.Entry<ItemType,Double> e1) {
+	public static int arbitraryCompare(Map.Entry<ItemType,Long> e0, Map.Entry<ItemType,Long> e1) {
 		for (SortingOrder value : values()) {
 			int comp = value.baseComparator.compare(e0, e1);
 			if (comp != 0)

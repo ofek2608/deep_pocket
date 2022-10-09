@@ -38,10 +38,10 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	}
 
 	@Override
-	public Stream<Map.Entry<ItemType,Double>> getSortedKnowledge(Pocket pocket) {
-		Map<ItemType,Double> counts = new HashMap<>();
+	public Stream<Map.Entry<ItemType,Long>> getSortedKnowledge(Pocket pocket) {
+		Map<ItemType,Long> counts = new HashMap<>();
 		for (ItemType type : getKnowledge().asSet()) {
-			double count = pocket.getCount(type);
+			long count = pocket.getItemCount(type);
 			if (count > 0)
 				counts.put(type, count);
 		}
