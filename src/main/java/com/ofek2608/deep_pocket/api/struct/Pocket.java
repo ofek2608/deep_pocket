@@ -10,13 +10,15 @@ import org.jetbrains.annotations.UnmodifiableView;
 import java.util.*;
 
 public class Pocket {
+	private final ItemConversions conversions;
 	private final UUID pocketId;
 	private final UUID owner;
 	private PocketInfo pocketInfo;
 	private final Map<ItemType,Double> items;
 	private Snapshot lastSnapshot;
 
-	public Pocket(UUID pocketId, UUID owner, PocketInfo pocketInfo) {
+	public Pocket(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
+		this.conversions = conversions;
 		this.pocketId = pocketId;
 		this.owner = owner;
 		this.pocketInfo = pocketInfo;
@@ -25,6 +27,7 @@ public class Pocket {
 	}
 
 	public Pocket(Pocket copy) {
+		this.conversions = copy.conversions;
 		this.pocketId = copy.pocketId;
 		this.owner = copy.owner;
 		this.pocketInfo = copy.pocketInfo;
@@ -32,7 +35,8 @@ public class Pocket {
 		this.lastSnapshot = new Snapshot();
 	}
 
-	public Pocket(CompoundTag saved, boolean allowPublicPocket) {
+	public Pocket(ItemConversions conversions, boolean allowPublicPocket, CompoundTag saved) {
+		this.conversions = conversions;
 		this.pocketId = saved.getUUID("pocketId");
 		this.owner = saved.getUUID("owner");
 		this.pocketInfo = new PocketInfo(saved.getCompound("info"));
@@ -45,6 +49,8 @@ public class Pocket {
 			items.put(type, count);
 		}
 		this.lastSnapshot = new Snapshot();
+		if (!allowPublicPocket && pocketInfo.securityMode == PocketSecurityMode.PUBLIC)
+			pocketInfo.securityMode = PocketSecurityMode.TEAM;
 	}
 
 	public CompoundTag save() {

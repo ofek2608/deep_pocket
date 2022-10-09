@@ -3,6 +3,7 @@ package com.ofek2608.deep_pocket.impl;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
+import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 
@@ -15,6 +16,9 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	private boolean permitPublicPocket;
 
 	DeepPocketClientApiImpl() {}
+
+	@Override public void setItemConversions(ItemConversions conversions) { this.conversions = conversions; }
+
 	//Client config
 	@Override public SearchMode getSearchMode() { return DeepPocketConfig.Client.SEARCH_MODE.get(); }
 	@Override public void setSearchMode(SearchMode searchMode) { DeepPocketConfig.Client.SEARCH_MODE.set(searchMode); }

@@ -1,9 +1,6 @@
 package com.ofek2608.deep_pocket.api;
 
-import com.ofek2608.deep_pocket.api.struct.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemValue;
-import com.ofek2608.deep_pocket.api.struct.PocketInfo;
+import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.UnmodifiableView;
@@ -16,6 +13,8 @@ import java.util.stream.Stream;
 public interface DeepPocketApi {
 	public static @Nullable DeepPocketApi get(boolean isClientSide) { return isClientSide ? DeepPocketClientApi.get() : DeepPocketServerApi.get(); }
 	public static @Nullable DeepPocketApi get(Level level) { return get(level.isClientSide); }
+
+	ItemConversions getItemConversions();
 
 	@Nullable
 	ItemValue getItemValue(ItemType type);

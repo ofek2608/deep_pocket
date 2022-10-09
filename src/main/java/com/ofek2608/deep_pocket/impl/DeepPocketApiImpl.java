@@ -1,13 +1,11 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemValue;
-import com.ofek2608.deep_pocket.api.struct.PocketInfo;
+import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.UnmodifiableView;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,9 +14,15 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 abstract class DeepPocketApiImpl implements DeepPocketApi {
+	protected @Nonnull ItemConversions conversions = ItemConversions.EMPTY;
 	private final Map<ItemType, ItemValue> itemValues = new HashMap<>();
 	protected final Map<UUID, Pocket.Snapshot> pocketSnapshots = new HashMap<>();
 	protected final Map<UUID, String> playerNameCache = new HashMap<>();
+
+	@Override
+	public ItemConversions getItemConversions() {
+		return conversions;
+	}
 
 	@Override
 	public @Nullable ItemValue getItemValue(ItemType type) {
@@ -56,7 +60,7 @@ abstract class DeepPocketApiImpl implements DeepPocketApi {
 	public @Nullable Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
 		if (pocketSnapshots.containsKey(pocketId))
 			return null;
-		Pocket newPocket = new Pocket(pocketId, owner, info);
+		Pocket newPocket = new Pocket(conversions, pocketId, owner, info);
 		pocketSnapshots.put(pocketId, newPocket.createSnapshot());
 		return newPocket;
 	}

@@ -2,11 +2,8 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemValue;
+import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
-import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
@@ -32,18 +29,23 @@ import java.util.*;
 
 class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketServerApi {
 	private static final Logger LOGGER = LogUtils.getLogger();
+	private final MinecraftServer server;
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
 	private final Map<UUID,PlayerKnowledgeImpl> knowledge = new HashMap<>();
 
-	DeepPocketServerApiImpl() {}
+	DeepPocketServerApiImpl(MinecraftServer server, ItemConversions conversions) {
+		this.server = server;
+		this.conversions = conversions;
+	}
 
-	DeepPocketServerApiImpl(CompoundTag tag) {
+	DeepPocketServerApiImpl(MinecraftServer server, ItemConversions conversions, CompoundTag tag) {
+		this(server, conversions);
 		boolean errors = false;
 		// Loading: Pockets
 		boolean allowPublicPockets = DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get();
 		for (Tag savedPocket : tag.getList("pockets", 10)) {
 			try {
-				Pocket readPocket = new Pocket((CompoundTag)savedPocket, allowPublicPockets);
+				Pocket readPocket = new Pocket(conversions, allowPublicPockets, (CompoundTag)savedPocket);
 				pocketSnapshots.put(readPocket.getPocketId(), readPocket.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
@@ -235,7 +237,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 
 
 
-	void tickUpdate(MinecraftServer server) {
+	void tickUpdate() {
 		//======
 		// Init
 		//======
