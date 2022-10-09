@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
@@ -80,8 +81,10 @@ public class ActiveImporter extends Block implements EntityBlock {
 			if (api == null || pocket == null) return;
 
 			int slots = itemHandler.getSlots();
-			for (int slot = 0; slot < slots; slot++)
-				api.insertItem(pocket, itemHandler.extractItem(slot, itemHandler.getSlotLimit(slot), false));
+			for (int slot = 0; slot < slots; slot++) {
+				ItemStack stack = itemHandler.extractItem(slot, itemHandler.getSlotLimit(slot), false);
+				pocket.insertItem(new ItemType(stack), stack.getCount());
+			}
 		}
 	}
 }

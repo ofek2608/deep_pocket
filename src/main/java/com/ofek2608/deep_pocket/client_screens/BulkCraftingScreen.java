@@ -5,7 +5,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
+import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.PlayerKnowledge;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import net.minecraft.client.Minecraft;
@@ -96,19 +98,20 @@ class BulkCraftingScreen extends Screen {
 			Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
 			return true;
 		}
+		PlayerKnowledge knowledge = DeepPocketClientApi.get().getKnowledge();
 		if (hoverBtn0) {
 			DeepPocketUtils.playClickSound();
-			count = pocket.getMaxExtract(recipe) >> 2;
+			count = pocket.getMaxExtract(knowledge, recipe) >> 2;
 			return true;
 		}
 		if (hoverBtn1) {
 			DeepPocketUtils.playClickSound();
-			count = pocket.getMaxExtract(recipe) >> 1;
+			count = pocket.getMaxExtract(knowledge, recipe) >> 1;
 			return true;
 		}
 		if (hoverBtn2) {
 			DeepPocketUtils.playClickSound();
-			count = pocket.getMaxExtract(recipe);
+			count = pocket.getMaxExtract(knowledge, recipe);
 			return true;
 		}
 		if (hoverBtn3) {

@@ -3,6 +3,7 @@ package com.ofek2608.deep_pocket.registry.pocket_screen;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.PlayerKnowledge;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -103,7 +104,7 @@ public class PocketMenu extends AbstractContainerMenu {
 	private void putStackInInventory(DeepPocketServerApi api, Pocket pocket, ItemStack stack) {
 		if (!stack.isEmpty()) moveItemStackTo(stack, 27, 36, false);//hotbar
 		if (!stack.isEmpty()) moveItemStackTo(stack, 0, 27, false);//inventory
-		if (!stack.isEmpty()) api.insertItem(pocket, stack);
+		if (!stack.isEmpty()) pocket.insertItem(new ItemType(stack), stack.getCount());
 	}
 
 	@Override
@@ -132,7 +133,7 @@ public class PocketMenu extends AbstractContainerMenu {
 
 		if (index < slots.size() - 1) {
 			//not the result slot
-			api.insertItem(pocket, stack);
+			pocket.insertItem(new ItemType(stack), stack.getCount());
 			slot.set(ItemStack.EMPTY);
 			slot.setChanged();
 			return ItemStack.EMPTY;
@@ -214,7 +215,8 @@ public class PocketMenu extends AbstractContainerMenu {
 			return;
 		}
 		for (int i = 0; i < craftSlots.getContainerSize(); i++) {
-			api.insertItem(pocket, craftSlots.getItem(i));
+			ItemStack stack = craftSlots.getItem(i);
+			pocket.insertItem(new ItemType(stack), stack.getCount());
 			craftSlots.setItem(i, ItemStack.EMPTY);
 		}
 		if (resultSlot != null)
@@ -234,7 +236,7 @@ public class PocketMenu extends AbstractContainerMenu {
 		if (pocket == null)
 			return null;
 		for (ItemType type : api.getSortedKnowledge(pocket).map(Map.Entry::getKey).toList())
-			if (ingredient.test(type.create()) && !api.extractItem(pocket, type.create()).isEmpty())
+			if (ingredient.test(type.create()) && pocket.extractItem(api.getKnowledge(), type, 1) == 1)
 				return type;
 		return null;
 	}
@@ -283,7 +285,7 @@ public class PocketMenu extends AbstractContainerMenu {
 		Pocket pocket = getPocket();
 		if (api == null || pocket == null)
 			return false;
-		return !api.extractItem(pocket, type.create(1)).isEmpty();
+		return pocket.extractItem(api.getKnowledge(playerInventory.player.getUUID()), type, 1) == 1;
 	}
 
 
@@ -306,15 +308,12 @@ public class PocketMenu extends AbstractContainerMenu {
 			return;
 		if (count <= 0 || carried.getCount() <= count) {
 			//insert all
-			api.insertItem(pocket, carried);
+			pocket.insertItem(new ItemType(carried), carried.getCount());
 			setCarried(ItemStack.EMPTY);
 			return;
 		}
 
-		ItemStack insert = carried.copy();
-		insert.setCount(count);
-		api.insertItem(pocket, insert);
-
+		pocket.insertItem(new ItemType(carried), count);
 		carried.shrink(count);
 		setCarried(carried);
 	}
@@ -328,7 +327,7 @@ public class PocketMenu extends AbstractContainerMenu {
 		count = (byte)Math.min(count, maxStack);
 
 		if (!toCarry) {
-			putStackInInventory(api, pocket, api.extractItem(pocket, type.create(count)));
+			putStackInInventory(api, pocket, type.create((int)pocket.extractItem(api.getKnowledge(player.getUUID()), type, count)));
 			return;
 		}
 
@@ -340,7 +339,8 @@ public class PocketMenu extends AbstractContainerMenu {
 		int extractRequestCount = Math.min(maxStack - currentCount, count);
 		if (extractRequestCount <= 0)
 			return;
-		ItemStack extracted = api.extractItem(pocket, type.create(extractRequestCount));
+
+		ItemStack extracted = type.create((int)pocket.extractItem(api.getKnowledge(player.getUUID()), type, extractRequestCount));
 		if (extracted.isEmpty())
 			return;
 		setCarried(type.create(currentCount + extracted.getCount()));
@@ -368,16 +368,17 @@ public class PocketMenu extends AbstractContainerMenu {
 		NonNullList<ItemStack> remainingItems = player.level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, player.level);
 		ForgeHooks.setCraftingPlayer(null);
 
-		long max = pocket.getMaxExtract(getCrafting());
+		PlayerKnowledge knowledge = api.getKnowledge(player.getUUID());
+		long max = pocket.getMaxExtract(knowledge, getCrafting());
 		if (0 <= max && max < count)
 			count = max;
 		if (count == 0)
 			return;
 		for (ItemType type : getCrafting())
-			pocket.extractItem(type, count);
-		api.insertItem(pocket, new ItemType(result), DeepPocketUtils.advancedMul(result.getCount(), count));
+			pocket.extractItem(knowledge, type, count);
+		pocket.insertItem(new ItemType(result), DeepPocketUtils.advancedMul(result.getCount(), count));
 		for (ItemStack remainingItem : remainingItems)
-			api.insertItem(pocket, new ItemType(remainingItem), DeepPocketUtils.advancedMul(remainingItem.getCount(), count));
+			pocket.insertItem(new ItemType(remainingItem), DeepPocketUtils.advancedMul(remainingItem.getCount(), count));
 
 		if (resultSlot != null)
 			resultSlot.checkTakeAchievements(result);

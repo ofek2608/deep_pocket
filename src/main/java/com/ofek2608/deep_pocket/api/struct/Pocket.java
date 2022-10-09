@@ -6,6 +6,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
@@ -153,15 +154,28 @@ public class Pocket {
 		return min;
 	}
 
-	public long getMaxExtract(Map<ItemType,Long> counts) {
+	private boolean isInvalidKnowledge(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts) {
+		if (knowledge == null)
+			return false;
+		for (ItemType item : counts.keySet())
+			if (!knowledge.contains(item))
+				return true;
+		return false;
+	}
+
+	public long getMaxExtract(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts) {
 		counts = new HashMap<>(counts);
 		conversions.convertMap(counts);
+		if (isInvalidKnowledge(knowledge, counts))
+			return 0;
 		return getMaxExtract0(counts);
 	}
 
-	public long extract(Map<ItemType,Long> counts, long overallCount) {
+	public long extract(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts, long overallCount) {
 		counts = new HashMap<>(counts);
 		conversions.convertMap(counts);
+		if (isInvalidKnowledge(knowledge, counts))
+			return 0;
 		long maxExtract = getMaxExtract0(counts);
 		if (0 <= maxExtract && maxExtract < overallCount)
 			overallCount = maxExtract;
@@ -175,15 +189,15 @@ public class Pocket {
 		return overallCount;
 	}
 
-	public long extractItem(ItemType type, long count) {
-		return extract(Map.of(type, 1L), count);
+	public long extractItem(@Nullable PlayerKnowledge knowledge, ItemType type, long count) {
+		return extract(knowledge, Map.of(type, 1L), count);
 	}
 
-	public long getMaxExtract(ItemType ... items) {
+	public long getMaxExtract(@Nullable PlayerKnowledge knowledge, ItemType ... items) {
 		Map<ItemType,Long> itemsMap = new HashMap<>();
 		for (ItemType item : items)
 			itemsMap.put(item, itemsMap.getOrDefault(item, 0L) + 1);
-		return getMaxExtract(itemsMap);
+		return getMaxExtract(knowledge, itemsMap);
 	}
 
 	public void clearItems() {

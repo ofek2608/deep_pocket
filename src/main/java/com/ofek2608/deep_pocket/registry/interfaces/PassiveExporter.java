@@ -62,7 +62,7 @@ public class PassiveExporter extends Block implements EntityBlock {
 				DeepPocketServerApi api = DeepPocketServerApi.get();
 				Pocket pocket = getServerPocket();
 				if (api == null || pocket == null) return ItemStack.EMPTY;
-				long maxExtract = api.getMaxExtract(pocket, getFilter());
+				long maxExtract = pocket.getMaxExtract(null, getFilter());
 				return getFilter().create(maxExtract < 0 || Integer.MAX_VALUE <= maxExtract ? Integer.MAX_VALUE : (int)maxExtract);
 			}
 
@@ -73,14 +73,15 @@ public class PassiveExporter extends Block implements EntityBlock {
 
 			@Override
 			public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
-				if (slot != 0) return ItemStack.EMPTY;
+				if (slot != 0 || amount <= 0) return ItemStack.EMPTY;
 				DeepPocketServerApi api = DeepPocketServerApi.get();
 				Pocket pocket = getServerPocket();
 				if (api == null || pocket == null) return ItemStack.EMPTY;
-				if (simulate)
-					return api.extractItem(pocket, getFilter().create(amount));
-				long maxExtract = api.getMaxExtract(pocket, getFilter());
-				return getFilter().create(maxExtract < 0 || amount <= maxExtract ? amount : (int)maxExtract);
+				ItemType filter = getFilter();
+				if (!simulate)
+					return filter.create((int)pocket.extractItem(null, filter, amount));
+				long maxExtract = pocket.extractItem(null, filter, amount);
+				return filter.create(maxExtract < 0 || amount <= maxExtract ? amount : (int)maxExtract);
 			}
 
 			@Override

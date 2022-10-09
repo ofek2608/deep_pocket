@@ -35,5 +35,6 @@ public class DeepPocketMod
 	 *  - Add new jei category that shows conversions
 	 *  - Add toast when the player expands his knowledge
 	 *  - Make more commands
+	 *  - Cleanup around pocket insertion and extractions
 	 */
 }

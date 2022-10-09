@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.registry;
 
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ofek2608.deep_pocket.DeepPocketMod;
@@ -9,15 +8,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
-import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.commands.TeleportCommand;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+@SuppressWarnings("SameReturnValue")
 @Mod.EventBusSubscriber(modid = DeepPocketMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 class DeepPocketCommands {
 	@SubscribeEvent
@@ -41,7 +39,7 @@ class DeepPocketCommands {
 			api.getKnowledge(player.getUUID()).clear();
 			send(context, "Successfully cleared the knowledge to " + player.getName().getString(), true);
 		} else {
-			send(context, "Filed to clear knowledge", true);
+			send(context, "Failed to clear knowledge", false);
 		}
 		return 0;
 	}
@@ -49,7 +47,7 @@ class DeepPocketCommands {
 	private static int knowledgeClearTargets(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		DeepPocketServerApi api = DeepPocketServerApi.get();
 		if (api == null) {
-			send(context, "Filed to clear knowledge", true);
+			send(context, "Failed to clear knowledge", false);
 			return 0;
 		}
 		var players = EntityArgument.getPlayers(context, "targets");

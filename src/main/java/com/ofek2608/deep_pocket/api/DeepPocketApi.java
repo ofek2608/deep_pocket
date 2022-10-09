@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.api.struct.*;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -27,13 +26,4 @@ public interface DeepPocketApi {
 	boolean cachePlayerName(UUID id, String name);
 	String getCachedPlayerName(UUID id);
 	@UnmodifiableView Map<UUID, String> getPlayerNameCache();
-
-	void insertItem(Pocket pocket, ItemStack stack);
-	void insertItem(Pocket pocket, ItemType type, long count);
-	ItemStack extractItem(Pocket pocket, ItemStack stack);
-	long getMaxExtract(Pocket pocket, ItemType type);
-
-
-
-
 }

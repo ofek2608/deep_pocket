@@ -47,7 +47,7 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	public Stream<Map.Entry<ItemType,Long>> getSortedKnowledge(Pocket pocket) {
 		Map<ItemType,Long> counts = new HashMap<>();
 		for (ItemType type : getKnowledge().getPocketItems(pocket).toList()) {
-			long count = pocket.getMaxExtract(type);
+			long count = pocket.getMaxExtract(getKnowledge(), type);
 			if (count > 0)
 				counts.put(type, count);
 			else if (count < 0)
