@@ -11,7 +11,6 @@ public final class DeepPocketConfigElemental {
 	@SuppressWarnings("EmptyMethod") public static void loadClass() {}
 	static {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Client.SPEC);
-//		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, Common.SPEC);
 	}
 
 	public static class Client {
@@ -33,16 +32,4 @@ public final class DeepPocketConfigElemental {
 			SPEC = builder.build();
 		}
 	}
-
-//	public static final class Common {
-//		private Common() {}
-//
-//		private static final ForgeConfigSpec SPEC;
-//
-//		static {
-//			var builder = new ForgeConfigSpec.Builder();
-//
-//			SPEC = builder.build();
-//		}
-//	}
 }
