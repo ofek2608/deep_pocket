@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket_elemental;
 
-import com.ofek2608.deep_pocket.DeepPocketMod;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 
@@ -11,7 +10,9 @@ public class DeepPocketModElemental {
 		return new ResourceLocation(ID, path);
 	}
 
+
 	public DeepPocketModElemental() {
-		System.out.println("Hello World, i am " + ID + " and i am acknowledged of " + DeepPocketMod.ID + "!");
+		DeepPocketRegistryElemental.loadClass();
+		DeepPocketConfigElemental.loadClass();
 	}
 }

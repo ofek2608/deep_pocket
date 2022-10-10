@@ -46,9 +46,9 @@ public class Pocket {
 		for (Tag itemCount : saved.getList("itemCounts", 10)) {
 			ItemType type = ItemType.load(((CompoundTag) itemCount).getCompound("item"));
 			long count = ((CompoundTag)itemCount).getLong("count");
-			if (count <= 0)
+			if (count == 0)
 				continue;
-			items.put(type, count);
+			items.put(type, count < 0 ? -1 : count);
 		}
 		conversions.convertMap(items);
 		this.lastSnapshot = new Snapshot();

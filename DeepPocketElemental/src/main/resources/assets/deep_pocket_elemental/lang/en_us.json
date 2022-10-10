@@ -1,0 +1,8 @@
+{
+	"item.deep_pocket_elemental.earth": "Earth",
+	"item.deep_pocket_elemental.water": "Water",
+	"item.deep_pocket_elemental.air": "Air",
+	"item.deep_pocket_elemental.fire": "Fire",
+	"deep_pocket_elemental.key.overlay_position": "Toggle Elements Overlay Position",
+	"deep_pocket_elemental.key.overlay_direction": "Toggle Elements Overlay Direction"
+}

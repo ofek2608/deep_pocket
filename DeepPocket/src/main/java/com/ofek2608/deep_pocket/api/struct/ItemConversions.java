@@ -142,9 +142,9 @@ public final class ItemConversions {
 					continue;
 				Map<ItemType,Long> valueCopy = new HashMap<>();
 				for (var entry1 : entry0.getValue().amounts.entrySet()) {
-					if (entry1.getKey().isEmpty())
+					if (entry1.getKey().isEmpty() || entry1.getValue() == 0)
 						continue;
-					valueCopy.put(entry1.getKey(), entry1.getValue());
+					valueCopy.put(entry1.getKey(), entry1.getValue() < 0 ? -1 : entry1.getValue());
 				}
 				valuesCopy.put(entry0.getKey(), valueCopy);
 			}

@@ -1,0 +1,6 @@
+stone,1,0,0,0
+clear
+oak_log,1,2,3,4
+oak_log,0,1,0,0
+oak_planks,0,0,-1,5
+obsidian,1000,1000,90,90
