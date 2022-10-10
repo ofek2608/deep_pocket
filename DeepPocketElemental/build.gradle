@@ -6,8 +6,8 @@ plugins {
 }
 
 version = '0.0.2'
-group = 'com.ofek2608.deep_pocket' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'deep_pocket'
+group = 'com.ofek2608.deep_pocket_elemental' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = 'deep_pocket_elemental'
 
 // Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -22,10 +22,10 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'deep_pocket'
+            property 'forge.enabledGameTestNamespaces', 'deep_pocket_elemental'
 
             mods {
-                deep_pocket {
+                deep_pocket_elemental {
                     source sourceSets.main
                 }
             }
@@ -38,10 +38,10 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'deep_pocket'
+            property 'forge.enabledGameTestNamespaces', 'deep_pocket_elemental'
 
             mods {
-                deep_pocket {
+                deep_pocket_elemental {
                     source sourceSets.main
                 }
             }
@@ -54,10 +54,10 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
-            property 'forge.enabledGameTestNamespaces', 'deep_pocket'
+            property 'forge.enabledGameTestNamespaces', 'deep_pocket_elemental'
 
             mods {
-                deep_pocket {
+                deep_pocket_elemental {
                     source sourceSets.main
                 }
             }
@@ -71,10 +71,10 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
 
-            args '--mod', 'deep_pocket', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            args '--mod', 'deep_pocket_elemental', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
-                deep_pocket {
+                deep_pocket_elemental {
                     source sourceSets.main
                 }
             }
@@ -104,6 +104,9 @@ repositories {
             includeGroup "curse.maven"
         }
     }
+    flatDir {
+        dir '../libs'
+    }
 }
 
 dependencies {
@@ -123,6 +126,8 @@ dependencies {
     runtimeOnly(fg.deobf("curse.maven:curios-compiled-309927:3924518"))
 
     implementation fg.deobf("curse.maven:theoneprobe-245211:3965693")
+
+    implementation fg.deobf('blank:deep-pocket:0.0')
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
