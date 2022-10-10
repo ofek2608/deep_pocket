@@ -6,8 +6,8 @@
     "010"
   ],
   "key": {
-    "1": {"item": "minecraft:lead"},
-    "0": {"item": "minecraft:fishing_rod"},
+    "1": {"item": "minecraft:firework_rocket"},
+    "0": {"item": "minecraft:bow"},
     "L": {"item": "deep_pocket:pocket_link"}
   },
   "result": {
