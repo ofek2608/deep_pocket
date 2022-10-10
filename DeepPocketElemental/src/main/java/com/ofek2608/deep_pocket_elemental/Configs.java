@@ -4,10 +4,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 
-import java.util.stream.Stream;
-
-public final class DeepPocketConfigElemental {
-	private DeepPocketConfigElemental() {}
+public final class Configs {
+	private Configs() {}
 	@SuppressWarnings("EmptyMethod") public static void loadClass() {}
 	static {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Client.SPEC);

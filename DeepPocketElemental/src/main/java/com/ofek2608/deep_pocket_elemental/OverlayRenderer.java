@@ -21,9 +21,9 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = DeepPocketModElemental.ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-final class ElementsOverlayRenderer {
-	private ElementsOverlayRenderer() {}
+@Mod.EventBusSubscriber(modid = DPEMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+final class OverlayRenderer {
+	private OverlayRenderer() {}
 
 	@SubscribeEvent
 	public static void event(RenderGuiOverlayEvent.Post event) {
@@ -36,8 +36,8 @@ final class ElementsOverlayRenderer {
 		int h = window.getGuiScaledHeight();
 		if (w < 72 || h < 72)
 			return;
-		OverlayLocation location = DeepPocketConfigElemental.Client.OVERLAY_LOCATION.get();
-		boolean ltr = DeepPocketConfigElemental.Client.OVERLAY_DIRECTION.get();
+		OverlayLocation location = Configs.Client.OVERLAY_LOCATION.get();
+		boolean ltr = Configs.Client.OVERLAY_DIRECTION.get();
 		int x = (w - 72) * location.x / 2 + 4;
 		int y = (h - 72) * location.y / 2 + 4;
 		render(event.getPoseStack(), x, y, ltr);
@@ -55,19 +55,19 @@ final class ElementsOverlayRenderer {
 		Pocket pocket = DeepPocketClientApi.get().getPocket(pocketId);
 		if (pocket == null) return;
 
-		String earth = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(DeepPocketRegistryElemental.EARTH.get())));
-		String water = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(DeepPocketRegistryElemental.WATER.get())));
-		String air = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(DeepPocketRegistryElemental.AIR.get())));
-		String fire = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(DeepPocketRegistryElemental.FIRE.get())));
+		String earth = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.EARTH.get())));
+		String water = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.WATER.get())));
+		String air = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.AIR.get())));
+		String fire = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.FIRE.get())));
 
 		//Background
 		GuiConfig.fill(stack, x, y, x + 64, y + 64, 0xCC111111);
 		//Icons
 		int iconX = direction ? x : x + 48;
-		itemRenderer.renderGuiItem(new ItemStack(DeepPocketRegistryElemental.EARTH.get()), iconX, y);
-		itemRenderer.renderGuiItem(new ItemStack(DeepPocketRegistryElemental.WATER.get()), iconX, y + 16);
-		itemRenderer.renderGuiItem(new ItemStack(DeepPocketRegistryElemental.AIR.get()), iconX, y + 32);
-		itemRenderer.renderGuiItem(new ItemStack(DeepPocketRegistryElemental.FIRE.get()), iconX, y + 48);
+		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.EARTH.get()), iconX, y);
+		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.WATER.get()), iconX, y + 16);
+		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.AIR.get()), iconX, y + 32);
+		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.FIRE.get()), iconX, y + 48);
 		//Numbers
 		font.draw(stack, earth, direction ? x + 18 : x + 46 - font.width(earth), y + 4, 0xFFFFFF);
 		font.draw(stack, water, direction ? x + 18 : x + 46 - font.width(water), y + 20, 0xFFFFFF);

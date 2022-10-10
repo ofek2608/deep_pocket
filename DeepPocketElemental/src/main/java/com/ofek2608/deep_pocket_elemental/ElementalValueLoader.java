@@ -18,8 +18,9 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mod.EventBusSubscriber(modid = DeepPocketModElemental.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-class ElementalValueLoader {
+@Mod.EventBusSubscriber(modid = DPEMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+final class ElementalValueLoader {
+	private ElementalValueLoader() {}
 	private static final Logger LOGGER = LogUtils.getLogger();
 	private static AllItemsValues values = new AllItemsValues();
 
@@ -50,7 +51,7 @@ class ElementalValueLoader {
 		private AllItemsValues() {}
 
 		private AllItemsValues(ResourceManager resourceManager) {
-			var resourceStack = resourceManager.getResourceStack(DeepPocketModElemental.loc("elemental_values.txt"));
+			var resourceStack = resourceManager.getResourceStack(DPEMod.loc("elemental_values.txt"));
 			for (Resource resource : resourceStack) {
 				try (var reader = resource.openAsReader()) {
 					reader.lines().forEach(this::readLine);
@@ -104,10 +105,10 @@ class ElementalValueLoader {
 		}
 
 		private void applyBuilder(ItemConversions.ItemValueBuilder builder) {
-			builder.add(DeepPocketRegistryElemental.EARTH.get(), earth);
-			builder.add(DeepPocketRegistryElemental.WATER.get(), water);
-			builder.add(DeepPocketRegistryElemental.AIR.get(), air);
-			builder.add(DeepPocketRegistryElemental.FIRE.get(), fire);
+			builder.add(ModRegistry.EARTH.get(), earth);
+			builder.add(ModRegistry.WATER.get(), water);
+			builder.add(ModRegistry.AIR.get(), air);
+			builder.add(ModRegistry.FIRE.get(), fire);
 		}
 	}
 }
