@@ -75,7 +75,7 @@ minecraft:mossy_cobblestone,100,0,0,0
 minecraft:obsidian,1000,0,0,100
 minecraft:purpur_block,0,320,320,0
 minecraft:purpur_pillar,0,320,320,0
-minecraft:ice,0,1000,0,0
+minecraft:ice,0,200,0,0
 minecraft:snow_block,0,100,10,0
 minecraft:clay,48,20,0,0
 minecraft:pumpkin,0,8,12,0
@@ -126,7 +126,7 @@ minecraft:red_terracotta,48,0,0,20
 minecraft:black_terracotta,48,0,0,20
 minecraft:hay_block,0,450,2250,0
 minecraft:terracotta,48,0,0,20
-minecraft:packed_ice,0,9000,0,0
+minecraft:packed_ice,0,1800,0,0
 minecraft:white_stained_glass,0,0,25,0
 minecraft:orange_stained_glass,0,0,25,0
 minecraft:magenta_stained_glass,0,0,25,0
@@ -265,12 +265,12 @@ minecraft:cooked_porkchop,200,300,0,900
 minecraft:golden_apple:240000,24500,48100,24000
 minecraft:enchanted_golden_apple:2400000,245000,481000,24000
 minecraft:bucket,45000,9000,9000,0
-minecraft:water_bucket,45000,9000,9000,0
+minecraft:water_bucket,45000,9100,9000,0
 minecraft:lava_bucket,45000,9000,9000,9000
 minecraft:powder_snow_bucket,45000,18000,18000,0
 minecraft:snowball,0,25,2,0
 minecraft:leather,800,0,200,100
-minecraft:milk_bucket,45000,18000,18000,0
+minecraft:milk_bucket,45000,9100,18000,0
 minecraft:brick,12,0,0,0
 minecraft:clay_ball,12,4,0,0
 minecraft:paper,
@@ -326,7 +326,7 @@ minecraft:melon_seeds,0,4,1,0
 
 minecraft:pumpkin_seeds,0,2,3,0
 
-minecraft:blue_ice,0,81000,0,0
+minecraft:blue_ice,0,16200,0,0
 minecraft:dripstone,100,0,50,50
 
 #TODO complete the list
