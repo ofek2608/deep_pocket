@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.integration;
 
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.logging.LogUtils;
