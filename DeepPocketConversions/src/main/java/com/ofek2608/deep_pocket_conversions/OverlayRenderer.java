@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket_elemental;
+package com.ofek2608.deep_pocket_conversions;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -21,7 +21,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = DPEMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = DPCMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 final class OverlayRenderer {
 	private OverlayRenderer() {}
 
@@ -34,12 +34,12 @@ final class OverlayRenderer {
 		Window window = event.getWindow();
 		int w = window.getGuiScaledWidth();
 		int h = window.getGuiScaledHeight();
-		if (w < 72 || h < 72)
+		if (w < 72 || h < 24)
 			return;
 		OverlayLocation location = Configs.Client.OVERLAY_LOCATION.get();
 		boolean ltr = Configs.Client.OVERLAY_DIRECTION.get();
 		int x = (w - 72) * location.x / 2 + 4;
-		int y = (h - 72) * location.y / 2 + 4;
+		int y = (h - 24) * location.y / 2 + 4;
 		render(event.getPoseStack(), x, y, ltr);
 
 	}
@@ -55,23 +55,14 @@ final class OverlayRenderer {
 		Pocket pocket = DeepPocketClientApi.get().getPocket(pocketId);
 		if (pocket == null || !pocket.canAccess(player)) return;
 
-		String earth = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.EARTH.get())));
-		String water = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.WATER.get())));
-		String air = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.AIR.get())));
-		String fire = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.FIRE.get())));
+		String matterValue = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.getMinMatter())));
 
 		//Background
-		GuiConfig.fill(stack, x, y, x + 64, y + 64, 0xCC111111);
+		GuiConfig.fill(stack, x, y, x + 64, y + 16, 0xCC111111);
 		//Icons
 		int iconX = direction ? x : x + 48;
-		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.EARTH.get()), iconX, y);
-		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.WATER.get()), iconX, y + 16);
-		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.AIR.get()), iconX, y + 32);
-		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.FIRE.get()), iconX, y + 48);
+		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.getMinMatter()), iconX, y);
 		//Numbers
-		font.draw(stack, earth, direction ? x + 18 : x + 46 - font.width(earth), y + 4, 0xFFFFFF);
-		font.draw(stack, water, direction ? x + 18 : x + 46 - font.width(water), y + 20, 0xFFFFFF);
-		font.draw(stack, air, direction ? x + 18 : x + 46 - font.width(air), y + 36, 0xFFFFFF);
-		font.draw(stack, fire, direction ? x + 18 : x + 46 - font.width(fire), y + 52, 0xFFFFFF);
+		font.draw(stack, matterValue, direction ? x + 18 : x + 46 - font.width(matterValue), y + 4, 0xFFFFFF);
 	}
 }

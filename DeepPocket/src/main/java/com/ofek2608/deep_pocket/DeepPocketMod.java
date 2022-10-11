@@ -35,5 +35,6 @@ public class DeepPocketMod
 	 *  - Add toast when the player expands his knowledge
 	 *  - Make more commands
 	 *  - Cleanup around pocket insertion and extractions
+	 *  - A way to extract infinite amount of an item
 	 */
 }

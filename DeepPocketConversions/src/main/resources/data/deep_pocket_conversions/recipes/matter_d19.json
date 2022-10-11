@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "deep_pocket_conversions:matter_19"
+    }
+  ],
+  "result": {
+    "item": "deep_pocket_conversions:matter_18",
+    "count": 8
+  }
+}

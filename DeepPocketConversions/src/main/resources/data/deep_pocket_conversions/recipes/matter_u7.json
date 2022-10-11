@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MMM",
+    "M M",
+    "MMM"
+  ],
+  "key": {
+    "M": {"item": "deep_pocket_conversions:matter_6"}
+  },
+  "result": {
+    "item": "deep_pocket_conversions:matter_7"
+  }
+}

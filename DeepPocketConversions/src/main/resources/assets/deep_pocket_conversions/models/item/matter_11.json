@@ -1,0 +1,6 @@
+{
+  "parent": "deep_pocket_conversions:item/matter_1",
+  "textures": {
+    "layer1": "deep_pocket_conversions:item/num_11"
+  }
+}

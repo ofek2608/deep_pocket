@@ -64,3 +64,9 @@ Check out the Homepage for more info
     versionRange="[0.0.2,0.1)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.deep_pocket_conversions]]
+    modId="deep_pocket_elemental"
+    mandatory=false
+    versionRange="[INCOMPATIBLE]"
+    ordering="NONE"
+    side="BOTH"
