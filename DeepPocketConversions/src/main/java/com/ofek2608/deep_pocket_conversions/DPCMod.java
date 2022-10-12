@@ -16,9 +16,9 @@ public class DPCMod {
 	public DPCMod() {
 		ModRegistry.loadClass();
 		Configs.loadClass();
-		//TODO add default VMs
-		//TODO fix issues with remaining items
 		registerDefaultRecipesLoaders();
+		//TODO fix default VMs
+		//TODO output and input values from config folder
 	}
 
 	private static void registerDefaultRecipesLoaders() {
