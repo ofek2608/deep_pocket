@@ -55,8 +55,9 @@ final class MVLoader {
 	}
 
 	private static final class MVs {
-		private final Map<ResourceLocation,Long> map = new HashMap<>();
 		private final List<Pattern> doNotCalculateRegex = new ArrayList<>();
+		private final Map<String,Long> constants = new HashMap<>();
+		private final Map<String,String> map = new HashMap<>();
 
 		private MVs() {}
 
@@ -92,8 +93,9 @@ final class MVLoader {
 				try (var reader = resource.openAsReader()) {
 					JsonObject obj = GsonHelper.parse(reader);
 					if (obj.get("clear") instanceof JsonPrimitive clear && clear.getAsBoolean()) {
-						map.clear();
 						doNotCalculateRegex.clear();
+						constants.clear();
+						map.clear();
 					}
 					if (obj.get("blacklist") instanceof JsonArray blacklist) {
 						for (JsonElement blackListElement : blacklist) {
@@ -102,13 +104,20 @@ final class MVLoader {
 							} catch (Exception ignored) {}
 						}
 					}
+					if (obj.get("constants") instanceof JsonObject jsonConstants) {
+						for (var entry : jsonConstants.entrySet()) {
+							try {
+								String value = entry.getValue().getAsString();
+								constants.put(entry.getKey(), value.equals("@") ? -1 : Long.parseLong(value));
+							} catch (Exception ignored) {}
+						}
+					}
 					if (obj.get("values") instanceof JsonObject values) {
 						for (var entry : values.entrySet()) {
-							try {
-								ResourceLocation loc = new ResourceLocation(entry.getKey());
-								map.remove(loc);
-								map.put(loc, Long.parseLong(entry.getValue().getAsString()));
-							} catch (Exception ignored) {}
+							if (entry.getValue() instanceof JsonPrimitive value && !value.isBoolean())
+								map.put(entry.getKey(), value.getAsString());
+							else
+								map.remove(entry.getKey());
 						}
 					}
 
@@ -128,27 +137,26 @@ final class MVLoader {
 		private void applyBuilder2(MinecraftServer server, ItemConversions.Builder builder) {
 			ItemType matter = new ItemType(ModRegistry.getMinMatter());
 			//Creating initial values
-			Map<ItemType,Long> initialValues = new HashMap<>();
+			Map<ItemType,String> recipesOverrides = new HashMap<>();
 			map.forEach((key,value)->{
-				Item item = ForgeRegistries.ITEMS.getValue(key);
-				if (item != null)
-					initialValues.put(new ItemType(item), value);
+				ItemType type = DPCUtils.parseItemType(key);
+				if (!type.isEmpty())
+					recipesOverrides.put(type, value);
 			});
 			for (int num = MatterItem.MIN_MATTER_NUM; num <= MatterItem.MAX_MATTER_NUM; num++) {
 				MatterItem item = ModRegistry.getMatter(num);
-				initialValues.put(new ItemType(item), item.value);
+				recipesOverrides.put(new ItemType(item), item.value >= 0 ? "" + item.value : "@");
 			}
 			//Filtering items to skip
-			Set<ItemType> doNotCalculate = ForgeRegistries.ITEMS.getEntries()
+			Set<Item> doNotCalculate = ForgeRegistries.ITEMS.getEntries()
 							.stream()
 							.filter(entry -> doNotCalculateMatch(entry.getKey().location()))
 							.map(Map.Entry::getValue)
-							.map(ItemType::new)
 							.collect(Collectors.toSet());
 			//Loading recipes
 			var recipes = DPCRecipeLoader.loadRecipes(server);
 			//Calculating
-			Map<ItemType,Long> values = MVCalculator.calculateMV(initialValues, recipes, doNotCalculate);
+			Map<ItemType,Long> values = MVCalculator.calculateMV(constants, recipes, recipesOverrides, doNotCalculate);
 			values.remove(matter);
 			//applying builder
 			values.forEach((type,value) -> builder.item(type).set(matter, value));

@@ -7,5 +7,5 @@ import java.util.function.Consumer;
 
 public interface IRecipeLoader<R extends Recipe<?>> {
 	public ResourceLocation getId();
-	public void load(Consumer<SimpleRecipe> recipeRegister, R recipe);
+	public void load(Consumer<ICompilableRecipe> recipeRegister, R recipe);
 }

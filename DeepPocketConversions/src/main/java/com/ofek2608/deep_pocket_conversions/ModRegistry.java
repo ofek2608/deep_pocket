@@ -13,8 +13,10 @@ import java.util.List;
 
 public class ModRegistry {
 	private ModRegistry() {}
+	@SuppressWarnings("EmptyMethod")
 	static void loadClass() {}
 
+	@SuppressWarnings("SameParameterValue")
 	private static <T> DeferredRegister<T> createRegister(IForgeRegistry<T> forge) {
 		DeferredRegister<T> register = DeferredRegister.create(forge, DPCMod.ID);
 		register.register(FMLJavaModLoadingContext.get().getModEventBus());

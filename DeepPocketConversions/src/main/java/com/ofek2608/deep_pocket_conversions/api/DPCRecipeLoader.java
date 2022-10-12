@@ -1,12 +1,7 @@
 package com.ofek2608.deep_pocket_conversions.api;
 
 import com.ofek2608.deep_pocket_conversions.Configs;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.Container;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.CraftingMenu;
-import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -26,12 +21,12 @@ public final class DPCRecipeLoader {
 
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	public static List<SimpleRecipe> loadRecipes(MinecraftServer server) {
+	public static List<ICompilableRecipe> loadRecipes(MinecraftServer server) {
 		if (!Configs.Common.RECIPE_LOADERS_ALL.get())
 			return new ArrayList<>();
 
 		RecipeManager recipeManager = server.getRecipeManager();
-		List<SimpleRecipe> result = new ArrayList<>();
+		List<ICompilableRecipe> result = new ArrayList<>();
 
 		for (IRecipeLoader<?> registeredRecipeLoader : REGISTERED_RECIPE_LOADERS) {
 			RecipeType<?> type = ForgeRegistries.RECIPE_TYPES.getValue(registeredRecipeLoader.getId());

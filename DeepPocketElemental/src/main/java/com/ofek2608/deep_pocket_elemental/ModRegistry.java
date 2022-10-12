@@ -10,8 +10,10 @@ import net.minecraftforge.registries.RegistryObject;
 
 public final class ModRegistry {
 	private ModRegistry() {}
+	@SuppressWarnings("EmptyMethod")
 	static void loadClass() {}
 
+	@SuppressWarnings("SameParameterValue")
 	private static <T> DeferredRegister<T> createRegister(IForgeRegistry<T> forge) {
 		DeferredRegister<T> register = DeferredRegister.create(forge, DPEMod.ID);
 		register.register(FMLJavaModLoadingContext.get().getModEventBus());
