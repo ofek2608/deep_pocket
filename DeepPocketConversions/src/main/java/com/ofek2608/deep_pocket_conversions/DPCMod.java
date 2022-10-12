@@ -17,7 +17,7 @@ public class DPCMod {
 		ModRegistry.loadClass();
 		Configs.loadClass();
 		//TODO add default VMs
-		//TODO check blacklist
+		//TODO fix issues with remaining items
 		registerDefaultRecipesLoaders();
 	}
 
