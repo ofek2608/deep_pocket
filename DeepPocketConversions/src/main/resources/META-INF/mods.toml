@@ -25,7 +25,7 @@ displayName="Deep Pocket Conversions" #mandatory
 # A URL to query for updates for this mod. See the JSON update specification https://mcforge.readthedocs.io/en/latest/gettingstarted/autoupdate/
 #updateJSONURL="https://change.me.example.invalid/updates.json" #optional
 # A URL for the "homepage" for this mod, displayed in the mod UI
-displayURL="https://www.curseforge.com/minecraft/mc-mods/deep-pocket" #optional
+displayURL="https://www.curseforge.com/minecraft/mc-mods/deep-pocket-conversions" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
 logoFile= "deep_pocket_conversions_icon.png" #optional
 # A text field displayed in the mod UI
@@ -42,7 +42,8 @@ authors="OfekN" #optional
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-This mod adds deep pockets which are infinte storage that you can use in automations
+This mod is an addon to DeepPocket
+With this mod you can convert items into matter and back
 Check out the Homepage for more info
 '''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.

@@ -1,5 +1,6 @@
 # mine
 libs
+.hide_git
 
 # eclipse
 bin
