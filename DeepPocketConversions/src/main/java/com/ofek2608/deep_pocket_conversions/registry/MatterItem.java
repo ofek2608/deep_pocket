@@ -1,5 +1,6 @@
-package com.ofek2608.deep_pocket_conversions;
+package com.ofek2608.deep_pocket_conversions.registry;
 
+import com.ofek2608.deep_pocket_conversions.DPCMod;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;

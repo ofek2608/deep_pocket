@@ -1,11 +1,12 @@
 package com.ofek2608.deep_pocket_conversions;
 
+import com.ofek2608.deep_pocket_conversions.client.OverlayLocation;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 
-public final class Configs {
-	private Configs() {}
+public final class DPCConfigs {
+	private DPCConfigs() {}
 	@SuppressWarnings("EmptyMethod") public static void loadClass() {}
 	static {
 		ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, Client.SPEC);

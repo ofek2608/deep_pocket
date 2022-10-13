@@ -1,6 +1,7 @@
-package com.ofek2608.deep_pocket_conversions;
+package com.ofek2608.deep_pocket_conversions.registry;
 
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
+import com.ofek2608.deep_pocket_conversions.DPCMod;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -11,10 +12,10 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModRegistry {
+public final class ModRegistry {
 	private ModRegistry() {}
 	@SuppressWarnings("EmptyMethod")
-	static void loadClass() {}
+	public static void loadClass() {}
 
 	@SuppressWarnings("SameParameterValue")
 	private static <T> DeferredRegister<T> createRegister(IForgeRegistry<T> forge) {

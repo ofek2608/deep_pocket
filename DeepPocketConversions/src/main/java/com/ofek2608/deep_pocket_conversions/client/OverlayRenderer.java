@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket_conversions;
+package com.ofek2608.deep_pocket_conversions.client;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -7,6 +7,9 @@ import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.integration.DeepPocketCurios;
+import com.ofek2608.deep_pocket_conversions.DPCConfigs;
+import com.ofek2608.deep_pocket_conversions.DPCMod;
+import com.ofek2608.deep_pocket_conversions.registry.ModRegistry;
 import mcjty.theoneprobe.gui.GuiConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -36,8 +39,8 @@ final class OverlayRenderer {
 		int h = window.getGuiScaledHeight();
 		if (w < 72 || h < 24)
 			return;
-		OverlayLocation location = Configs.Client.OVERLAY_LOCATION.get();
-		boolean ltr = Configs.Client.OVERLAY_DIRECTION.get();
+		OverlayLocation location = DPCConfigs.Client.OVERLAY_LOCATION.get();
+		boolean ltr = DPCConfigs.Client.OVERLAY_DIRECTION.get();
 		int x = (w - 72) * location.x / 2 + 4;
 		int y = (h - 24) * location.y / 2 + 4;
 		render(event.getPoseStack(), x, y, ltr);

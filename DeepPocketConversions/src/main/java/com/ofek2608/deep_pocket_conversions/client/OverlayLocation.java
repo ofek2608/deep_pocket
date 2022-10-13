@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket_conversions;
+package com.ofek2608.deep_pocket_conversions.client;
 
 public enum OverlayLocation {
 	TOP_LEFT(0, 0),TOP_CENTER(1, 0),TOP_RIGHT(2, 0),

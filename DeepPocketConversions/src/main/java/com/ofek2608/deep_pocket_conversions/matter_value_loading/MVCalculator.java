@@ -1,8 +1,10 @@
-package com.ofek2608.deep_pocket_conversions;
+package com.ofek2608.deep_pocket_conversions.matter_value_loading;
 
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket_conversions.api.*;
+import com.ofek2608.deep_pocket_conversions.registry.MatterItem;
+import com.ofek2608.deep_pocket_conversions.registry.ModRegistry;
 import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
@@ -56,6 +58,11 @@ public final class MVCalculator {
 		overrideRecipes.forEach(((type, code) -> recipesCompilers.put(type, ctx->parse(ctx, type, code))));
 		// Removing matter_1 in case that someone added it
 		recipesCompilers.remove(new ItemType(ModRegistry.getMinMatter()));
+		// Adding the rest of the matters
+		for (int num = MatterItem.MIN_MATTER_NUM + 1; num <= MatterItem.MAX_MATTER_NUM; num++) {
+			MatterItem item = ModRegistry.getMatter(num);
+			recipesCompilers.put(new ItemType(item), ctx->ValueRule.constant(ProcessingNum.valueOf(item.value)));
+		}
 		// Return
 		return recipesCompilers;
 	}

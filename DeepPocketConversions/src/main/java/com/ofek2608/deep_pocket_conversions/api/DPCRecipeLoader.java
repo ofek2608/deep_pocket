@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket_conversions.api;
 
-import com.ofek2608.deep_pocket_conversions.Configs;
+import com.ofek2608.deep_pocket_conversions.DPCConfigs;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -22,7 +22,7 @@ public final class DPCRecipeLoader {
 
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	public static List<ICompilableRecipe> loadRecipes(MinecraftServer server) {
-		if (!Configs.Common.RECIPE_LOADERS_ALL.get())
+		if (!DPCConfigs.Common.RECIPE_LOADERS_ALL.get())
 			return new ArrayList<>();
 
 		RecipeManager recipeManager = server.getRecipeManager();

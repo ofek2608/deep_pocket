@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket_conversions;
 
 import com.ofek2608.deep_pocket_conversions.api.BasicRecipeLoader;
 import com.ofek2608.deep_pocket_conversions.api.DPCRecipeLoader;
+import com.ofek2608.deep_pocket_conversions.registry.ModRegistry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 
@@ -15,19 +16,18 @@ public class DPCMod {
 
 	public DPCMod() {
 		ModRegistry.loadClass();
-		Configs.loadClass();
+		DPCConfigs.loadClass();
 		registerDefaultRecipesLoaders();
-		//TODO fix default VMs
 		//TODO output and input values from config folder
 	}
 
 	private static void registerDefaultRecipesLoaders() {
-		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("crafting"), Configs.Common.RECIPE_LOADERS_CRAFTING));
-		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("smelting"), Configs.Common.RECIPE_LOADERS_SMELTING));
-		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("blasting"), Configs.Common.RECIPE_LOADERS_BLASTING));
-		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("smoking"), Configs.Common.RECIPE_LOADERS_SMOKING));
-		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("campfire_cooking"), Configs.Common.RECIPE_LOADERS_CAMPFIRE));
-		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("stonecutting"), Configs.Common.RECIPE_LOADERS_STONECUTTING));
-		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("smithing"), Configs.Common.RECIPE_LOADERS_SMITHING));
+		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("crafting"), DPCConfigs.Common.RECIPE_LOADERS_CRAFTING));
+		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("smelting"), DPCConfigs.Common.RECIPE_LOADERS_SMELTING));
+		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("blasting"), DPCConfigs.Common.RECIPE_LOADERS_BLASTING));
+		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("smoking"), DPCConfigs.Common.RECIPE_LOADERS_SMOKING));
+		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("campfire_cooking"), DPCConfigs.Common.RECIPE_LOADERS_CAMPFIRE));
+		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("stonecutting"), DPCConfigs.Common.RECIPE_LOADERS_STONECUTTING));
+		DPCRecipeLoader.registerLoader(new BasicRecipeLoader<>(new ResourceLocation("smithing"), DPCConfigs.Common.RECIPE_LOADERS_SMITHING));
 	}
 }
