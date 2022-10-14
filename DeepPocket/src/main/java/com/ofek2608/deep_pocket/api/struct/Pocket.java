@@ -5,18 +5,21 @@ import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.player.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
 
-public class Pocket {
+public final class Pocket {
 	private final ItemConversions conversions;
 	private final UUID pocketId;
 	private final UUID owner;
 	private PocketInfo pocketInfo;
 	private final Map<ItemType,Long> items;
+	private final Map<UUID,CraftingPattern> patterns;
 	private Snapshot lastSnapshot;
 
 	public Pocket(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
@@ -25,6 +28,7 @@ public class Pocket {
 		this.owner = owner;
 		this.pocketInfo = pocketInfo;
 		this.items = new HashMap<>();
+		this.patterns = new HashMap<>();
 		this.lastSnapshot = new Snapshot();
 	}
 
@@ -34,10 +38,11 @@ public class Pocket {
 		this.owner = copy.owner;
 		this.pocketInfo = copy.pocketInfo;
 		this.items = new HashMap<>(copy.items);
+		this.patterns = new HashMap<>(copy.patterns);
 		this.lastSnapshot = new Snapshot();
 	}
 
-	public Pocket(ItemConversions conversions, boolean allowPublicPocket, CompoundTag saved) {
+	public Pocket(MinecraftServer server, ItemConversions conversions, boolean allowPublicPocket, CompoundTag saved) {
 		this.conversions = conversions;
 		this.pocketId = saved.getUUID("pocketId");
 		this.owner = saved.getUUID("owner");
@@ -48,9 +53,16 @@ public class Pocket {
 			long count = ((CompoundTag)itemCount).getLong("count");
 			if (count == 0)
 				continue;
-			items.put(type, count < 0 ? -1 : count);
+			this.items.put(type, count < 0 ? -1 : count);
 		}
 		conversions.convertMap(items);
+		this.patterns = new HashMap<>();
+		for (Tag savedPattern : saved.getList("patterns", 10)) {
+			try {
+				WorldCraftingPattern pattern = new WorldCraftingPattern((CompoundTag) savedPattern, server);
+				this.patterns.put(pattern.getPatternId(), pattern);
+			} catch (Exception ignored) {}
+		}
 		this.lastSnapshot = new Snapshot();
 		if (!allowPublicPocket && pocketInfo.securityMode == PocketSecurityMode.PUBLIC)
 			pocketInfo.securityMode = PocketSecurityMode.TEAM;
@@ -206,6 +218,30 @@ public class Pocket {
 		this.lastSnapshot.changedItems.clear();
 	}
 
+	public @Nullable CraftingPattern getPattern(UUID patternId) {
+		return patterns.get(patternId);
+	}
+
+	@ApiStatus.Internal
+	public void addPattern(CraftingPattern pattern) {
+		patterns.put(pattern.getPatternId(), pattern);
+		this.lastSnapshot.changedPatterns.add(pattern.getPatternId());
+	}
+
+	public void addPattern(WorldCraftingPattern pattern) {
+		this.addPattern((CraftingPattern)pattern);
+	}
+
+	public void removePattern(UUID patternId) {
+		if (this.patterns.remove(patternId) != null)
+			this.lastSnapshot.changedPatterns.add(patternId);
+	}
+
+	public @UnmodifiableView Collection<CraftingPattern> getPatterns() {
+		return Collections.unmodifiableCollection(this.patterns.values());
+	}
+
+
 	public Pocket copy() {
 		return new Pocket(this);
 	}
@@ -219,6 +255,7 @@ public class Pocket {
 		private boolean changedInfo;
 		private boolean clearedItems;
 		private final Set<ItemType> changedItems = new HashSet<>();
+		private final Set<UUID> changedPatterns = new HashSet<>();
 		private Snapshot next;
 
 		private Snapshot() {}
@@ -247,6 +284,19 @@ public class Pocket {
 				for (ItemType type : next.changedItems)
 					result.put(type, Pocket.this.getItemCount(type));
 			return result;
+		}
+
+		public CraftingPattern[] getAddedPatterns() {
+			return changedPatterns.stream()
+							.map(Pocket.this::getPattern)
+							.filter(Objects::nonNull)
+							.toArray(CraftingPattern[]::new);
+		}
+
+		public UUID[] getRemovedPatterns() {
+			return changedPatterns.stream()
+							.filter(patternId->Pocket.this.getPattern(patternId) == null)
+							.toArray(UUID[]::new);
 		}
 
 

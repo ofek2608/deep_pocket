@@ -7,35 +7,44 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 final class DPPacketUtils {
 	private DPPacketUtils() {}
 
-	static ItemType[] readItemTypeArray(FriendlyByteBuf buf) {
+	static <T> T[] decodeArray(FriendlyByteBuf buf, IntFunction<T[]> arrayFactory, Function<FriendlyByteBuf,T> decoder) {
 		int length = buf.readVarInt();
-		ItemType[] result = new ItemType[length];
+		T[] result = arrayFactory.apply(length);
 		for (int i = 0; i < length; i++)
-			result[i] = ItemType.decode(buf);
+			result[i] = decoder.apply(buf);
 		return result;
 	}
 
-	static void writeItemTypeArray(FriendlyByteBuf buf, ItemType[] types) {
-		buf.writeVarInt(types.length);
-		for (ItemType type : types)
-			ItemType.encode(buf, type);
+	static <T> void encodeArray(FriendlyByteBuf buf, T[] array, BiConsumer<FriendlyByteBuf,T> encoder) {
+		buf.writeVarInt(array.length);
+		for (T t : array)
+			encoder.accept(buf, t);
 	}
 
-	static <T> Map<ItemType,T> readItemTypeMap(FriendlyByteBuf buf, Function<FriendlyByteBuf,T> reader) {
+	static ItemType[] decodeItemTypeArray(FriendlyByteBuf buf) {
+		return decodeArray(buf, ItemType[]::new, ItemType::decode);
+	}
+
+	static void encodeItemTypeArray(FriendlyByteBuf buf, ItemType[] types) {
+		encodeArray(buf, types, ItemType::encode);
+	}
+
+	static <T> Map<ItemType,T> decodeItemTypeMap(FriendlyByteBuf buf, Function<FriendlyByteBuf,T> reader) {
 		Map<ItemType,T> map = new HashMap<>();
-		ItemType[] types = DPPacketUtils.readItemTypeArray(buf);
+		ItemType[] types = DPPacketUtils.decodeItemTypeArray(buf);
 		for (ItemType type : types)
 			map.put(type, reader.apply(buf));
 		return map;
 	}
 
-	static <T> void writeItemTypeMap(FriendlyByteBuf buf, Map<ItemType,T> map, BiConsumer<FriendlyByteBuf,T> writer) {
+	static <T> void encodeItemTypeMap(FriendlyByteBuf buf, Map<ItemType,T> map, BiConsumer<FriendlyByteBuf,T> writer) {
 		ItemType[] types = map.keySet().toArray(new ItemType[0]);
-		DPPacketUtils.writeItemTypeArray(buf, types);
+		DPPacketUtils.encodeItemTypeArray(buf, types);
 		for (ItemType type : types)
 			writer.accept(buf, map.get(type));
 	}

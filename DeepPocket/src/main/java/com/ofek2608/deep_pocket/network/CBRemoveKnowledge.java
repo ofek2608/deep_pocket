@@ -15,11 +15,11 @@ class CBRemoveKnowledge {
 	}
 
 	CBRemoveKnowledge(FriendlyByteBuf buf) {
-		this(DPPacketUtils.readItemTypeArray(buf));
+		this(DPPacketUtils.decodeItemTypeArray(buf));
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		DPPacketUtils.writeItemTypeArray(buf, types);
+		DPPacketUtils.encodeItemTypeArray(buf, types);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {

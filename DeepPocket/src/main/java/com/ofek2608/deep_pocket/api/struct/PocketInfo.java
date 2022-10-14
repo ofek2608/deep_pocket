@@ -7,7 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import javax.annotation.Nonnull;
 
-public class PocketInfo {
+public final class PocketInfo {
 	public static final int MAX_NAME_LENGTH = 16;
 	public @Nonnull String name;
 	public @Nonnull ItemType icon;

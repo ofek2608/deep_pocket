@@ -1,0 +1,45 @@
+package com.ofek2608.deep_pocket.api.struct;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.Item;
+
+import java.util.UUID;
+
+public final class WorldCraftingPattern extends CraftingPattern {
+	private final ServerLevel level;
+	private final BlockPos pos;
+
+	public WorldCraftingPattern(UUID patternId, Item[] input, Item[] output, ServerLevel level, BlockPos pos) {
+		super(patternId, input, output);
+		this.level = level;
+		this.pos = pos;
+	}
+
+	public WorldCraftingPattern(CompoundTag saved, MinecraftServer server) {
+		super(saved);
+		this.level = server.getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(saved.getString("level"))));
+		this.pos = BlockPos.of(saved.getLong("pos"));
+	}
+
+	@Override
+	public CompoundTag save() {
+		CompoundTag saved = super.save();
+		saved.putString("level", level.dimension().toString());
+		saved.putLong("pos", pos.asLong());
+		return saved;
+	}
+
+	public ServerLevel getLevel() {
+		return level;
+	}
+
+	public BlockPos getPos() {
+		return pos;
+	}
+}

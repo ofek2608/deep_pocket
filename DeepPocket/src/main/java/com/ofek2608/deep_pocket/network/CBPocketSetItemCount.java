@@ -20,12 +20,12 @@ class CBPocketSetItemCount {
 	}
 
 	CBPocketSetItemCount(FriendlyByteBuf buf) {
-		this(buf.readUUID(), DPPacketUtils.readItemTypeMap(buf, FriendlyByteBuf::readLong));
+		this(buf.readUUID(), DPPacketUtils.decodeItemTypeMap(buf, FriendlyByteBuf::readLong));
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
-		DPPacketUtils.writeItemTypeMap(buf, counts, FriendlyByteBuf::writeLong);
+		DPPacketUtils.encodeItemTypeMap(buf, counts, FriendlyByteBuf::writeLong);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {

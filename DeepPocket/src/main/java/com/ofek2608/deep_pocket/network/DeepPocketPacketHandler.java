@@ -37,6 +37,7 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, CBPocketSetItemCount.class, CBPocketSetItemCount::encode, CBPocketSetItemCount::new, CBPocketSetItemCount::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketClearItems.class, CBPocketClearItems::encode, CBPocketClearItems::new, CBPocketClearItems::handle, clientbound);
 
+		CHANNEL.registerMessage(++pid, CBUpdatePatterns.class, CBUpdatePatterns::encode, CBUpdatePatterns::new, CBUpdatePatterns::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBAddKnowledge.class, CBAddKnowledge::encode, CBAddKnowledge::new, CBAddKnowledge::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBRemoveKnowledge.class, CBRemoveKnowledge::encode, CBRemoveKnowledge::new, CBRemoveKnowledge::handle, clientbound);
@@ -71,6 +72,8 @@ public final class DeepPocketPacketHandler {
 	public static void cbPocketInfo(PacketDistributor.PacketTarget target, UUID pocketId, PocketInfo info) { CHANNEL.send(target, new CBPocketInfo(pocketId, info)); }
 	public static void cbPocketSetItemCount(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Long> counts) { CHANNEL.send(target, new CBPocketSetItemCount(pocketId, counts)); }
 	public static void cbPocketClearItems(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearItems(pocketId)); }
+
+	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, CraftingPattern[] addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
 
 	public static void cbAddKnowledge(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBAddKnowledge(types)); }
 	public static void cbRemoveKnowledge(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBRemoveKnowledge(types)); }

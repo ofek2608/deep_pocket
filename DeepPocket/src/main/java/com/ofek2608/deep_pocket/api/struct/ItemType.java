@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.api.struct;
 
-import net.minecraft.core.Registry;
+import com.ofek2608.deep_pocket.DeepPocketUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
@@ -88,17 +88,11 @@ public final class ItemType {
 
 
 	public static void encode(FriendlyByteBuf buf, ItemType type) {
-		//noinspection deprecation
-		buf.writeId(Registry.ITEM, type.getItem());
+		DeepPocketUtils.encodeItem(buf, type.getItem());
 		buf.writeNbt(type.getTag());
 	}
 
 	public static ItemType decode(FriendlyByteBuf buf) {
-		//noinspection deprecation
-		Item item = buf.readById(Registry.ITEM);
-		CompoundTag tag = buf.readNbt();
-		if (item == null)
-			throw new RuntimeException("DeepPocket: received illegal item.");
-		return new ItemType(item, tag == null ? new CompoundTag() : tag);
+		return new ItemType(DeepPocketUtils.decodeItem(buf), buf.readNbt());
 	}
 }

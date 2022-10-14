@@ -3,6 +3,8 @@ package com.ofek2608.deep_pocket;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.Registry;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.Item;
@@ -185,5 +187,25 @@ public final class DeepPocketUtils {
 			a /= 1000;
 		}
 		return "Inf";
+	}
+
+
+
+
+
+
+
+
+
+
+	@SuppressWarnings("deprecation")
+	public static void encodeItem(FriendlyByteBuf buf, Item item) {
+		buf.writeId(Registry.ITEM, item);
+	}
+
+	@SuppressWarnings("deprecation")
+	public static Item decodeItem(FriendlyByteBuf buf) {
+		Item item = buf.readById(Registry.ITEM);
+		return item == null ? Items.AIR : item;
 	}
 }
