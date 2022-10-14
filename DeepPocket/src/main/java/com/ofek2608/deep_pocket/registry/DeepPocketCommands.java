@@ -22,11 +22,15 @@ class DeepPocketCommands {
 	public static void event(RegisterCommandsEvent event) {
 		event.getDispatcher().register(Commands.literal("deep_pocket").then(
 						Commands.literal("knowledge").then(
-										Commands.literal("clear")
+										Commands.literal("clear").requires(DeepPocketCommands::hasOp)
 														.executes(DeepPocketCommands::knowledgeClear)
 														.then(Commands.argument("targets", EntityArgument.players()).executes(DeepPocketCommands::knowledgeClearTargets))
 						)
 		));
+	}
+
+	private static boolean hasOp(CommandSourceStack sender) {
+		return sender.hasPermission(2);
 	}
 
 	private static void send(CommandContext<CommandSourceStack> context, String msg, boolean success) {
