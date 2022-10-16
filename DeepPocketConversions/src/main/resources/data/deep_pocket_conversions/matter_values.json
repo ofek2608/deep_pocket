@@ -3,25 +3,6 @@
     "blacklist": [
         "minecraft:shulker_box",
         "minecraft:(.*)_shulker_box",
-        ".*:.*_sword",
-        ".*:.*_shovel",
-        ".*:.*_pickaxe",
-        ".*:.*_axe",
-        ".*:.*_hoe",
-        ".*:.*_helmet",
-        ".*:.*_chestplate",
-        ".*:.*_leggings",
-        ".*:.*_boots",
-        "minecraft:shears",
-        "minecraft:flint_and_steel",
-        "minecraft:bow",
-        "minecraft:crossbow",
-        "minecraft:fishing_rod",
-        "minecraft:shield",
-        "minecraft:trident",
-        "minecraft:carrot_on_a_stick",
-        "minecraft:warped_fungus_on_a_stick",
-        "minecraft:elytra",
         "minecraft:firework_rocket"
     ],
     "constants": {
@@ -275,6 +256,7 @@
         "minecraft:phantom_membrane":"$dpc:rare_drop",
         "minecraft:ghast_tear":"$dpc:rare_drop",
         "minecraft:scute":"$dpc:rare_drop",
+        "minecraft:trident":"$dpc:rare_drop",
 
         "minecraft:blaze_rod":"$dpc:epic_drop",
         "minecraft:ender_pearl":"$dpc:epic_drop",
@@ -291,6 +273,8 @@
 
         "minecraft:cake":"minecraft:sugar*2+minecraft:egg+minecraft:wheat",
         "minecraft:dispenser":"minecraft:cobblestone*7+minecraft:redstone+(minecraft:stick+minecraft:string)*3",
+        "minecraft:firework_star":"minecraft:gunpowder",
+        "minecraft:firework_rocket":"minecraft:gunpowder+minecraft:paper",
         "minecraft:water_bucket":"minecraft:bucket",
         "minecraft:lava_bucket":"minecraft:bucket+$dpc:lava",
         "minecraft:powder_snow_bucket":"minecraft:bucket+$dpc:soils",
