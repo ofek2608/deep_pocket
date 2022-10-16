@@ -4,6 +4,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -12,8 +14,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Objects;
 import java.util.Random;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public final class DeepPocketUtils {
 	private DeepPocketUtils() {}
@@ -196,6 +203,22 @@ public final class DeepPocketUtils {
 
 
 
+	public static <T> T[] loadArray(ListTag list, IntFunction<T[]> arrayFactory, Function<CompoundTag,T> loader) {
+		return list.stream()
+						.map(elem -> elem instanceof CompoundTag tag ? tag : null)
+						.filter(Objects::nonNull)
+						.map(loader)
+						.toArray(arrayFactory);
+	}
+
+	public static <T> ListTag saveArray(T[] array, Function<T,CompoundTag> saver) {
+		ListTag saved = new ListTag();
+		Stream.of(array)
+						.map(saver)
+						.forEach(saved::add);
+		return saved;
+	}
+
 
 
 	@SuppressWarnings("deprecation")
@@ -207,5 +230,19 @@ public final class DeepPocketUtils {
 	public static Item decodeItem(FriendlyByteBuf buf) {
 		Item item = buf.readById(Registry.ITEM);
 		return item == null ? Items.AIR : item;
+	}
+
+	public static <T> T[] decodeArray(FriendlyByteBuf buf, IntFunction<T[]> arrayFactory, Function<FriendlyByteBuf,T> decoder) {
+		int length = buf.readVarInt();
+		T[] result = arrayFactory.apply(length);
+		for (int i = 0; i < length; i++)
+			result[i] = decoder.apply(buf);
+		return result;
+	}
+
+	public static <T> void encodeArray(FriendlyByteBuf buf, T[] array, BiConsumer<FriendlyByteBuf,T> encoder) {
+		buf.writeVarInt(array.length);
+		for (T t : array)
+			encoder.accept(buf, t);
 	}
 }

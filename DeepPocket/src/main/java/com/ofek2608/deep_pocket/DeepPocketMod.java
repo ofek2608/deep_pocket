@@ -26,15 +26,13 @@ public class DeepPocketMod
 
 	/*
 	 * TODO future content
-	 *  - In PocketScreen#renderPocketTooltip add a way to see the conversion
-	 *  - Maybe add custom tooltip with ItemTooltipEvent
-	 *  - Maybe a way to set filter to allow nbt variants
-	 *  - Maybe a crafting patten
+	 *  - Maybe a way to set filter to allow nbt variants (for exporters)
+	 *  - Crafting patten
 	 *  - Improve the textures of the importers, exporters and signal
 	 *  - Maybe integrate with ftb chunks to prevent pockets from being used in forgotten places (or in houses of old team members)
 	 *  - Add toast when the player expands his knowledge
 	 *  - Make more commands
 	 *  - Cleanup around pocket insertion and extractions
-	 *  - A way to extract infinite amount of an item
+	 *  - A way to extract infinite amount of an item (mini pockets)
 	 */
 }
