@@ -109,7 +109,7 @@ final class MVLoader {
 		ItemType matter = new ItemType(ModRegistry.getMinMatter());
 
 		Map<ItemType,String> itemTypeValues = getItemTypeValues(file.values);
-		Set<Item> blackListedItems = getBlackListedItems(file.blackList);
+		Set<Item> blackListedItems = getBlackListedItems(file.blacklist);
 		var recipes = DPCRecipeLoader.loadRecipes(server);
 
 		Map<ItemType,Long> resultValues = MVCalculator.calculateMV(file.constants, recipes, itemTypeValues, blackListedItems);

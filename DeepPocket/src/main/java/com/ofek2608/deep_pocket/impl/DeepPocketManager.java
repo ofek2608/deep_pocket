@@ -44,7 +44,7 @@ public final class DeepPocketManager {
 			DeepPocketSavedData savedData = dataStorage.computeIfAbsent(
 							tag->new DeepPocketSavedData(server, conversions, tag),
 							()->new DeepPocketSavedData(server, conversions),
-							DeepPocketMod.ID + ":server_api"
+							DeepPocketMod.ID + "-server_api"
 			);
 			serverApi = savedData.api;
 			MinecraftForge.EVENT_BUS.post(new DeepPocketServerStartedEvent(server, serverApi));

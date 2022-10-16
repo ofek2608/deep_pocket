@@ -23,11 +23,12 @@ final class MVTooltip {
 
 	@SubscribeEvent
 	public static void event(ItemTooltipEvent event) {
-		OptionalLong value = getValue(new ItemType(event.getItemStack()));
-		if (value.isEmpty())
+		OptionalLong optionalValue = getValue(new ItemType(event.getItemStack()));
+		if (optionalValue.isEmpty())
 			return;
+		long value = optionalValue.getAsLong();
 		List<Component> list = event.getToolTip();
-		list.add(list.size() == 0 ? 0 : 1, Component.translatable("tooltip." + DPCMod.ID + ".matter_value", Screen.hasShiftDown() ? "" + value.getAsLong() : DeepPocketUtils.advancedToString(value.getAsLong())).withStyle(ChatFormatting.YELLOW));
+		list.add(list.size() == 0 ? 0 : 1, Component.translatable("tooltip." + DPCMod.ID + ".matter_value", Screen.hasShiftDown() ? (value < 0 ? "Inf" : "" + value) : DeepPocketUtils.advancedToString(value)).withStyle(ChatFormatting.YELLOW));
 	}
 
 	private static OptionalLong getValue(ItemType type) {

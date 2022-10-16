@@ -12,13 +12,13 @@ import java.util.stream.Stream;
 
 public final class MVFile {
 	public final boolean clear;
-	public final @UnmodifiableView List<String> blackList;
+	public final @UnmodifiableView List<String> blacklist;
 	public final @UnmodifiableView Map<String,Long> constants;
 	public final @UnmodifiableView Map<String,String> values;
 
 	public MVFile() {
 		this.clear = false;
-		this.blackList = Collections.emptyList();
+		this.blacklist = Collections.emptyList();
 		this.constants = Collections.emptyMap();
 		this.values = Collections.emptyMap();
 	}
@@ -31,7 +31,7 @@ public final class MVFile {
 		// clear
 		this.clear = clear;
 		// blackList
-		this.blackList = Stream.of(files).skip(lastClear).flatMap(file->file.blackList.stream()).toList();
+		this.blacklist = Stream.of(files).skip(lastClear).flatMap(file->file.blacklist.stream()).toList();
 		// constants
 		this.constants = streamToMap(Stream.of(files).skip(lastClear).flatMap(file->file.constants.entrySet().stream()));
 		// values
@@ -42,7 +42,7 @@ public final class MVFile {
 		// clear
 		clear = json.get("clear") instanceof JsonPrimitive jsonClear && jsonClear.getAsBoolean();
 		// blackList
-		blackList = json.get("blackList") instanceof JsonArray jsonBlackList ?
+		blacklist = json.get("blacklist") instanceof JsonArray jsonBlackList ?
 						jsonArrayToList(jsonBlackList, JsonElement::getAsString) :
 						Collections.emptyList();
 		// constants
@@ -61,8 +61,8 @@ public final class MVFile {
 		json.addProperty("clear", clear);
 		// blackList
 		JsonArray jsonBlackList = new JsonArray();
-		blackList.forEach(jsonBlackList::add);
-		json.add("blackList", jsonBlackList);
+		blacklist.forEach(jsonBlackList::add);
+		json.add("blacklist", jsonBlackList);
 		// constants
 		JsonObject jsonConstants = new JsonObject();
 		constants.forEach(jsonConstants::addProperty);
