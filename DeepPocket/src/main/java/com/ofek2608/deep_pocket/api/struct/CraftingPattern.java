@@ -17,9 +17,9 @@ import java.util.stream.Stream;
 public sealed class CraftingPattern permits WorldCraftingPattern {
 	private final UUID patternId;
 	private final Item[] input;
-	private final Item[] output;
+	private final ItemType[] output;
 
-	public CraftingPattern(UUID patternId, Item[] input, Item[] output) {
+	public CraftingPattern(UUID patternId, Item[] input, ItemType[] output) {
 		this.patternId = patternId;
 		this.input = input;
 		this.output = output;
@@ -28,14 +28,14 @@ public sealed class CraftingPattern permits WorldCraftingPattern {
 	public CraftingPattern(CompoundTag saved) {
 		this.patternId = saved.getUUID("patternId");
 		this.input = loadItemArray(saved.getList("input", 8));
-		this.output = loadItemArray(saved.getList("output", 8));
+		this.output = loadItemTypeArray(saved.getList("output", 8));
 	}
 
 	public CompoundTag save() {
 		CompoundTag saved = new CompoundTag();
 		saved.putUUID("patternId", patternId);
 		saved.put("input", saveItemArray(input));
-		saved.put("output", saveItemArray(output));
+		saved.put("output", saveItemTypeArray(output));
 		return saved;
 	}
 
@@ -59,6 +59,22 @@ public sealed class CraftingPattern permits WorldCraftingPattern {
 		return saved;
 	}
 
+	private static ItemType[] loadItemTypeArray(ListTag lst) {
+		return lst.stream()
+						.map(elem -> elem instanceof CompoundTag tag ? tag : null)
+						.filter(Objects::nonNull)
+						.map(ItemType::load)
+						.toArray(ItemType[]::new);
+	}
+
+	private static ListTag saveItemTypeArray(ItemType[] items) {
+		ListTag saved = new ListTag();
+		Stream.of(items)
+						.map(ItemType::save)
+						.forEach(saved::add);
+		return saved;
+	}
+
 
 
 
@@ -68,8 +84,8 @@ public sealed class CraftingPattern permits WorldCraftingPattern {
 		for (Item item : pattern.input)
 			DeepPocketUtils.encodeItem(buf, item);
 		buf.writeVarInt(pattern.output.length);
-		for (Item item : pattern.output)
-			DeepPocketUtils.encodeItem(buf, item);
+		for (ItemType item : pattern.output)
+			ItemType.encode(buf, item);
 	}
 
 	public static CraftingPattern decode(FriendlyByteBuf buf) {
@@ -77,9 +93,9 @@ public sealed class CraftingPattern permits WorldCraftingPattern {
 		Item[] input = new Item[buf.readVarInt()];
 		for (int i = 0; i < input.length; i++)
 			input[i] = DeepPocketUtils.decodeItem(buf);
-		Item[] output = new Item[buf.readVarInt()];
+		ItemType[] output = new ItemType[buf.readVarInt()];
 		for (int i = 0; i < output.length; i++)
-			output[i] = DeepPocketUtils.decodeItem(buf);
+			output[i] = ItemType.decode(buf);
 		return new CraftingPattern(patternId, input, output);
 	}
 
@@ -91,7 +107,7 @@ public sealed class CraftingPattern permits WorldCraftingPattern {
 		return Arrays.copyOf(input, input.length);
 	}
 
-	public Item[] getOutput() {
+	public ItemType[] getOutput() {
 		return Arrays.copyOf(output, output.length);
 	}
 }

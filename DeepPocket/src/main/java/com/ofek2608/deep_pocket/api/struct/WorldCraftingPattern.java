@@ -15,7 +15,7 @@ public final class WorldCraftingPattern extends CraftingPattern {
 	private final ServerLevel level;
 	private final BlockPos pos;
 
-	public WorldCraftingPattern(UUID patternId, Item[] input, Item[] output, ServerLevel level, BlockPos pos) {
+	public WorldCraftingPattern(UUID patternId, Item[] input, ItemType[] output, ServerLevel level, BlockPos pos) {
 		super(patternId, input, output);
 		this.level = level;
 		this.pos = pos;
