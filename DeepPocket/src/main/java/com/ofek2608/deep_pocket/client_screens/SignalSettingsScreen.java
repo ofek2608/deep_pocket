@@ -75,6 +75,8 @@ class SignalSettingsScreen extends Screen {
 	public void render(PoseStack stack, int mx, int my, float partialTick) {
 		updateFields(mx, my);
 
+		renderBackground(stack);
+
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);
 

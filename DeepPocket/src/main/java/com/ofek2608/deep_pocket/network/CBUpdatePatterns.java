@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.network;
 
+import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
@@ -23,15 +24,15 @@ class CBUpdatePatterns {
 	CBUpdatePatterns(FriendlyByteBuf buf) {
 		this(
 						buf.readUUID(),
-						DPPacketUtils.decodeArray(buf, CraftingPattern[]::new, CraftingPattern::decode),
-						DPPacketUtils.decodeArray(buf, UUID[]::new, FriendlyByteBuf::readUUID)
+						DeepPocketUtils.decodeArray(buf, CraftingPattern[]::new, CraftingPattern::decode),
+						DeepPocketUtils.decodeArray(buf, UUID[]::new, FriendlyByteBuf::readUUID)
 		);
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
-		DPPacketUtils.encodeArray(buf, addedPatterns, CraftingPattern::encode);
-		DPPacketUtils.encodeArray(buf, removedPatterns, FriendlyByteBuf::writeUUID);
+		DeepPocketUtils.encodeArray(buf, addedPatterns, CraftingPattern::encode);
+		DeepPocketUtils.encodeArray(buf, removedPatterns, FriendlyByteBuf::writeUUID);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {

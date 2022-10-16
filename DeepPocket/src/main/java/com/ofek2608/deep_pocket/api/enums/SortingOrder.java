@@ -8,15 +8,13 @@ import net.minecraftforge.registries.ForgeRegistries;
 import java.util.Comparator;
 import java.util.Map;
 
+@SuppressWarnings("deprecation")
 public enum SortingOrder {
 	COUNT("Count", Comparator.comparingLong(entry->{
 		long count = entry.getValue();
 		return count < 0 ? Long.MAX_VALUE : count - 1;
 	})),
-	ID("ID", Comparator.comparingInt(e->{
-		//noinspection deprecation
-		return Registry.ITEM.getId(e.getKey().getItem());
-	})),
+	ID("ID", Comparator.comparingInt(e->Registry.ITEM.getId(e.getKey().getItem()))),
 	NAME("Name", Comparator.comparing(e->e.getKey().create().getDisplayName().getString())),
 	MOD("Mod", Comparator.comparing(e->{
 		ResourceLocation loc = ForgeRegistries.ITEMS.getKey(e.getKey().getItem());

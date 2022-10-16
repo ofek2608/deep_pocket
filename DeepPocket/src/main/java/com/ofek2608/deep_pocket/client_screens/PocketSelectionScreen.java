@@ -112,6 +112,8 @@ class PocketSelectionScreen extends Screen {
 	public void render(PoseStack stack, int mx, int my, float partialTick) {
 		updateFields(mx, my);
 
+		renderBackground(stack);
+
 		ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);

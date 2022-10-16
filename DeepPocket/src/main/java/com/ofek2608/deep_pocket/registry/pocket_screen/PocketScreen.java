@@ -463,6 +463,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	@Override
 	public void render(PoseStack stack, int mx, int my, float partialTick) {
 		reloadPosition(mx, my);
+		renderBackground(stack);
 		superRender(stack, mx, my, partialTick);
 		renderTooltip(stack, mx, my);
 	}

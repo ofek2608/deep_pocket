@@ -7,7 +7,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.Item;
 
 import java.util.UUID;
 
@@ -15,7 +14,7 @@ public final class WorldCraftingPattern extends CraftingPattern {
 	private final ServerLevel level;
 	private final BlockPos pos;
 
-	public WorldCraftingPattern(UUID patternId, Item[] input, ItemType[] output, ServerLevel level, BlockPos pos) {
+	public WorldCraftingPattern(UUID patternId, ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
 		super(patternId, input, output);
 		this.level = level;
 		this.pos = pos;
