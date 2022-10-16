@@ -14,9 +14,11 @@ import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -31,6 +33,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class MVLoader {
 	private MVLoader() {}
@@ -79,13 +82,29 @@ final class MVLoader {
 		}
 	}
 
-	private static Map<ItemType,String> getItemTypeValues(Map<String,String> valuesRaw) {
+	private static Stream<Item> getItemsForTag(ResourceLocation findTag) {
+		return ForgeRegistries.ITEMS.getValues()
+						.stream()
+						.filter(item->new ItemStack(item).getTags().anyMatch(tag->tag.location().equals(findTag)));
+	}
+
+	private static void addItemTypeValue(Map<ItemType,String> itemTypeValues, String key, String value) {
+		if (key.startsWith("#")) {
+			getItemsForTag(new ResourceLocation(key.substring(1)))
+							.forEach(item->itemTypeValues.put(new ItemType(new ItemStack(item)), value));
+			return;
+		}
+		ItemType type = DPCUtils.parseItemType(key);
+		if (!type.isEmpty())
+			itemTypeValues.put(type, value);
+	}
+
+	private static Map<ItemType,String> getItemTypeValues(List<Map<String,String>> valuesRaw) {
 		Map<ItemType,String> itemTypeValues = new HashMap<>();
-		valuesRaw.forEach((key,value)->{
-			ItemType type = DPCUtils.parseItemType(key);
-			if (!type.isEmpty())
-				itemTypeValues.put(type, value);
-		});
+		valuesRaw.stream()
+						.map(Map::entrySet)
+						.flatMap(Set::stream)
+						.forEach(entry->addItemTypeValue(itemTypeValues, entry.getKey(), entry.getValue()));
 		return itemTypeValues;
 	}
 

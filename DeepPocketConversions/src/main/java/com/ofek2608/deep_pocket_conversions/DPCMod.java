@@ -19,8 +19,6 @@ public class DPCMod {
 		DPCConfigs.loadClass();
 		registerDefaultRecipesLoaders();
 		// TODO output and input values from config folder
-		// TODO add option to give costs for item tags
-		//  - make sure to give proper priority when multiple item tags have the same item
 	}
 
 	private static void registerDefaultRecipesLoaders() {

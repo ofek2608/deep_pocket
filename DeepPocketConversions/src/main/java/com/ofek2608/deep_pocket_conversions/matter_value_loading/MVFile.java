@@ -14,13 +14,13 @@ public final class MVFile {
 	public final boolean clear;
 	public final @UnmodifiableView List<String> blacklist;
 	public final @UnmodifiableView Map<String,Long> constants;
-	public final @UnmodifiableView Map<String,String> values;
+	public final @UnmodifiableView List<Map<String,String>> values;
 
 	public MVFile() {
 		this.clear = false;
 		this.blacklist = Collections.emptyList();
 		this.constants = Collections.emptyMap();
-		this.values = Collections.emptyMap();
+		this.values = Collections.emptyList();
 	}
 
 	public MVFile(boolean clear, MVFile ... files) {
@@ -35,7 +35,7 @@ public final class MVFile {
 		// constants
 		this.constants = streamToMap(Stream.of(files).skip(lastClear).flatMap(file->file.constants.entrySet().stream()));
 		// values
-		this.values = streamToMap(Stream.of(files).skip(lastClear).flatMap(file->file.values.entrySet().stream()));
+		this.values = Stream.of(files).skip(lastClear).flatMap(file->file.values.stream()).toList();
 	}
 
 	public MVFile(JsonObject json) {
@@ -50,9 +50,11 @@ public final class MVFile {
 						jsonObjectToMap(jsonConstants, JsonElement::getAsLong) :
 						Collections.emptyMap();
 		// values
-		values = json.get("values") instanceof JsonObject jsonValues ?
-						jsonObjectToMap(jsonValues, JsonElement::getAsString) :
-						Collections.emptyMap();
+		values = json.get("values") instanceof JsonArray jsonValues ?
+						jsonArrayToList(jsonValues,element->jsonObjectToMap((JsonObject)element, JsonElement::getAsString)) :
+						json.get("values") instanceof JsonObject jsonValues ?
+										List.of(jsonObjectToMap(jsonValues, JsonElement::getAsString)) :
+										Collections.emptyList();
 	}
 
 	public JsonObject save() {
@@ -68,9 +70,19 @@ public final class MVFile {
 		constants.forEach(jsonConstants::addProperty);
 		json.add("constants", jsonConstants);
 		// values
-		JsonObject jsonValues = new JsonObject();
-		values.forEach(jsonValues::addProperty);
-		json.add("values", jsonConstants);
+		if (values.size() == 1) {
+			JsonObject jsonValues = new JsonObject();
+			values.get(0).forEach(jsonValues::addProperty);
+			json.add("values", jsonValues);
+		} else if (values.size() > 1) {
+			JsonArray jsonValues = new JsonArray();
+			for (Map<String, String> valuesSingle : values) {
+				JsonObject jsonValuesSingle = new JsonObject();
+				valuesSingle.forEach(jsonValuesSingle::addProperty);
+				jsonValues.add(jsonValuesSingle);
+			}
+			json.add("values", jsonValues);
+		}
 
 		return json;
 	}
@@ -91,8 +103,12 @@ public final class MVFile {
 	@UnmodifiableView
 	private static <T> List<T> jsonArrayToList(JsonArray jsonArray, Function<JsonElement,T> mapping) {
 		List<T> result = new ArrayList<>();
-		for (JsonElement element : jsonArray)
-			result.add(mapping.apply(element));
+		for (JsonElement element : jsonArray) {
+			try {
+				result.add(mapping.apply(element));
+			} catch (Exception ignored) {
+			}
+		}
 		return Collections.unmodifiableList(result);
 	}
 
