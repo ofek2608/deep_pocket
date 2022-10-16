@@ -151,7 +151,8 @@ class PocketSettingsScreen extends Screen {
 			DeepPocketUtils.playClickSound();
 			if (pocketId != null && holdingShift) {
 				DeepPocketPacketHandler.sbDestroyPocket(pocketId);
-
+				if (minecraft != null)
+					minecraft.setScreen(null);
 				return true;
 			}
 			onClose();
