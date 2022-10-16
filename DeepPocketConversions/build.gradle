@@ -5,7 +5,7 @@ plugins {
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
-version = '1.0.0'
+version = '1.0.1'
 group = 'com.ofek2608.deep_pocket_conversions' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'deep_pocket_conversions'
 
@@ -112,21 +112,14 @@ repositories {
 dependencies {
     minecraft 'net.minecraftforge:forge:1.19.2-43.1.30'
 
-    // compile against the JEI API but do not include it at runtime
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge-api:${jei_version}"))
-    // at runtime, use the full JEI jar for Forge
     runtimeOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}"))
-
-    implementation fg.deobf("curse.maven:architectury-419699:3984018")
-    implementation fg.deobf("curse.maven:ftb-library-404465:3963543")
-    implementation fg.deobf("curse.maven:ftb-teams-404468:3963573")
-
-    compileOnly(fg.deobf("curse.maven:curios-api-309927:3924522"))
+    runtimeOnly(fg.deobf("curse.maven:architectury-419699:3984018"))
+    runtimeOnly(fg.deobf("curse.maven:ftb-library-404465:3963543"))
+    runtimeOnly(fg.deobf("curse.maven:ftb-teams-404468:3963573"))
     runtimeOnly(fg.deobf("curse.maven:curios-compiled-309927:3924518"))
-
-    implementation fg.deobf("curse.maven:theoneprobe-245211:3965693")
-
+    runtimeOnly(fg.deobf("curse.maven:theoneprobe-245211:3965693"))
     implementation fg.deobf('blank:deep-pocket:0.0')
 }
 

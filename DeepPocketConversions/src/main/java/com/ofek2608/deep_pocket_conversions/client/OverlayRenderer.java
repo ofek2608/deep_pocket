@@ -10,9 +10,9 @@ import com.ofek2608.deep_pocket.integration.DeepPocketCurios;
 import com.ofek2608.deep_pocket_conversions.DPCConfigs;
 import com.ofek2608.deep_pocket_conversions.DPCMod;
 import com.ofek2608.deep_pocket_conversions.registry.ModRegistry;
-import mcjty.theoneprobe.gui.GuiConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +61,7 @@ final class OverlayRenderer {
 		String matterValue = DeepPocketUtils.advancedToString(pocket.getItemCount(new ItemType(ModRegistry.getMinMatter())));
 
 		//Background
-		GuiConfig.fill(stack, x, y, x + 64, y + 16, 0xCC111111);
+		Screen.fill(stack, x, y, x + 64, y + 16, 0xCC111111);
 		//Icons
 		int iconX = direction ? x : x + 48;
 		itemRenderer.renderGuiItem(new ItemStack(ModRegistry.getMinMatter()), iconX, y);
