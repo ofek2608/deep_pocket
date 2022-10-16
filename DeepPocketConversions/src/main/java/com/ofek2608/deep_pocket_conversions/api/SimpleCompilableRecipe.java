@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket_conversions.api;
 
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 
