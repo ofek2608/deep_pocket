@@ -51,6 +51,7 @@ public class CraftingPatternClientTooltip implements ClientTooltipComponent {
 		poseStack.pushPose();
 		poseStack.translate(0, 0, blitOffset);
 		RenderSystem.setShaderColor(1, 1, 1, 1);
+		//FIXME item number is gray and not white
 		renderItems(gridSizeInput, gridSizeOutput, totalW, totalH, (x,y,slotIndex)->{
 			if (slotIndex < param.input.length)
 				DeepPocketClientUtils.renderItemAmount(poseStack, mx + x, my + y, param.input[slotIndex], itemRenderer, font);

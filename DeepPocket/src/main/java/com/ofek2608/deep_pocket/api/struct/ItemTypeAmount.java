@@ -1,12 +1,7 @@
 package com.ofek2608.deep_pocket.api.struct;
 
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public final class ItemTypeAmount {
 	private final ItemType itemType;
@@ -52,16 +47,5 @@ public final class ItemTypeAmount {
 
 	public long getAmount() {
 		return itemType.isEmpty() ? 0 : amount < 0 ? -1 : amount;
-	}
-
-
-
-
-
-
-
-	private static Item getItem(ResourceLocation loc) {
-		Item item = ForgeRegistries.ITEMS.getValue(loc);
-		return item == null ? Items.AIR : item;
 	}
 }

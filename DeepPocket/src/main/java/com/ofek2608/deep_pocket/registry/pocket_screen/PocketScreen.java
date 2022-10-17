@@ -362,21 +362,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			int y = 0;
 			for (var pocketSlot : visiblePocketSlots) {
 				DeepPocketClientUtils.renderItemAmount(poseStack, xOffset + x * 16, yOffset + y * 16, pocketSlot, itemRenderer, font);
-//				ItemStack itemStack = pocketSlot.getItemType().create();
-//				int displayX = xOffset + x * 16;
-//				int displayY = yOffset + y * 16;
-//				renderSlotItemSingle(poseStack, displayX, displayY, itemStack);
-//				long amount = pocketSlot.getAmount();
-//				if (amount != 1) {
-//					poseStack.pushPose();
-//					String displayText = DeepPocketUtils.advancedToString(amount);
-//					poseStack.translate(0.0D, 0.0D, Minecraft.getInstance().getItemRenderer().blitOffset + 200.0F);
-//					poseStack.scale(0.5f, 0.5f, 1f);
-//					MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-//					font.drawInBatch(displayText, (float)(displayX * 2 + 32 - font.width(displayText)), (float)(displayY * 2 + 24), 0xFFFFFF, true, poseStack.last().pose(), bufferSource, false, 0, 0xF000F0);
-//					bufferSource.endBatch();
-//					poseStack.popPose();
-//				}
 
 				if (++x == 9) {
 					x = 0;

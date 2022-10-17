@@ -3,7 +3,6 @@ package com.ofek2608.deep_pocket.registry;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -25,13 +24,9 @@ public final class DeepPocketBEWLR extends BlockEntityWithoutLevelRenderer {
 					Minecraft.getInstance().getEntityModels()
 	);
 	private static final ResourceLocation MODEL_LOC_NORMAL_CRAFTING_PATTERN = DeepPocketMod.loc("item/normal_crafting_pattern");
-	private final BlockEntityRenderDispatcher dispatcher;
-	private final EntityModelSet modelSet;
 
 	public DeepPocketBEWLR(BlockEntityRenderDispatcher dispatcher, EntityModelSet modelSet) {
 		super(dispatcher, modelSet);
-		this.dispatcher = dispatcher;
-		this.modelSet = modelSet;
 	}
 
 	static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
@@ -46,11 +41,11 @@ public final class DeepPocketBEWLR extends BlockEntityWithoutLevelRenderer {
 	@Override
 	public void renderByItem(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
 		if (stack.getItem() == DeepPocketRegistry.CRAFTING_PATTERN_ITEM.get()) {
-			renderCraftingPattern(stack, transformType, poseStack, bufferSource, packedLight, packedOverlay);
+			renderCraftingPattern(stack, transformType, poseStack, packedLight, packedOverlay);
 		}
 	}
 
-	private void renderCraftingPattern(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+	private void renderCraftingPattern(ItemStack stack, ItemTransforms.TransformType transformType, PoseStack poseStack, int packedLight, int packedOverlay) {
 		ItemStack renderStack = CraftingPatternItem.getCachedDisplayedResult(stack);
 		if (!Screen.hasShiftDown())
 			renderStack = ItemStack.EMPTY;
@@ -72,7 +67,7 @@ public final class DeepPocketBEWLR extends BlockEntityWithoutLevelRenderer {
 			Lighting.setupForFlatItems();
 
 		poseStack.pushPose();
-		bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
+		MultiBufferSource.BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 		boolean leftHand = transformType == ItemTransforms.TransformType.FIRST_PERSON_LEFT_HAND || transformType == ItemTransforms.TransformType.THIRD_PERSON_LEFT_HAND;
 		poseStack.translate(0.5F, 0.5F, 0.5F);
 		Minecraft.getInstance().getItemRenderer().render(
@@ -88,7 +83,7 @@ public final class DeepPocketBEWLR extends BlockEntityWithoutLevelRenderer {
 		poseStack.popPose();
 
 		if (renderItem) {
-			((MultiBufferSource.BufferSource)bufferSource).endBatch();
+			bufferSource.endBatch();
 			Lighting.setupFor3DItems();
 		}
 	}

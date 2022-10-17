@@ -6,7 +6,6 @@ import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.impl.DeepPocketManager;
 
-import java.util.Map;
 import java.util.stream.Stream;
 
 public interface DeepPocketClientApi extends DeepPocketApi {
