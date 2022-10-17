@@ -3,11 +3,11 @@ package com.ofek2608.deep_pocket.registry.pocket_screen;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.struct.PlayerKnowledge;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
+import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
+import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -25,7 +25,6 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.Optional;
 
 public class PocketMenu extends AbstractContainerMenu {
@@ -35,14 +34,15 @@ public class PocketMenu extends AbstractContainerMenu {
 	private final ResultContainer resultSlots = new ResultContainer();
 	private @Nullable PocketResultSlot resultSlot;
 	private @Nullable Pocket pocket;//should not use except in get and set pocket
+	public @Nullable Object screen;
 
 	private int lastResetYOffset;
-	private boolean lastResetShowCrafting;
+	private PocketDisplayMode lastDisplayMode;
 
 	protected PocketMenu(@Nullable MenuType<?> menuType, int containerId, Inventory playerInventory) {
 		super(menuType, containerId);
 		this.playerInventory = playerInventory;
-		resetSlots(0, true);
+		resetSlots(0, PocketDisplayMode.NORMAL);
 	}
 
 	public PocketMenu(int containerId, Inventory playerInventory) {
@@ -54,13 +54,13 @@ public class PocketMenu extends AbstractContainerMenu {
 	}
 
 	private static final int CRAFTING_HEIGHT = 48 + 4;
-	public void resetSlots(int yOffset, boolean showCrafting) {
-		if (lastResetYOffset == yOffset && lastResetShowCrafting == showCrafting)
+	public void resetSlots(int yOffset, PocketDisplayMode displayMode) {
+		if (lastResetYOffset == yOffset && lastDisplayMode == displayMode)
 			return;
 		lastResetYOffset = yOffset;
-		lastResetShowCrafting = showCrafting;
+		lastDisplayMode = displayMode;
 		slots.clear();
-		if (showCrafting)
+		if (displayMode != PocketDisplayMode.NORMAL)
 			yOffset += CRAFTING_HEIGHT;
 		//inventory
 		for(int y = 0; y < 3; ++y) {
@@ -72,10 +72,10 @@ public class PocketMenu extends AbstractContainerMenu {
 		for(int x = 0; x < 9; ++x) {
 			this.addSlot(new Slot(playerInventory, x, 19 + x * 16, yOffset + 48 + 4));
 		}
+		if (displayMode != PocketDisplayMode.NORMAL)
+			yOffset -= CRAFTING_HEIGHT; //reset yOffset
 		//crafting
-		if (showCrafting)
-			yOffset -= CRAFTING_HEIGHT;
-		else
+		if (displayMode != PocketDisplayMode.CRAFTING)
 			yOffset -= 0xFFFFFF;//Outside the screen
 		for(int y = 0; y < 3; ++y)
 			for(int x = 0; x < 3; ++x)
@@ -223,25 +223,36 @@ public class PocketMenu extends AbstractContainerMenu {
 			resultSlot.set(ItemStack.EMPTY);
 	}
 
-	private static @Nullable ItemType requestIngredientClientBound(ItemStack[] inventoryItems, @Nullable Pocket pocket, Ingredient ingredient) {
+	private static ItemType requestIngredientClientBound(ItemStack[] inventoryItems, @Nullable Pocket pocket, Ingredient ingredient, boolean consume) {
 		for (ItemStack stack : inventoryItems) {
 			if (stack.isEmpty() || !ingredient.test(stack))
 				continue;
 			ItemType type = new ItemType(stack);
-			stack.shrink(1);
+			if (consume)
+				stack.shrink(1);
 			return type;
 		}
 
 		DeepPocketClientApi api = DeepPocketClientApi.get();
-		if (pocket == null)
-			return null;
-		for (ItemType type : api.getSortedKnowledge(pocket).map(Map.Entry::getKey).toList())
-			if (ingredient.test(type.create()) && pocket.extractItem(api.getKnowledge(), type, 1) == 1)
-				return type;
-		return null;
+		if (pocket != null)
+			for (ItemType type : api.getSortedKnowledge(pocket).map(ItemTypeAmount::getItemType).toList())
+				if (ingredient.test(type.create()) && (!consume || pocket.extractItem(api.getKnowledge(), type, 1) == 1))
+					return type;
+		if (consume)
+			return ItemType.EMPTY;
+		ItemStack[] ingredientItems = ingredient.getItems();
+		return ingredientItems.length > 0 ? new ItemType(ingredientItems[0]) : ItemType.EMPTY;
 	}
 
 	public void requestRecipeClientBound(Recipe<?> recipe) {
+		DeepPocketClientApi api = DeepPocketClientApi.get();
+		boolean consume;
+		if (api.getPocketDisplayMode() == PocketDisplayMode.CREATE_PATTERN) {
+			consume = false;
+		} else {
+			api.setPocketDisplayMode(PocketDisplayMode.CRAFTING);
+			consume = true;
+		}
 		ItemStack[] inventoryItems = slots.stream().map(Slot::getItem).map(ItemStack::copy).toArray(ItemStack[]::new);
 		Pocket pocket = getPocket();
 		if (pocket != null)
@@ -261,13 +272,18 @@ public class PocketMenu extends AbstractContainerMenu {
 				index++;
 			if (index >= 9)
 				return;
-			requesting[index] = requestIngredientClientBound(inventoryItems, pocket, ingredient);
+			requesting[index] = requestIngredientClientBound(inventoryItems, pocket, ingredient, consume);
 			index++;
 		}
 		for (int i = 0; i < 9; i++)
 			if (requesting[i] == null)
 				requesting[i] = ItemType.EMPTY;
-		DeepPocketPacketHandler.sbRequestRecipe(requesting);
+		if (consume) {
+			DeepPocketPacketHandler.sbRequestRecipe(requesting);
+			return;
+		}
+		if (screen instanceof PocketScreen pocketScreen)
+			pocketScreen.setPattern(requesting, recipe.getResultItem());
 	}
 
 	private boolean requestIngredientServerBound(ItemType type) {
@@ -344,6 +360,31 @@ public class PocketMenu extends AbstractContainerMenu {
 		if (extracted.isEmpty())
 			return;
 		setCarried(type.create(currentCount + extracted.getCount()));
+	}
+
+	public void createPattern(ServerPlayer player, ItemAmount[] input, ItemTypeAmount[] output, boolean toCarry) {
+		if (input.length != 9 || output.length != 9)
+			return;
+		boolean empty = true;
+		for (ItemTypeAmount outputItem : output)
+			empty = empty && outputItem.isEmpty();
+		if (empty)
+			return;
+
+		DeepPocketServerApi api = DeepPocketServerApi.get();
+		Pocket pocket = getPocket();
+		if (api == null || pocket == null)
+			return;
+		if (toCarry && !getCarried().isEmpty())
+			return;
+		if (pocket.extractItem(api.getKnowledge(player.getUUID()), new ItemType(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get()), 1L) != 1)
+			return;
+		ItemStack newPattern = CraftingPatternItem.createItem(input, output);
+		if (toCarry)
+			setCarried(newPattern);
+		else
+			putStackInInventory(api, pocket, newPattern);
+
 	}
 
 	public ItemType[] getCrafting() {

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "deep_pocket:item/normal_crafting_pattern"
+  }
+}

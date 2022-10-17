@@ -245,4 +245,13 @@ public final class DeepPocketUtils {
 		for (T t : array)
 			encoder.accept(buf, t);
 	}
+
+	public static int sqrt(int integer) {
+		int result = (int)Math.sqrt(integer);
+		while (result * result < integer)
+			result++;
+		while (result * result > integer)
+			result--;
+		return result;
+	}
 }

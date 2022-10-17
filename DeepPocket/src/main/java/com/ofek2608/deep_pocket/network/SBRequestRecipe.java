@@ -9,10 +9,10 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 class SBRequestRecipe {
-	private final ItemType[] types;
+	private final ItemType[] items;
 
-	SBRequestRecipe(ItemType ... types) {
-		this.types = types;
+	SBRequestRecipe(ItemType[] items) {
+		this.items = items;
 	}
 
 	SBRequestRecipe(FriendlyByteBuf buf) {
@@ -20,7 +20,7 @@ class SBRequestRecipe {
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		DPPacketUtils.encodeItemTypeArray(buf, types);
+		DPPacketUtils.encodeItemTypeArray(buf, items);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
@@ -28,7 +28,7 @@ class SBRequestRecipe {
 			ServerPlayer player = ctxSupplier.get().getSender();
 			if (player == null || !(player.containerMenu instanceof PocketMenu menu))
 				return;
-			menu.requestRecipeServerBound(player, types);
+			menu.requestRecipeServerBound(player, items);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

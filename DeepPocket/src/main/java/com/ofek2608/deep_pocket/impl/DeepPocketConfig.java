@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.impl;
 
+import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -21,7 +22,7 @@ public final class DeepPocketConfig {
 		public static final ForgeConfigSpec.EnumValue<SearchMode> SEARCH_MODE;
 		public static final ForgeConfigSpec.EnumValue<SortingOrder> SORTING_ORDER;
 		public static final ForgeConfigSpec.BooleanValue SORT_ASCENDING;
-		public static final ForgeConfigSpec.BooleanValue DISPLAY_CRAFTING;
+		public static final ForgeConfigSpec.EnumValue<PocketDisplayMode> POCKET_DISPLAY_MODE;
 
 		static {
 			var builder = new ForgeConfigSpec.Builder();
@@ -31,7 +32,7 @@ public final class DeepPocketConfig {
 				SEARCH_MODE = builder.defineEnum("SearchMode", SearchMode.NORMAL);
 				SORTING_ORDER = builder.defineEnum("SortingOrder", SortingOrder.COUNT);
 				SORT_ASCENDING = builder.define("SortAscending", false);
-				DISPLAY_CRAFTING = builder.define("ShowCrafting", true);
+				POCKET_DISPLAY_MODE = builder.defineEnum("PocketDisplayMode", PocketDisplayMode.NORMAL);
 				builder.pop();
 			}
 

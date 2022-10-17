@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.LongConsumer;
 
 public final class ClientScreens {
 	private ClientScreens() {}
@@ -56,5 +57,9 @@ public final class ClientScreens {
 		Player player = minecraft.player;
 		if (player != null)
 			minecraft.setScreen(new BulkCraftingScreen(minecraft.screen, pocket, recipe));
+	}
+
+	public static void numberPicker(Component title, long initialValue, LongConsumer onSelect) {
+		//TODO open gui to ask the player for a number
 	}
 }

@@ -53,6 +53,7 @@ public final class DeepPocketPacketHandler {
 
 		CHANNEL.registerMessage(++pid, SBPocketInsert.class, SBPocketInsert::encode, SBPocketInsert::new, SBPocketInsert::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBPocketExtract.class, SBPocketExtract::encode, SBPocketExtract::new, SBPocketExtract::handle, serverbound);
+		CHANNEL.registerMessage(++pid, SBPatternCreate.class, SBPatternCreate::encode, SBPatternCreate::new, SBPatternCreate::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBRequestRecipe.class, SBRequestRecipe::encode, SBRequestRecipe::new, SBRequestRecipe::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBClearCraftingGrid.class, SBClearCraftingGrid::encode, SBClearCraftingGrid::new, SBClearCraftingGrid::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBBulkCrafting.class, SBBulkCrafting::encode, SBBulkCrafting::new, SBBulkCrafting::handle, serverbound);
@@ -89,6 +90,7 @@ public final class DeepPocketPacketHandler {
 
 	public static void sbPocketInsert(byte count) { CHANNEL.send(serverTarget(), new SBPocketInsert(count)); }
 	public static void sbPocketExtract(ItemType type, boolean toCarry, byte count) { CHANNEL.send(serverTarget(), new SBPocketExtract(type, toCarry, count)); }
+	public static void sbPatternCreate(ItemAmount[] input, ItemTypeAmount[] output, boolean toCarry) { CHANNEL.send(serverTarget(), new SBPatternCreate(input, output, toCarry)); }
 	public static void sbRequestRecipe(ItemType[] items) { CHANNEL.send(serverTarget(), new SBRequestRecipe(items)); }
 	public static void sbClearCraftingGrid(boolean up) { CHANNEL.send(serverTarget(), new SBClearCraftingGrid(up)); }
 	public static void sbBulkCrafting(long count) { CHANNEL.send(serverTarget(), new SBBulkCrafting(count)); }

@@ -2,7 +2,7 @@ package com.ofek2608.deep_pocket.registry;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.registry.interfaces.*;
-import com.ofek2608.deep_pocket.registry.items.CraftingPatternItem;
+import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import com.ofek2608.deep_pocket.registry.items.PocketFactoryItem;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.items.PocketLinkItem;
@@ -60,7 +60,7 @@ public final class DeepPocketRegistry {
 	public static final RegistryObject<PocketLinkItem> POCKET_LINK_ITEM = ITEMS.register("pocket_link", ()->new PocketLinkItem(itemProperties(64)));
 	public static final RegistryObject<PocketItem> POCKET_ITEM = ITEMS.register("pocket", ()->new PocketItem(itemProperties(1)));
 	public static final RegistryObject<PocketFactoryItem> POCKET_FACTORY_ITEM = ITEMS.register("pocket_factory", ()->new PocketFactoryItem(itemProperties(1)));
-	public static final RegistryObject<Item> EMPTY_CRAFTING_PATTERN_ITEM = ITEMS.register("empty_crafting_pattern", ()->new CraftingPatternItem(itemProperties(64)));//FIXME use Item instead of CraftingPatternItem
+	public static final RegistryObject<Item> EMPTY_CRAFTING_PATTERN_ITEM = ITEMS.register("empty_crafting_pattern", ()->new Item(itemProperties(64)));
 	public static final RegistryObject<CraftingPatternItem> CRAFTING_PATTERN_ITEM = ITEMS.register("crafting_pattern", ()->new CraftingPatternItem(itemProperties(1)));
 
 	public static final RegistryObject<MenuType<PocketMenu>> POCKET_MENU = MENU_TYPES.register("pocket", ()->new MenuType<>(PocketMenu::new));

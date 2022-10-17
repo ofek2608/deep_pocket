@@ -1,13 +1,11 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.events.DeepPocketItemConversionsUpdatedEvent;
-import com.ofek2608.deep_pocket.api.struct.ItemConversions;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.PlayerKnowledge;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.Util;
 import net.minecraftforge.common.MinecraftForge;
 
@@ -35,8 +33,8 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	@Override public void setSortingOrder(SortingOrder order) { DeepPocketConfig.Client.SORTING_ORDER.set(order); }
 	@Override public boolean isSortAscending() { return DeepPocketConfig.Client.SORT_ASCENDING.get(); }
 	@Override public void setSortAscending(boolean sortAscending) { DeepPocketConfig.Client.SORT_ASCENDING.set(sortAscending); }
-	@Override public boolean isDisplayCrafting() { return DeepPocketConfig.Client.DISPLAY_CRAFTING.get(); }
-	@Override public void setDisplayCrafting(boolean displayCrafting) { DeepPocketConfig.Client.DISPLAY_CRAFTING.set(displayCrafting); }
+	@Override public PocketDisplayMode getPocketDisplayMode() { return DeepPocketConfig.Client.POCKET_DISPLAY_MODE.get(); }
+	@Override public void setPocketDisplayMode(PocketDisplayMode pocketDisplayMode) { DeepPocketConfig.Client.POCKET_DISPLAY_MODE.set(pocketDisplayMode); }
 	//Server config
 	@Override public boolean isPermitPublicPocket() { return permitPublicPocket; }
 	@Override public void setPermitPublicPocket(boolean value) { this.permitPublicPocket = value; }
@@ -47,7 +45,7 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 	}
 
 	@Override
-	public Stream<Map.Entry<ItemType,Long>> getSortedKnowledge(Pocket pocket) {
+	public Stream<ItemTypeAmount> getSortedKnowledge(Pocket pocket) {
 		Map<ItemType,Long> counts = new HashMap<>();
 		for (ItemType type : getKnowledge().getPocketItems(pocket).toList()) {
 			long count = pocket.getMaxExtract(getKnowledge(), type);
@@ -59,6 +57,9 @@ class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketCli
 		var comparator = getSortingOrder().comparator;
 		if (!isSortAscending())
 			comparator = comparator.reversed();
-		return counts.entrySet().stream().sorted(comparator);
+		return counts.entrySet()
+						.stream()
+						.map(entry->new ItemTypeAmount(entry.getKey(), entry.getValue()))
+						.sorted(comparator);
 	}
 }

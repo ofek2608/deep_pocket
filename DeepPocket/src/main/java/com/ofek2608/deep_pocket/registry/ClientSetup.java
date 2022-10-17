@@ -4,10 +4,15 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
 import com.ofek2608.deep_pocket.registry.interfaces.InterfaceBER;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
+import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternClientTooltip;
+import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
+import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternUnbakedModel;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.ModelEvent;
+import net.minecraftforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,5 +49,20 @@ class ClientSetup {
 		event.registerBlockEntityRenderer(DeepPocketRegistry.ACTIVE_IMPORTER_ENTITY.get(), InterfaceBER::new);
 		event.registerBlockEntityRenderer(DeepPocketRegistry.ACTIVE_EXPORTER_ENTITY.get(), InterfaceBER::new);
 		event.registerBlockEntityRenderer(DeepPocketRegistry.SIGNAL_ENTITY.get(), InterfaceBER::new);
+	}
+
+	@SubscribeEvent
+	public static void event(RegisterClientTooltipComponentFactoriesEvent event) {
+		event.register(CraftingPatternTooltip.class, CraftingPatternClientTooltip::new);
+	}
+
+	@SubscribeEvent
+	public static void event(ModelEvent.RegisterGeometryLoaders event) {
+		event.register("crafting_pattern", CraftingPatternUnbakedModel.LOADER);
+	}
+
+	@SubscribeEvent
+	public static void event(ModelEvent.RegisterAdditional event) {
+		DeepPocketBEWLR.registerAdditionalModels(event);
 	}
 }

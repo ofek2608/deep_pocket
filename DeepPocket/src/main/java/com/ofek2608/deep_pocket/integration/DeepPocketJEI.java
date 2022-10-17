@@ -11,13 +11,16 @@ import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
+import com.ofek2608.deep_pocket.registry.pocket_screen.PocketScreen;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IJeiHelpers;
+import mezz.jei.api.ingredients.ITypedIngredient;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.IRecipeManager;
 import mezz.jei.api.recipe.RecipeIngredientRole;
@@ -26,6 +29,7 @@ import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.transfer.IRecipeTransferError;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandler;
 import mezz.jei.api.recipe.transfer.IRecipeTransferHandlerHelper;
+import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import mezz.jei.api.registration.IRecipeTransferRegistration;
@@ -33,6 +37,7 @@ import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -42,12 +47,12 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Unmodifiable;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 
 public final class DeepPocketJEI {
@@ -111,6 +116,12 @@ public final class DeepPocketJEI {
 		@Override
 		public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
 			registration.addUniversalRecipeTransferHandler(new PocketRecipeTransferHandler(registration.getTransferHelper()));
+		}
+
+		@Override
+		public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+			IModPlugin.super.registerGuiHandlers(registration);
+			registration.addGhostIngredientHandler(PocketScreen.class, new PocketScreenGhostIngredientHandler());
 		}
 
 		@Override
@@ -272,9 +283,50 @@ public final class DeepPocketJEI {
 				return transferHelper.createUserErrorWithTooltip(Component.literal("Can't craft in 3x3"));
 			if (!doTransfer || !player.level.isClientSide)
 				return null;
-			DeepPocketClientApi.get().setDisplayCrafting(true);
 			container.requestRecipeClientBound(recipe);
 			return null;
+		}
+	}
+
+	private static final class PocketScreenGhostIngredientHandler implements IGhostIngredientHandler<PocketScreen> {
+
+		@Contract(pure = true)
+		@Unmodifiable
+		@Override
+		public <I> List<Target<I>> getTargets(PocketScreen gui, I ingredient, boolean doStart) {
+			if (getAsItemStack(ingredient).isEmpty())
+				return Collections.emptyList();
+			int count = gui.getJEITargetCount();
+			List<Target<I>> result = new ArrayList<>();
+			for (int i = 0; i < count; i++) {
+				int finalI = i;
+				result.add(new Target<>() {
+					@Override
+					public Rect2i getArea() {
+						return gui.getJEITargetArea(finalI);
+					}
+
+					@Override
+					public void accept(I ingredient) {
+						getAsItemStack(ingredient).ifPresent(stack->gui.acceptJEIGhostIngredient(finalI, stack));
+					}
+				});
+			}
+			return result;
+		}
+
+		private static Optional<ItemStack> getAsItemStack(Object ingredient) {
+			return ingredient instanceof ItemStack stack ? Optional.of(stack) :
+							ingredient instanceof ITypedIngredient<?> typedIngredient && typedIngredient.getIngredient() instanceof ItemStack stack ? Optional.of(stack) :
+											Optional.empty();
+		}
+
+		@Override
+		public void onComplete() {}
+
+		@Override
+		public boolean shouldHighlightTargets() {
+			return false;
 		}
 	}
 }
