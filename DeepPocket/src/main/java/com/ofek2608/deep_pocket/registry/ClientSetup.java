@@ -6,7 +6,6 @@ import com.ofek2608.deep_pocket.registry.interfaces.InterfaceBER;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternClientTooltip;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
-import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternUnbakedModel;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
@@ -54,11 +53,6 @@ class ClientSetup {
 	@SubscribeEvent
 	public static void event(RegisterClientTooltipComponentFactoriesEvent event) {
 		event.register(CraftingPatternTooltip.class, CraftingPatternClientTooltip::new);
-	}
-
-	@SubscribeEvent
-	public static void event(ModelEvent.RegisterGeometryLoaders event) {
-		event.register("crafting_pattern", CraftingPatternUnbakedModel.LOADER);
 	}
 
 	@SubscribeEvent
