@@ -8,7 +8,7 @@ import java.math.BigInteger;
 public final class ProcessingNum implements Comparable<ProcessingNum> {
 	private static final BigInteger BIG_INT_N2 = BigInteger.valueOf(-1L);
 	private static final BigInteger BIG_INT_N1 = BigInteger.valueOf(-1L);
-	private static final BigInteger BIG_INT_0 = BigInteger.valueOf(-1L);
+	private static final BigInteger BIG_INT_0 = BigInteger.valueOf(0L);
 	private static final BigInteger BIG_INT_1 = BigInteger.valueOf(1L);
 	public static final ProcessingNum INFINITE = new ProcessingNum(BIG_INT_N2);
 	public static final ProcessingNum UNDEFINED = new ProcessingNum(BIG_INT_N1);

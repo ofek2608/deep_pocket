@@ -191,7 +191,8 @@ public final class MVCalculator {
 				return OptionalLong.empty();
 			}
 			try {
-				return OptionalLong.of(value.longValueExact());
+				long longValue = value.longValueExact();
+				return OptionalLong.of(longValue == 0 ? 1 : longValue);
 			} catch (Exception e) {
 				return OptionalLong.of(-1);
 			}

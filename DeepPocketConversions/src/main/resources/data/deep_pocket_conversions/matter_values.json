@@ -44,7 +44,7 @@
         "minecraft:diamond":"$dpc:diamond",
         "minecraft:netherite_ingot":"$dpc:netherite",
         "minecraft:obsidian":"$dpc:lava",
-        "minecraft:honey_comb":"$dpc:honey",
+        "minecraft:honeycomb":"$dpc:honey",
         "minecraft:sculk_sensor":"$dpc:sculk_generated",
         "minecraft:sculk_shrieker":"$dpc:sculk_generated",
 
