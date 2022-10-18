@@ -1,9 +1,12 @@
 package com.ofek2608.deep_pocket_conversions.matter_value_loading;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.api.events.DeepPocketBuildConversionsEvent;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket_conversions.DPCConfigs;
 import com.ofek2608.deep_pocket_conversions.DPCMod;
 import com.ofek2608.deep_pocket_conversions.DPCUtils;
 import com.ofek2608.deep_pocket_conversions.api.DPCRecipeLoader;
@@ -21,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -28,6 +32,8 @@ import org.slf4j.Logger;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -63,14 +69,53 @@ final class MVLoader {
 	}
 
 	private static MVFile load(ResourceManager resourceManager) {
+		boolean overrideConfiguredRecipes = DPCConfigs.Common.OVERRIDE_CONFIGURED_RECIPES.get();
 		var locations = resourceManager.getNamespaces().stream().map(namespace->new ResourceLocation(namespace, "matter_values.json")).toList();
-		return new MVFile(
-						false,
-						resourceManager.listPacks()
-										.flatMap(pack->locations.stream().map(loc->loadOneFile(pack,loc)))
-										.filter(Objects::nonNull)
-										.toArray(MVFile[]::new)
-		);
+		Stream<MVFile> files = resourceManager.listPacks()
+						.flatMap(pack->locations.stream().map(loc->loadOneFile(pack,loc)))
+						.filter(Objects::nonNull);
+		if (!overrideConfiguredRecipes) {
+			MVFile file = loadConfig();
+			if (file != null)
+				files = Stream.concat(files, Stream.of(file));
+		}
+		MVFile result = new MVFile(false, files.toArray(MVFile[]::new));
+		if (overrideConfiguredRecipes)
+			saveConfig(result);
+		return result;
+	}
+
+	public static @Nullable MVFile loadConfig() {
+		try {
+			Path path = getConfigPath();
+			String data = Files.readString(path);
+			return new MVFile(GsonHelper.parse(data));
+		} catch (Exception e) {
+			LOGGER.error("Couldn't load matter values from the config folder", e);
+			return null;
+		}
+	}
+
+	public static void saveConfig(MVFile file) {
+
+		try {
+			String data = new GsonBuilder().setPrettyPrinting().create().toJson(file.save());
+			int firstObject = data.indexOf('{') + 1;
+			data = data.substring(0, firstObject) +
+							"\n  \"Note\": \"If you want to edit this file, you need to disable 'overrideConfiguredRecipes' in the mod config.\"," +
+							data.substring(firstObject);
+
+			Path path = getConfigPath();
+			if (!Files.exists(path))
+				Files.createFile(path);
+			Files.writeString(path, data);
+		} catch (Exception e) {
+			LOGGER.error("Couldn't save matter values to the config folder", e);
+		}
+	}
+
+	private static Path getConfigPath() {
+		return FMLPaths.CONFIGDIR.get().resolve("deep_pocket_conversions-matter_value.json");
 	}
 
 	private static @Nullable MVFile loadOneFile(PackResources pack, ResourceLocation loc) {

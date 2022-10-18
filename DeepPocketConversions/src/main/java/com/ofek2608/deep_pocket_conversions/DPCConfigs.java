@@ -37,6 +37,7 @@ public final class DPCConfigs {
 		private Common() {}
 
 		private static final ForgeConfigSpec SPEC;
+		public static final ForgeConfigSpec.BooleanValue OVERRIDE_CONFIGURED_RECIPES;
 		public static final ForgeConfigSpec.BooleanValue RECIPE_LOADERS_ALL;
 		public static final ForgeConfigSpec.BooleanValue RECIPE_LOADERS_CRAFTING;
 		public static final ForgeConfigSpec.BooleanValue RECIPE_LOADERS_SMELTING;
@@ -49,6 +50,8 @@ public final class DPCConfigs {
 		static {
 			var builder = new ForgeConfigSpec.Builder();
 
+			builder.comment("If you disable this, you can edit \"config/deep_pocket_conversions-matter_value.json\" without it being overridden.");
+			OVERRIDE_CONFIGURED_RECIPES = builder.define("overrideConfiguredRecipes", true);
 			{
 				builder.comment("Determines if it should use recipes and what type of recipes");
 				builder.push("RecipeLoaders");

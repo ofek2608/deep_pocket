@@ -18,7 +18,6 @@ public class DPCMod {
 		ModRegistry.loadClass();
 		DPCConfigs.loadClass();
 		registerDefaultRecipesLoaders();
-		// TODO output and input values from config folder
 	}
 
 	private static void registerDefaultRecipesLoaders() {
