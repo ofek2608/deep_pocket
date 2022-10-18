@@ -48,4 +48,21 @@ public final class ItemTypeAmount {
 	public long getAmount() {
 		return itemType.isEmpty() ? 0 : amount < 0 ? -1 : amount;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		return this == o || o instanceof ItemTypeAmount that &&
+						this.amount == that.amount &&
+						itemType.equals(that.itemType);
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * itemType.hashCode() + (int) (amount ^ (amount >>> 32));
+	}
+
+	@Override
+	public String toString() {
+		return amount + " x " + itemType;
+	}
 }

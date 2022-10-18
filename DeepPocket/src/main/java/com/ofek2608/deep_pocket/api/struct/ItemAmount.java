@@ -56,6 +56,22 @@ public final class ItemAmount {
 		return item == Items.AIR ? 0 : amount < 0 ? -1 : amount;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		return this == o || o instanceof ItemAmount that &&
+						this.amount == that.amount &&
+						this.item == that.item;
+	}
+
+	@Override
+	public int hashCode() {
+		return 31 * item.hashCode() + (int) (amount ^ (amount >>> 32));
+	}
+
+	@Override
+	public String toString() {
+		return amount + " x " + item;
+	}
 
 
 
