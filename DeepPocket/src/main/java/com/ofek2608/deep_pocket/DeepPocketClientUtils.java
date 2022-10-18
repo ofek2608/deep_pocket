@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.ofek2608.deep_pocket.api.struct.ItemAmount;
@@ -26,9 +27,7 @@ public final class DeepPocketClientUtils {
 		String displayText = DeepPocketUtils.advancedToString(amount);
 		poseStack.translate(0.0D, 0.0D, itemRenderer.blitOffset + 200);
 		poseStack.scale(0.5f, 0.5f, 1f);
-		MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-		font.drawInBatch(displayText, (float)(x * 2 + 32 - font.width(displayText)), (float)(y * 2 + 24), 0xFFFFFF, true, poseStack.last().pose(), bufferSource, false, 0, 0xF000F0);
-		bufferSource.endBatch();
+		font.draw(poseStack, displayText, x * 2 + 32 - font.width(displayText), y * 2 + 24, 0xFFFFFF);
 		poseStack.popPose();
 	}
 
