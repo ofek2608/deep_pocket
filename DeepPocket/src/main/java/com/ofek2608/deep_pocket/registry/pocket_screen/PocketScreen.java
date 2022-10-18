@@ -665,7 +665,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			return;
 		if (currentAmount == 0)
 			return;
-		ClientScreens.numberPicker(Component.literal("Item Amount"), currentAmount, newAmount->{
+		Pocket pocket = menu.getPocket();
+		ClientScreens.selectNumber(Component.literal("Select Amount"), pocket == null ? 0 : pocket.getColor(), currentAmount, newAmount->{
 			resultConsumer.accept(newAmount);
 			Minecraft.getInstance().setScreen(this);
 		});

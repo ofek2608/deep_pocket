@@ -45,6 +45,13 @@ public final class ClientScreens {
 			minecraft.setScreen(new ItemSelectionScreen(title, color, player.getInventory(), onSelect, onCancel));
 	}
 
+	public static void selectNumber(Component title, int color, long initialValue, LongConsumer onSelect) {
+		Minecraft minecraft = Minecraft.getInstance();
+		Player player = minecraft.player;
+		if (player != null)
+			minecraft.setScreen(new NumberSelectionScreen(title, color, initialValue, onSelect));
+	}
+
 	public static void configureSignalBlock(int color, BlockPos pos, SignalSettings settings) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
@@ -57,9 +64,5 @@ public final class ClientScreens {
 		Player player = minecraft.player;
 		if (player != null)
 			minecraft.setScreen(new BulkCraftingScreen(minecraft.screen, pocket, recipe));
-	}
-
-	public static void numberPicker(Component title, long initialValue, LongConsumer onSelect) {
-		//TODO open gui to ask the player for a number
 	}
 }
