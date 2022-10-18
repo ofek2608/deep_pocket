@@ -16,7 +16,7 @@ public final class DeepPocketPacketHandler {
 	private DeepPocketPacketHandler() {}
 	@SuppressWarnings("EmptyMethod") public static void loadClass() {}
 
-	private static final String PROTOCOL_VERSION = "0.0.3";
+	private static final String PROTOCOL_VERSION = "0.0.5";
 	private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(DeepPocketMod.loc("main"), ()->PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
 	static {

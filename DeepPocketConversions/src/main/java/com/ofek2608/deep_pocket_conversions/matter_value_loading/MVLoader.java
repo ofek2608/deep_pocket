@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket_conversions.matter_value_loading;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.api.events.DeepPocketBuildConversionsEvent;

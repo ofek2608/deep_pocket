@@ -1,12 +1,9 @@
 package com.ofek2608.deep_pocket;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 
