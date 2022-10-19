@@ -5,7 +5,6 @@ import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
-import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.core.BlockPos;
@@ -91,7 +90,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 
 	public static class Ent extends BlockEntityWithPocket implements Container, PatternSupportedBlockEntity {
 		protected NonNullList<ItemStack> items;
-		protected UUID[] patterns;
+		protected final UUID[] patterns;
 
 		public Ent(BlockEntityType<?> type, BlockPos pos, BlockState state, int size) {
 			super(type, pos, state);

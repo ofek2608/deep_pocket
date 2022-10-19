@@ -2,7 +2,6 @@ package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
-import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
