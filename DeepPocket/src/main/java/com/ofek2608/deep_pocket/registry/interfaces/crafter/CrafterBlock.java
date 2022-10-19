@@ -39,7 +39,6 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class CrafterBlock extends Block implements EntityBlock {
-	//FIXME add texture for the block
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
 	public CrafterBlock(Properties properties) {
 		super(properties);
