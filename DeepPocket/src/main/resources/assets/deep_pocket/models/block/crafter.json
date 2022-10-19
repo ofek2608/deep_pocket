@@ -1,0 +1,7 @@
+{
+    "parent": "deep_pocket:block/tinted_cube_column",
+    "textures": {
+        "top": "deep_pocket:block/crafter",
+        "side": "deep_pocket:block/crafter_direction"
+    }
+}

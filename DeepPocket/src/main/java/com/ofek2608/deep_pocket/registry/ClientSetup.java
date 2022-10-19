@@ -34,7 +34,8 @@ class ClientSetup {
 						DeepPocketRegistry.PASSIVE_EXPORTER_BLOCK.get(),
 						DeepPocketRegistry.ACTIVE_IMPORTER_BLOCK.get(),
 						DeepPocketRegistry.ACTIVE_EXPORTER_BLOCK.get(),
-						DeepPocketRegistry.SIGNAL_BLOCK.get()
+						DeepPocketRegistry.SIGNAL_BLOCK.get(),
+						DeepPocketRegistry.CRAFTER_BLOCK.get()
 		);
 	}
 
@@ -50,6 +51,7 @@ class ClientSetup {
 		event.registerBlockEntityRenderer(DeepPocketRegistry.ACTIVE_IMPORTER_ENTITY.get(), InterfaceBER::new);
 		event.registerBlockEntityRenderer(DeepPocketRegistry.ACTIVE_EXPORTER_ENTITY.get(), InterfaceBER::new);
 		event.registerBlockEntityRenderer(DeepPocketRegistry.SIGNAL_ENTITY.get(), InterfaceBER::new);
+		event.registerBlockEntityRenderer(DeepPocketRegistry.CRAFTER_ENTITY.get(), InterfaceBER::new);
 	}
 
 	@SubscribeEvent

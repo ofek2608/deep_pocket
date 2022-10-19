@@ -6,6 +6,7 @@ import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
+import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import net.minecraft.nbt.CompoundTag;
@@ -144,7 +145,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		if (pocket == null)
 			return;
 		NetworkHooks.openScreen(player, PocketMenu.MENU_PROVIDER);
-		if (player.containerMenu instanceof PocketMenu menu)
+		if (player.containerMenu instanceof MenuWithPocket menu)
 			menu.setPocket(pocket);
 		DeepPocketPacketHandler.cbSetViewedPocket(PacketDistributor.PLAYER.with(()->player), pocket.getPocketId());
 	}

@@ -3,7 +3,9 @@ package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
 import com.ofek2608.deep_pocket.api.struct.Pocket;
 import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
+import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
+import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.core.BlockPos;
@@ -11,7 +13,9 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -27,6 +31,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
+import net.minecraftforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,32 +58,36 @@ public class CrafterBlock extends Block implements EntityBlock {
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player pPlayer, InteractionHand pHand, BlockHitResult pHit) {
-		if (level.isClientSide)
+	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand pHand, BlockHitResult pHit) {
+		if (level.isClientSide || !(player instanceof ServerPlayer serverPlayer))
 			return InteractionResult.SUCCESS;
-		MenuProvider menuprovider = this.getMenuProvider(state, level, pos);
-		if (menuprovider != null)
-			pPlayer.openMenu(menuprovider);
-
-		return InteractionResult.CONSUME;
-	}
-
-	@SuppressWarnings("deprecation")
-	@Nullable
-	@Override
-	public MenuProvider getMenuProvider(BlockState state, Level level, BlockPos pos) {
 		if (!(level.getBlockEntity(pos) instanceof Ent ent))
-			return null;
-		return new SimpleMenuProvider(
-						(id,inv,player)->new CrafterMenu(id, inv, ent.itemHandler, pos),
+			return InteractionResult.CONSUME;
+		Pocket pocket = ent.getServerPocket();
+		MenuProvider menuprovider = new SimpleMenuProvider(
+						(id,inv,p)->{
+							CrafterMenu menu = new CrafterMenu(id, inv, ent.itemHandler, pos);
+							menu.setPocket(pocket);
+							return menu;
+						},
 						Component.literal("Crafter")
 		);
+		player.openMenu(menuprovider);
+		if (pocket != null)
+			DeepPocketPacketHandler.cbSetViewedPocket(PacketDistributor.PLAYER.with(()->serverPlayer), pocket.getPocketId());
+
+		return InteractionResult.CONSUME;
 	}
 
 	@Nullable
 	@Override
 	public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
 		return new Ent(pos, state);
+	}
+
+	@Override
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+		BlockEntityWithPocket.onPlace(level, pos, placer);
 	}
 
 	public static class Ent extends BlockEntityWithPocket implements Container, PatternSupportedBlockEntity {

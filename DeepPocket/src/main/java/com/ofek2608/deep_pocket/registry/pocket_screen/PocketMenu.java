@@ -7,6 +7,7 @@ import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
+import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public class PocketMenu extends AbstractContainerMenu {
+public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket {
 	public static final MenuProvider MENU_PROVIDER = new SimpleMenuProvider(PocketMenu::new, Component.empty());
 	public final Inventory playerInventory;
 	private final CraftingContainer craftSlots = new CraftingContainer(this, 3, 3);
@@ -86,20 +87,15 @@ public class PocketMenu extends AbstractContainerMenu {
 
 
 
+	@Override
 	public @Nullable Pocket getPocket() {
 		return pocket != null && pocket.canAccess(playerInventory.player) ? pocket : null;
 	}
 
+	@Override
 	public void setPocket(@Nullable Pocket pocket) {
 		this.pocket = pocket;
 	}
-
-
-
-
-
-
-
 
 	private void putStackInInventory(DeepPocketServerApi api, Pocket pocket, ItemStack stack) {
 		if (!stack.isEmpty()) moveItemStackTo(stack, 27, 36, false);//hotbar
