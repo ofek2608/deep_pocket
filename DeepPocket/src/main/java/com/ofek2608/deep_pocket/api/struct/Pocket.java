@@ -2,11 +2,14 @@ package com.ofek2608.deep_pocket.api.struct;
 
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
@@ -228,8 +231,13 @@ public final class Pocket {
 		this.lastSnapshot.changedPatterns.add(pattern.getPatternId());
 	}
 
-	public void addPattern(WorldCraftingPattern pattern) {
-		this.addPattern((CraftingPattern)pattern);
+	public UUID addPattern(ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
+		UUID patternId;
+		do {
+			patternId = UUID.randomUUID();
+		} while (this.patterns.containsKey(patternId));
+		addPattern(new WorldCraftingPattern(patternId, input, output, level, pos));
+		return patternId;
 	}
 
 	public void removePattern(UUID patternId) {

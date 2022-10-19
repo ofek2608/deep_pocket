@@ -3,6 +3,7 @@ package com.ofek2608.deep_pocket.registry;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
 import com.ofek2608.deep_pocket.registry.interfaces.InterfaceBER;
+import com.ofek2608.deep_pocket.registry.interfaces.crafter.CrafterScreen;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternClientTooltip;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
@@ -22,6 +23,7 @@ class ClientSetup {
 	@SubscribeEvent
 	public static void event(FMLClientSetupEvent event) {
 		MenuScreens.register(DeepPocketRegistry.POCKET_MENU.get(), PocketScreen::new);
+		MenuScreens.register(DeepPocketRegistry.CRAFTER_MENU.get(), CrafterScreen::new);
 	}
 
 	@SubscribeEvent

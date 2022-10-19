@@ -2,6 +2,8 @@ package com.ofek2608.deep_pocket.registry;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.registry.interfaces.*;
+import com.ofek2608.deep_pocket.registry.interfaces.crafter.CrafterBlock;
+import com.ofek2608.deep_pocket.registry.interfaces.crafter.CrafterMenu;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import com.ofek2608.deep_pocket.registry.items.PocketFactoryItem;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
@@ -64,24 +66,24 @@ public final class DeepPocketRegistry {
 	public static final RegistryObject<CraftingPatternItem> CRAFTING_PATTERN_ITEM = ITEMS.register("crafting_pattern", ()->new CraftingPatternItem(itemProperties(1)));
 
 	public static final RegistryObject<MenuType<PocketMenu>> POCKET_MENU = MENU_TYPES.register("pocket", ()->new MenuType<>(PocketMenu::new));
+	public static final RegistryObject<MenuType<CrafterMenu>> CRAFTER_MENU = MENU_TYPES.register("crafter", ()->new MenuType<>(CrafterMenu::new));
 
 	public static final RegistryObject<PassiveImporter> PASSIVE_IMPORTER_BLOCK = BLOCKS.register("passive_importer", ()->new PassiveImporter(blockProperties()));
 	public static final RegistryObject<PassiveExporter> PASSIVE_EXPORTER_BLOCK = BLOCKS.register("passive_exporter", ()->new PassiveExporter(blockProperties()));
 	public static final RegistryObject<ActiveImporter> ACTIVE_IMPORTER_BLOCK = BLOCKS.register("active_importer", ()->new ActiveImporter(blockProperties()));
 	public static final RegistryObject<ActiveExporter> ACTIVE_EXPORTER_BLOCK = BLOCKS.register("active_exporter", ()->new ActiveExporter(blockProperties()));
 	public static final RegistryObject<SignalBlock> SIGNAL_BLOCK = BLOCKS.register("signal", ()->new SignalBlock(blockProperties()));
+	public static final RegistryObject<CrafterBlock> CRAFTER_BLOCK = BLOCKS.register("crafter", ()->new CrafterBlock(blockProperties()));
 	public static final RegistryObject<BlockEntityType<PassiveImporter.Ent>> PASSIVE_IMPORTER_ENTITY = registerBlockEntity(PASSIVE_IMPORTER_BLOCK, PassiveImporter.Ent::new);
 	public static final RegistryObject<BlockEntityType<PassiveExporter.Ent>> PASSIVE_EXPORTER_ENTITY = registerBlockEntity(PASSIVE_EXPORTER_BLOCK, PassiveExporter.Ent::new);
 	public static final RegistryObject<BlockEntityType<ActiveImporter.Ent>> ACTIVE_IMPORTER_ENTITY = registerBlockEntity(ACTIVE_IMPORTER_BLOCK, ActiveImporter.Ent::new);
 	public static final RegistryObject<BlockEntityType<ActiveExporter.Ent>> ACTIVE_EXPORTER_ENTITY = registerBlockEntity(ACTIVE_EXPORTER_BLOCK, ActiveExporter.Ent::new);
 	public static final RegistryObject<BlockEntityType<SignalBlock.Ent>> SIGNAL_ENTITY = registerBlockEntity(SIGNAL_BLOCK, SignalBlock.Ent::new);
+	public static final RegistryObject<BlockEntityType<CrafterBlock.Ent>> CRAFTER_ENTITY = registerBlockEntity(CRAFTER_BLOCK, CrafterBlock.Ent::new);
 	public static final RegistryObject<BlockItem> PASSIVE_IMPORTER_ITEM = registerBlockItem(PASSIVE_IMPORTER_BLOCK);
 	public static final RegistryObject<BlockItem> PASSIVE_EXPORTER_ITEM = registerBlockItem(PASSIVE_EXPORTER_BLOCK);
 	public static final RegistryObject<BlockItem> ACTIVE_IMPORTER_ITEM = registerBlockItem(ACTIVE_IMPORTER_BLOCK);
 	public static final RegistryObject<BlockItem> ACTIVE_EXPORTER_ITEM = registerBlockItem(ACTIVE_EXPORTER_BLOCK);
 	public static final RegistryObject<BlockItem> SIGNAL_ITEM = registerBlockItem(SIGNAL_BLOCK);
-	//TODO add another block,blockEntity and item for crafter
-
-
-
+	public static final RegistryObject<BlockItem> CRAFTER_ITEM = registerBlockItem(CRAFTER_BLOCK);
 }
