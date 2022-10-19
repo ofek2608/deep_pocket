@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "deep_pocket:crafting_pattern"
+    }
+  ],
+  "result": {
+    "item": "deep_pocket:empty_crafting_pattern"
+  }
+}

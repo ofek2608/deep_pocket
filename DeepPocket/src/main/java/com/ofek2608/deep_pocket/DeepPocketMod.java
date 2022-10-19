@@ -33,7 +33,6 @@ public final class DeepPocketMod {
 	 *      when you press on an item while holding ctrl you can craft the item using ClientScreens#selectNumber
 	 *      and then opening a gui to show the required crafting, and warning if there are any. with a confirm/cancel options.
 	 *      if confirmed, sent to the server and he adds it as a process.
-	 *  - Add recipes for empty crafting patterns, crafters, and reset crafting pattern
 	 * TODO before version 1.0.0
 	 *  - test multiplayer
 	 *  - Make more commands

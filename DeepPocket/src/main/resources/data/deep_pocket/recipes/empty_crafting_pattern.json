@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "GCG",
+    "III"
+  ],
+  "key": {
+    "G": {"item": "minecraft:glass_pane"},
+    "I": {"item": "minecraft:iron_bars"},
+    "C": {"item": "minecraft:crafting_table"}
+  },
+  "result": {
+    "item": "deep_pocket:empty_crafting_pattern"
+  }
+}
