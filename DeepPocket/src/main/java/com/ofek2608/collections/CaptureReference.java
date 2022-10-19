@@ -1,5 +1,8 @@
 package com.ofek2608.collections;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
 public class CaptureReference<T> {
@@ -10,6 +13,12 @@ public class CaptureReference<T> {
 
 	public CaptureReference(T initialValue) {
 		this.value = initialValue;
+	}
+
+	@Contract(pure = true)
+	public CaptureReference(@NotNull CaptureReference<T> copy) {
+		this.value = copy.value;
+		this.lastSnapshot = null;
 	}
 
 	public boolean set(T value) {
