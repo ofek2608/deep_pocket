@@ -43,5 +43,6 @@ public final class DeepPocketMod {
 	 *  - Maybe integrate with ftb chunks to prevent pockets from being used in forgotten places (or in houses of old team members)
 	 *  - Cleanup around pocket insertion and extractions
 	 *  - A way to extract infinite amount of an item (mini pockets)
+	 *  - Maybe fluids inside pocket
 	 */
 }
