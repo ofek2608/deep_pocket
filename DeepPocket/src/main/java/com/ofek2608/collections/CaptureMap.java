@@ -2,6 +2,7 @@ package com.ofek2608.collections;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
@@ -15,11 +16,11 @@ public class CaptureMap<K,V> implements Map<K,V> {
 	private Values values;
 	private EntrySet entrySet;
 
-	public CaptureMap(int initialCapacity, float loadFactor) {
+	public CaptureMap(@Range(from = 0, to = Integer.MAX_VALUE) int initialCapacity, float loadFactor) {
 		this.internal = new HashMap<>(initialCapacity, loadFactor);
 	}
 
-	public CaptureMap(int initialCapacity) {
+	public CaptureMap(@Range(from = 0, to = Integer.MAX_VALUE) int initialCapacity) {
 		this.internal = new HashMap<>(initialCapacity);
 	}
 
@@ -54,16 +55,33 @@ public class CaptureMap<K,V> implements Map<K,V> {
 
 	@Override
 	public V get(Object key) {
-		return internal.get(key);
+		return internal.getOrDefault(key, defaultValue(key));
 	}
 
 	@Nullable
 	@Override
 	public V put(K key, V value) {
+		validateKey(key);
+		value = validateValue(value);
+		if (Objects.equals(defaultValue(key), value))
+			return remove(key);
 		V oldValue = internal.put(key, value);
 		if (!Objects.equals(oldValue, value))
 			lastSnapshot.added.add(key);
 		return oldValue;
+	}
+
+	public boolean putIfCan(K key, V value) {
+		if (internal.containsKey(key))
+			return false;
+		try {
+			validateKey(key);
+			value = validateValue(value);
+		} catch (Exception exception) {
+			return false;
+		}
+		internal.put(key, value);
+		return true;
 	}
 
 	@Override
@@ -123,8 +141,15 @@ public class CaptureMap<K,V> implements Map<K,V> {
 
 
 
+	//For use in an extending class
+	public void validateKey(K key) throws IllegalArgumentException { }
+	public V validateValue(V val) throws IllegalArgumentException { return val; }
+	public V defaultValue(Object key) { return null; }
+
+
+
 	public class Snapshot {
-		protected Snapshot next;
+		private Snapshot next;
 		protected final Set<K> added = new HashSet<>();
 		protected final Set<K> removed = new HashSet<>();
 
@@ -141,17 +166,28 @@ public class CaptureMap<K,V> implements Map<K,V> {
 			next = next.next;
 		}
 
-		public @UnmodifiableView Set<K> getAdded() {
+		public @UnmodifiableView Set<K> getAddedKeys() {
 			return Collections.unmodifiableSet(added);
 		}
 
-		public @UnmodifiableView Set<K> getRemoved() {
+		public @UnmodifiableView List<V> getAddedValues() {
+			return added.stream().map(CaptureMap.this::get).toList();
+		}
+
+		public @UnmodifiableView Set<K> getRemovedKeys() {
 			return Collections.unmodifiableSet(removed);
 		}
 
 		public @UnmodifiableView Map<K,V> getAddedAsMap() {
 			HashMap<K,V> result = new HashMap<>();
 			added.forEach(key->result.put(key, internal.get(key)));
+			return result;
+		}
+
+		public @UnmodifiableView Map<K,V> getChangedAsMap() {
+			HashMap<K,V> result = new HashMap<>();
+			added.forEach(key->result.put(key, internal.get(key)));
+			removed.forEach(key->result.put(key, defaultValue(key)));
 			return result;
 		}
 	}

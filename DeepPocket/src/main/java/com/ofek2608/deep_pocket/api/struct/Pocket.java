@@ -1,5 +1,7 @@
 package com.ofek2608.deep_pocket.api.struct;
 
+import com.ofek2608.collections.CaptureMap;
+import com.ofek2608.collections.CaptureReference;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import net.minecraft.core.BlockPos;
@@ -19,37 +21,30 @@ public final class Pocket {
 	private final ItemConversions conversions;
 	private final UUID pocketId;
 	private final UUID owner;
-	private PocketInfo pocketInfo;
-	private final Map<ItemType,Long> items;
-	private final Map<UUID,CraftingPattern> patterns;
-	private Snapshot lastSnapshot;
+	private final CaptureReference<PocketInfo> pocketInfo;
+	private final PocketItems items;
+	private final CaptureMap<UUID,CraftingPattern> patterns;
 
 	public Pocket(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
 		this.conversions = conversions;
 		this.pocketId = pocketId;
 		this.owner = owner;
-		this.pocketInfo = pocketInfo;
-		this.items = new HashMap<>();
-		this.patterns = new HashMap<>();
-		this.lastSnapshot = new Snapshot();
+		this.pocketInfo = new CaptureReference<>(pocketInfo);
+		this.items = new PocketItems();
+		this.patterns = new CaptureMap<>();
 	}
 
 	public Pocket(Pocket copy) {
 		this.conversions = copy.conversions;
 		this.pocketId = copy.pocketId;
 		this.owner = copy.owner;
-		this.pocketInfo = copy.pocketInfo;
-		this.items = new HashMap<>(copy.items);
-		this.patterns = new HashMap<>(copy.patterns);
-		this.lastSnapshot = new Snapshot();
+		this.pocketInfo = new CaptureReference<>(copy.pocketInfo);
+		this.items = new PocketItems(copy.items);
+		this.patterns = new CaptureMap<>(copy.patterns);
 	}
 
 	public Pocket(MinecraftServer server, ItemConversions conversions, boolean allowPublicPocket, CompoundTag saved) {
-		this.conversions = conversions;
-		this.pocketId = saved.getUUID("pocketId");
-		this.owner = saved.getUUID("owner");
-		this.pocketInfo = new PocketInfo(saved.getCompound("info"));
-		this.items = new HashMap<>();
+		this(conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
 		for (Tag itemCount : saved.getList("itemCounts", 10)) {
 			ItemType type = ItemType.load(((CompoundTag) itemCount).getCompound("item"));
 			long count = ((CompoundTag)itemCount).getLong("count");
@@ -58,23 +53,21 @@ public final class Pocket {
 			this.items.put(type, count < 0 ? -1 : count);
 		}
 		conversions.convertMap(items);
-		this.patterns = new HashMap<>();
 		for (Tag savedPattern : saved.getList("patterns", 10)) {
 			try {
 				WorldCraftingPattern pattern = new WorldCraftingPattern((CompoundTag) savedPattern, server);
 				this.patterns.put(pattern.getPatternId(), pattern);
 			} catch (Exception ignored) {}
 		}
-		this.lastSnapshot = new Snapshot();
-		if (!allowPublicPocket && pocketInfo.securityMode == PocketSecurityMode.PUBLIC)
-			pocketInfo.securityMode = PocketSecurityMode.TEAM;
+		if (!allowPublicPocket && pocketInfo.get().securityMode == PocketSecurityMode.PUBLIC)
+			pocketInfo.get().securityMode = PocketSecurityMode.TEAM;
 	}
 
 	public CompoundTag save() {
 		CompoundTag saved = new CompoundTag();
 		saved.putUUID("pocketId", pocketId);
 		saved.putUUID("owner", owner);
-		saved.put("info", pocketInfo.save());
+		saved.put("info", pocketInfo.get().save());
 		ListTag itemCounts = new ListTag();
 		for (var entry : items.entrySet()) {
 			CompoundTag itemCount = new CompoundTag();
@@ -88,49 +81,31 @@ public final class Pocket {
 
 	public UUID getPocketId() { return pocketId; }
 	public UUID getOwner() { return owner; }
-	public PocketInfo getInfo() { return new PocketInfo(pocketInfo); }
-	public String getName() { return pocketInfo.name; }
-	public ItemType getIcon() { return pocketInfo.icon; }
-	public int getColor() { return pocketInfo.color; }
-	public PocketSecurityMode getSecurityMode() { return pocketInfo.securityMode; }
+	public PocketInfo getInfo() { return new PocketInfo(pocketInfo.get()); }
+	public String getName() { return pocketInfo.get().name; }
+	public ItemType getIcon() { return pocketInfo.get().icon; }
+	public int getColor() { return pocketInfo.get().color; }
+	public PocketSecurityMode getSecurityMode() { return pocketInfo.get().securityMode; }
 
 	public void setInfo(PocketInfo pocketInfo) {
-		this.pocketInfo = new PocketInfo(pocketInfo);
-		this.lastSnapshot.changedInfo = true;
+		this.pocketInfo.set(new PocketInfo(pocketInfo));
 	}
 
 
 	public boolean canAccess(Player player) {
-		return pocketInfo.securityMode.canAccess(player, getOwner());
+		return pocketInfo.get().securityMode.canAccess(player, getOwner());
 	}
 
-	public @UnmodifiableView Map<ItemType,Long> getItems() {
-		return Collections.unmodifiableMap(items);
+	public Map<ItemType,Long> getItems() {
+		return items;
 	}
 
 	public long getItemCount(ItemType type) {
-		return type.isEmpty() ? 0 : items.getOrDefault(type, 0L);
-	}
-
-	public void setItemCount(ItemType type, long count) {
-		if (type.isEmpty())
-			return;
-		boolean changed;
-		if (count == 0)
-			changed = items.remove(type) != null;
-		else
-			changed = !Objects.equals(items.put(type, count < 0 ? -1 : count), count);
-		if (changed)
-			this.lastSnapshot.changedItems.add(type);
+		return items.get(type);
 	}
 
 	private void insertItem0(ItemType type, long count) {
-		if (count < 0) {
-			setItemCount(type, -1);
-			return;
-		}
-		long currentCount = getItemCount(type);
-		setItemCount(type, currentCount < 0 ? -1 : count + currentCount);
+		items.computeIfPresent(type, (t,current)->current < 0 || count < 0 ? -1 : current + count);
 	}
 
 	public void insertItem(ItemType type, long count) {
@@ -186,19 +161,23 @@ public final class Pocket {
 	}
 
 	public long extract(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts, long overallCount) {
+		if (overallCount == 0)
+			return 0;
 		counts = new HashMap<>(counts);
 		conversions.convertMap(counts);
 		if (isInvalidKnowledge(knowledge, counts))
 			return 0;
 		long maxExtract = getMaxExtract0(counts);
-		if (0 <= maxExtract && maxExtract < overallCount)
+		if (maxExtract == 0)
+			return 0;
+		if (0 < maxExtract && maxExtract < overallCount)
 			overallCount = maxExtract;
 		for (var entry : counts.entrySet()) {
 			long existing = getItemCount(entry.getKey());
 			if (existing < 0)
 				continue;
 			long needed = DeepPocketUtils.advancedMul(entry.getValue(), overallCount);
-			setItemCount(entry.getKey(), existing - needed);
+			items.put(entry.getKey(), existing - needed);
 		}
 		return overallCount;
 	}
@@ -216,8 +195,6 @@ public final class Pocket {
 
 	public void clearItems() {
 		items.clear();
-		this.lastSnapshot.clearedItems = true;
-		this.lastSnapshot.changedItems.clear();
 	}
 
 	public @Nullable CraftingPattern getPattern(UUID patternId) {
@@ -227,25 +204,23 @@ public final class Pocket {
 	@ApiStatus.Internal
 	public void addPattern(CraftingPattern pattern) {
 		patterns.put(pattern.getPatternId(), pattern);
-		this.lastSnapshot.changedPatterns.add(pattern.getPatternId());
 	}
 
 	public UUID addPattern(ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
 		UUID patternId;
 		do {
 			patternId = UUID.randomUUID();
-		} while (this.patterns.containsKey(patternId));
+		} while (patterns.containsKey(patternId));
 		addPattern(new WorldCraftingPattern(patternId, input, output, level, pos));
 		return patternId;
 	}
 
 	public void removePattern(UUID patternId) {
-		if (this.patterns.remove(patternId) != null)
-			this.lastSnapshot.changedPatterns.add(patternId);
+		patterns.remove(patternId);
 	}
 
-	public @UnmodifiableView Collection<CraftingPattern> getPatterns() {
-		return Collections.unmodifiableCollection(this.patterns.values());
+	public Collection<CraftingPattern> getPatterns() {
+		return patterns.values();
 	}
 
 
@@ -254,16 +229,14 @@ public final class Pocket {
 	}
 
 	public Snapshot createSnapshot() {
-		return this.lastSnapshot = this.lastSnapshot.next = new Snapshot();
+		return new Snapshot();
 	}
 
 
 	public final class Snapshot {
-		private boolean changedInfo;
-		private boolean clearedItems;
-		private final Set<ItemType> changedItems = new HashSet<>();
-		private final Set<UUID> changedPatterns = new HashSet<>();
-		private Snapshot next;
+		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
+		private final CaptureMap<ItemType,Long>.Snapshot itemsSnapshot = items.createSnapshot();
+		private final CaptureMap<UUID,CraftingPattern>.Snapshot patternsSnapshot = patterns.createSnapshot();
 
 		private Snapshot() {}
 
@@ -272,55 +245,48 @@ public final class Pocket {
 		}
 
 		public boolean didChangedInfo() {
-			simplify();
-			return changedInfo || next != null && next.changedInfo;
+			return pocketInfoSnapshot.isChanged();
 		}
 
-		public boolean didClearedItems() {
-			simplify();
-			return clearedItems || next != null && next.clearedItems;
-		}
-
-		public Map<ItemType,Long> getChangedItems() {
-			simplify();
-			Map<ItemType,Long> result = new HashMap<>();
-			if (next == null || !next.clearedItems)
-				for (ItemType type : changedItems)
-					result.put(type, Pocket.this.getItemCount(type));
-			if (next != null)
-				for (ItemType type : next.changedItems)
-					result.put(type, Pocket.this.getItemCount(type));
-			return result;
+		public @UnmodifiableView Map<ItemType,Long> getChangedItems() {
+			return itemsSnapshot.getChangedAsMap();
 		}
 
 		public CraftingPattern[] getAddedPatterns() {
-			return changedPatterns.stream()
-							.map(Pocket.this::getPattern)
-							.filter(Objects::nonNull)
-							.toArray(CraftingPattern[]::new);
+			return patternsSnapshot.getAddedValues().toArray(CraftingPattern[]::new);
 		}
 
 		public UUID[] getRemovedPatterns() {
-			return changedPatterns.stream()
-							.filter(patternId->Pocket.this.getPattern(patternId) == null)
-							.toArray(UUID[]::new);
+			return patternsSnapshot.getRemovedKeys().toArray(UUID[]::new);
+		}
+	}
+
+
+
+
+
+
+
+	private final class PocketItems extends CaptureMap<ItemType,Long> {
+		public PocketItems() { }
+		public PocketItems(Map<? extends ItemType, ? extends Long> m) { super(m); }
+
+		@Override
+		public void validateKey(ItemType key) {
+			Objects.requireNonNull(key);
+			if (key.isEmpty() || conversions.hasValue(key))
+				throw new IllegalArgumentException();
 		}
 
+		@Override
+		public Long validateValue(Long val) {
+			Objects.requireNonNull(val);
+			return val < 0 ? -1 : val;
+		}
 
-
-
-		private void simplify() {
-			if (next == null)
-				return;
-			while (next.next != null) {
-				changedInfo = changedInfo || next.changedInfo;
-				if (next.clearedItems) {
-					clearedItems = true;
-					changedItems.clear();
-				}
-				changedItems.addAll(next.changedItems);
-				next = next.next;
-			}
+		@Override
+		public Long defaultValue(Object key) {
+			return 0L;
 		}
 	}
 }

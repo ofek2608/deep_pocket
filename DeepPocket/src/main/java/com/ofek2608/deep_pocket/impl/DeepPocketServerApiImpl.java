@@ -320,8 +320,6 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			for (ServerPlayer player : oldPlayers) {
 				PacketDistributor.PacketTarget playerTarget = PacketDistributor.PLAYER.with(() -> player);
 				PlayerKnowledge.Snapshot snapshot = getKnowledgeSnapshot(player.getUUID());
-				if (snapshot.didClear())
-					DeepPocketPacketHandler.cbClearKnowledge(playerTarget);
 				ItemType[] removed = snapshot.getRemoved();
 				ItemType[] added = snapshot.getAdded();
 				if (removed.length > 0)
@@ -352,9 +350,6 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			Pocket.Snapshot snapshot = entry.getKey();
 			UUID pocketId = snapshot.getPocket().getPocketId();
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
-			//Clear items
-			if (snapshot.didClearedItems())
-				DeepPocketPacketHandler.cbPocketClearItems(packetTarget, pocketId);
 			//Changed items
 			Map<ItemType,Long> changedItems = snapshot.getChangedItems();
 			if (!changedItems.isEmpty())

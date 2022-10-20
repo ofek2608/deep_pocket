@@ -74,6 +74,10 @@ public final class ItemConversions {
 		return Collections.unmodifiableSet(values.keySet());
 	}
 
+	public boolean hasValue(ItemType type) {
+		return values.containsKey(type);
+	}
+
 	public @Nullable long[] getValue(ItemType type) {
 		long[] value = values.get(type);
 		return value == null ? null : value.clone();
