@@ -3,7 +3,7 @@ package com.ofek2608.deep_pocket.impl;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketHelper;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.PlayerKnowledge;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
@@ -36,7 +36,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	private static final Logger LOGGER = LogUtils.getLogger();
 	private final MinecraftServer server;
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
-	private final Map<UUID, PlayerKnowledge.Snapshot> knowledge = new HashMap<>();
+	private final Map<UUID, Knowledge.Snapshot> knowledge = new HashMap<>();
 
 	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions) {
 		super(helper);
@@ -51,7 +51,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		boolean allowPublicPockets = DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get();
 		for (Tag savedPocket : tag.getList("pockets", 10)) {
 			try {
-				Pocket readPocket = loadPocket(server, conversions, allowPublicPockets, (CompoundTag)savedPocket);
+				Pocket readPocket = loadPocket(allowPublicPockets, (CompoundTag)savedPocket);
 				pocketSnapshots.put(readPocket.getPocketId(), readPocket.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
@@ -68,9 +68,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		// Loading: Knowledge
 		for (Tag savedKnowledge : tag.getList("knowledge", 10)) {
 			try {
-				UUID owner = ((CompoundTag)savedKnowledge).getUUID("player");
-				PlayerKnowledgeImpl readKnowledge = new PlayerKnowledgeImpl(conversions, (CompoundTag)savedKnowledge);
-				knowledge.put(owner, readKnowledge.createSnapshot());
+				UUID playerId = ((CompoundTag)savedKnowledge).getUUID("player");
+				Knowledge readKnowledge = loadKnowledge((CompoundTag)savedKnowledge);
+				knowledge.put(playerId, readKnowledge.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
 			}
@@ -79,7 +79,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			LOGGER.warn("There was error while trying to load Deep Pocket's saved data");
 	}
 
-	private Pocket loadPocket(MinecraftServer server, ItemConversions conversions, boolean allowPublicPocket, CompoundTag saved) {
+	private Pocket loadPocket(boolean allowPublicPocket, CompoundTag saved) {
 		Pocket pocket = helper.createPocket(conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
 
 		Map<ItemType,Long> items = pocket.getItemsMap();
@@ -118,6 +118,16 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		return pocket;
 	}
 
+	private Knowledge loadKnowledge(CompoundTag saved) {
+		Knowledge knowledge = helper.createKnowledge(conversions);
+		for (Tag itemTag : saved.getList("items", 10)) {
+			ItemType item = ItemType.load((CompoundTag) itemTag);
+			if (conversions.getValue(item) != null)
+				knowledge.add(item);
+		}
+		return knowledge;
+	}
+
 	public CompoundTag save(CompoundTag tag) {
 		// Saving: Pockets
 		ListTag savedPockets = new ListTag();
@@ -134,8 +144,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		tag.put("playerNameCache", savedPlayerNameCache);
 		// Saving: Knowledge
 		ListTag savedKnowledge = new ListTag();
-		for (PlayerKnowledge.Snapshot snapshot : knowledge.values())
-			savedKnowledge.add(snapshot.getKnowledge().save());
+		knowledge.forEach((playerId,playerKnowledge) -> savedKnowledge.add(saveKnowledge(playerId, playerKnowledge.getKnowledge())));
 		tag.put("knowledge", savedKnowledge);
 		return tag;
 	}
@@ -153,6 +162,16 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			itemCounts.add(itemCount);
 		}
 		saved.put("itemCounts", itemCounts);
+		return saved;
+	}
+
+	private static CompoundTag saveKnowledge(UUID playerId, Knowledge knowledge) {
+		CompoundTag saved = new CompoundTag();
+		saved.putUUID("player", playerId);
+		ListTag items = new ListTag();
+		for (ItemType item : knowledge.asSet())
+			items.add(item.save());
+		saved.put("items", items);
 		return saved;
 	}
 
@@ -195,8 +214,8 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	}
 
 	@Override
-	public PlayerKnowledge getKnowledge(UUID playerId) {
-		return knowledge.computeIfAbsent(playerId, id->new PlayerKnowledgeImpl(conversions).createSnapshot()).getKnowledge();
+	public Knowledge getKnowledge(UUID playerId) {
+		return knowledge.computeIfAbsent(playerId, id->helper.createKnowledge(conversions).createSnapshot()).getKnowledge();
 	}
 
 	@Override
@@ -284,10 +303,10 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 
 
 
-	private PlayerKnowledge.Snapshot getKnowledgeSnapshot(UUID playerId) {
-		PlayerKnowledge.Snapshot snapshot = knowledge.get(playerId);
+	private Knowledge.Snapshot getKnowledgeSnapshot(UUID playerId) {
+		Knowledge.Snapshot snapshot = knowledge.get(playerId);
 		if (snapshot == null) {
-			snapshot = new PlayerKnowledgeImpl(conversions).createSnapshot();
+			snapshot = helper.createKnowledge(conversions).createSnapshot();
 			knowledge.put(playerId, snapshot);
 		} else {
 			knowledge.put(playerId, snapshot.getKnowledge().createSnapshot());
@@ -307,7 +326,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		//==================
 
 		for (ServerPlayer player : onlinePLayers) {
-			PlayerKnowledge knowledge = getKnowledge(player.getUUID());
+			Knowledge knowledge = getKnowledge(player.getUUID());
 			for (ItemStack item : player.getInventory().items)
 				knowledge.add(new ItemType(item));
 			knowledge.add(new ItemType(player.containerMenu.getCarried()));
@@ -381,13 +400,13 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 					DeepPocketPacketHandler.cbPocketInfo(packetTarget, snapshot.getPocket().getPocketId(), snapshot.getPocket().getInfo());
 			for (ServerPlayer player : oldPlayers) {
 				PacketDistributor.PacketTarget playerTarget = PacketDistributor.PLAYER.with(() -> player);
-				PlayerKnowledge.Snapshot snapshot = getKnowledgeSnapshot(player.getUUID());
+				Knowledge.Snapshot snapshot = getKnowledgeSnapshot(player.getUUID());
 				ItemType[] removed = snapshot.getRemoved();
 				ItemType[] added = snapshot.getAdded();
 				if (removed.length > 0)
-					DeepPocketPacketHandler.cbAddKnowledge(playerTarget, removed);
+					DeepPocketPacketHandler.cbKnowledgeAdd(playerTarget, removed);
 				if (added.length > 0)
-					DeepPocketPacketHandler.cbAddKnowledge(playerTarget, added);
+					DeepPocketPacketHandler.cbKnowledgeAdd(playerTarget, added);
 			}
 		}
 		//On Join
@@ -401,7 +420,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			DeepPocketPacketHandler.cbSetPlayersName(packetTarget, getPlayerNameCache());
 			//knowledge
 			for (ServerPlayer player : newPlayers)
-				DeepPocketPacketHandler.cbAddKnowledge(PacketDistributor.PLAYER.with(() -> player), getKnowledgeSnapshot(player.getUUID()).getKnowledge().asSet().toArray(new ItemType[0]));
+				DeepPocketPacketHandler.cbKnowledgeAdd(PacketDistributor.PLAYER.with(() -> player), getKnowledgeSnapshot(player.getUUID()).getKnowledge().asSet().toArray(new ItemType[0]));
 			//pockets
 			DeepPocketPacketHandler.cbClearPockets(packetTarget);
 			for (Pocket pocket : pockets)
@@ -430,7 +449,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			UUID pocketId = pocket.getPocketId();
 			DeepPocketPacketHandler.cbPocketClearItems(packetTarget, pocketId);
 			UUID[] patternsToRemove = Stream.concat(
-							pocket.getPatterns().stream().map(CraftingPattern::getPatternId),
+							pocket.getPatternsMap().keySet().stream(),
 							Stream.of(pocketSnapshot.getRemovedPatterns())
 			).toArray(UUID[]::new);
 			if (patternsToRemove.length > 0)
@@ -442,9 +461,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			Pocket pocket = entry.getKey();
 			UUID pocketId = pocket.getPocketId();
 			DeepPocketPacketHandler.cbPocketSetItemCount(packetTarget, pocketId, pocket.getItemsMap());
-			Collection<CraftingPattern> patterns = pocket.getPatterns();
-			if (patterns.size() > 0)
-				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns.toArray(CraftingPattern[]::new), new UUID[0]);
+			CraftingPattern[] patterns = pocket.getPatternsMap().values().toArray(CraftingPattern[]::new);
+			if (patterns.length > 0)
+				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns, new UUID[0]);
 		}
 
 		//======

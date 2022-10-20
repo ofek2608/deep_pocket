@@ -7,14 +7,14 @@ import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-class CBAddKnowledge {
+class CBKnowledgeRem {
 	private final ItemType[] types;
 
-	CBAddKnowledge(ItemType ... types) {
+	CBKnowledgeRem(ItemType ... types) {
 		this.types = types;
 	}
 
-	CBAddKnowledge(FriendlyByteBuf buf) {
+	CBKnowledgeRem(FriendlyByteBuf buf) {
 		this(DPPacketUtils.decodeItemTypeArray(buf));
 	}
 
@@ -23,7 +23,7 @@ class CBAddKnowledge {
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
-		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().getKnowledge().add(types));
+		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().getKnowledge().remove(types));
 		ctxSupplier.get().setPacketHandled(true);
 	}
 }

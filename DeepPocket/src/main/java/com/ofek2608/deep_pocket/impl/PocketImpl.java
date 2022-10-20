@@ -3,7 +3,7 @@ package com.ofek2608.deep_pocket.impl;
 import com.ofek2608.collections.CaptureMap;
 import com.ofek2608.collections.CaptureReference;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.PlayerKnowledge;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.struct.*;
@@ -44,15 +44,13 @@ final class PocketImpl implements Pocket {
 	@Override public UUID getPocketId() { return pocketId; }
 	@Override public UUID getOwner() { return owner; }
 	@Override public PocketInfo getInfo() { return new PocketInfo(pocketInfo.get()); }
+	@Override public void setInfo(PocketInfo pocketInfo) { this.pocketInfo.set(new PocketInfo(pocketInfo)); }
 	@Override public String getName() { return pocketInfo.get().name; }
 	@Override public ItemType getIcon() { return pocketInfo.get().icon; }
 	@Override public int getColor() { return pocketInfo.get().color; }
 	@Override public PocketSecurityMode getSecurityMode() { return pocketInfo.get().securityMode; }
 
-	@Override
-	public void setInfo(PocketInfo pocketInfo) {
-		this.pocketInfo.set(new PocketInfo(pocketInfo));
-	}
+
 
 
 	@Override
@@ -110,7 +108,7 @@ final class PocketImpl implements Pocket {
 		return min;
 	}
 
-	private boolean isInvalidKnowledge(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts) {
+	private boolean isInvalidKnowledge(@Nullable Knowledge knowledge, Map<ItemType,Long> counts) {
 		if (knowledge == null)
 			return false;
 		for (ItemType item : counts.keySet())
@@ -120,7 +118,7 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
-	public long getMaxExtract(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts) {
+	public long getMaxExtract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts) {
 		counts = new HashMap<>(counts);
 		conversions.convertMap(counts);
 		if (isInvalidKnowledge(knowledge, counts))
@@ -129,7 +127,7 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
-	public long extract(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts, long overallCount) {
+	public long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount) {
 		if (overallCount == 0)
 			return 0;
 		counts = new HashMap<>(counts);
@@ -152,21 +150,16 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
-	public long extractItem(@Nullable PlayerKnowledge knowledge, ItemType type, long count) {
+	public long extractItem(@Nullable Knowledge knowledge, ItemType type, long count) {
 		return extract(knowledge, Map.of(type, 1L), count);
 	}
 
 	@Override
-	public long getMaxExtract(@Nullable PlayerKnowledge knowledge, ItemType ... items) {
+	public long getMaxExtract(@Nullable Knowledge knowledge, ItemType ... items) {
 		Map<ItemType,Long> itemsMap = new HashMap<>();
 		for (ItemType item : items)
 			itemsMap.put(item, itemsMap.getOrDefault(item, 0L) + 1);
 		return getMaxExtract(knowledge, itemsMap);
-	}
-
-	@Override
-	public void clearItems() {
-		items.clear();
 	}
 
 	@Override
@@ -192,11 +185,6 @@ final class PocketImpl implements Pocket {
 	@Override
 	public void removePattern(UUID patternId) {
 		patterns.remove(patternId);
-	}
-
-	@Override
-	public Collection<CraftingPattern> getPatterns() {
-		return patterns.values();
 	}
 
 	@Override

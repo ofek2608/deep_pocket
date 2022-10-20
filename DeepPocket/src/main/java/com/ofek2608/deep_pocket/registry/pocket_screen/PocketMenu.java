@@ -3,7 +3,7 @@ package com.ofek2608.deep_pocket.registry.pocket_screen;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.PlayerKnowledge;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.struct.*;
@@ -407,7 +407,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		NonNullList<ItemStack> remainingItems = player.level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, player.level);
 		ForgeHooks.setCraftingPlayer(null);
 
-		PlayerKnowledge knowledge = api.getKnowledge(player.getUUID());
+		Knowledge knowledge = api.getKnowledge(player.getUUID());
 		long max = pocket.getMaxExtract(knowledge, getCrafting());
 		if (0 <= max && max < count)
 			count = max;

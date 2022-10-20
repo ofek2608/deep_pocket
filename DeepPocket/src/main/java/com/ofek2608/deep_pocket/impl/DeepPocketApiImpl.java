@@ -23,6 +23,11 @@ abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements Dee
 	}
 
 	@Override
+	public Helper getHelper() {
+		return helper;
+	}
+
+	@Override
 	public ItemConversions getItemConversions() {
 		return conversions;
 	}

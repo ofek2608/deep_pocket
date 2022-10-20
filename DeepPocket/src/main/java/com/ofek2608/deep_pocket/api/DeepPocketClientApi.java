@@ -10,6 +10,10 @@ import java.util.stream.Stream;
 
 public interface DeepPocketClientApi extends DeepPocketApi {
 	static DeepPocketClientApi get() { return DeepPocketManager.getClientApi(); }
+
+
+	@Override DeepPocketClientHelper getHelper();
+
 	void setItemConversions(ItemConversions conversions);
 	//client config
 	SearchMode getSearchMode();
@@ -24,6 +28,6 @@ public interface DeepPocketClientApi extends DeepPocketApi {
 	boolean isPermitPublicPocket();
 	void setPermitPublicPocket(boolean value);
 
-	PlayerKnowledge getKnowledge();
+	Knowledge getKnowledge();
 	Stream<ItemTypeAmount> getSortedKnowledge(Pocket pocket);
 }

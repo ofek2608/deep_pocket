@@ -8,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,25 +15,24 @@ public interface Pocket {
 	UUID getPocketId();
 	UUID getOwner();
 	PocketInfo getInfo();
+	void setInfo(PocketInfo pocketInfo);
 	String getName();
 	ItemType getIcon();
 	int getColor();
 	PocketSecurityMode getSecurityMode();
-	void setInfo(PocketInfo pocketInfo);
+
 	boolean canAccess(Player player);
 	Map<ItemType,Long> getItemsMap();
 	long getItemCount(ItemType type);
 	void insertItem(ItemType type, long count);
-	long getMaxExtract(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts);
-	long extract(@Nullable PlayerKnowledge knowledge, Map<ItemType,Long> counts, long overallCount);
-	long extractItem(@Nullable PlayerKnowledge knowledge, ItemType type, long count);
-	long getMaxExtract(@Nullable PlayerKnowledge knowledge, ItemType ... items);
-	void clearItems();
+	long getMaxExtract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts);
+	long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount);
+	long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
+	long getMaxExtract(@Nullable Knowledge knowledge, ItemType ... items);
 	Map<UUID,CraftingPattern> getPatternsMap();
 	@Nullable CraftingPattern getPattern(UUID patternId);
 	UUID addPattern(ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
 	void removePattern(UUID patternId);
-	Collection<CraftingPattern> getPatterns();
 	Snapshot createSnapshot();
 	Pocket copy();
 

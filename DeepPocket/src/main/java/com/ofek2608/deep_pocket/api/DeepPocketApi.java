@@ -13,6 +13,8 @@ public interface DeepPocketApi {
 	public static @Nullable DeepPocketApi get(boolean isClientSide) { return isClientSide ? DeepPocketClientApi.get() : DeepPocketServerApi.get(); }
 	public static @Nullable DeepPocketApi get(Level level) { return get(level.isClientSide); }
 
+	DeepPocketHelper getHelper();
+
 	ItemConversions getItemConversions();
 
 	Stream<Pocket> getPockets();

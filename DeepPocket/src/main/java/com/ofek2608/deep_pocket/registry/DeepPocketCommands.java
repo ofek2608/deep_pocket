@@ -40,7 +40,7 @@ class DeepPocketCommands {
 	private static int knowledgeClear(CommandContext<CommandSourceStack> context) {
 		DeepPocketServerApi api = DeepPocketServerApi.get();
 		if (context.getSource().source instanceof Player player && api != null) {
-			api.getKnowledge(player.getUUID()).clear();
+			api.getKnowledge(player.getUUID()).asSet().clear();
 			send(context, "Successfully cleared the knowledge to " + player.getName().getString(), true);
 		} else {
 			send(context, "Failed to clear knowledge", false);
@@ -56,7 +56,7 @@ class DeepPocketCommands {
 		}
 		var players = EntityArgument.getPlayers(context, "targets");
 		for (ServerPlayer player : players)
-			api.getKnowledge(player.getUUID()).clear();
+			api.getKnowledge(player.getUUID()).asSet().clear();
 		send(context, "Successfully cleared the knowledge to " + players.size() + " players", true);
 		return 0;
 	}

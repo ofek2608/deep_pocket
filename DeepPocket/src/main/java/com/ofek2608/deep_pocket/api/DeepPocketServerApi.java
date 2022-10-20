@@ -13,7 +13,7 @@ public interface DeepPocketServerApi extends DeepPocketApi {
 	static @Nullable DeepPocketServerApi get() { return DeepPocketManager.getServerApi(); }
 
 	@UnmodifiableView Set<UUID> getViewedPockets(ServerPlayer player);
-	PlayerKnowledge getKnowledge(UUID playerId);
+	Knowledge getKnowledge(UUID playerId);
 
 	void openPocket(ServerPlayer player, UUID pocketId);
 	void selectPocketFor(ServerPlayer player, UUID pocketId);
