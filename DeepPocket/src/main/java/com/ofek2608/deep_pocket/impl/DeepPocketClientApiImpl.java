@@ -1,28 +1,34 @@
 package com.ofek2608.deep_pocket.impl;
 
-import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.events.DeepPocketItemConversionsUpdatedEvent;
-import com.ofek2608.deep_pocket.api.struct.*;
-import net.minecraft.Util;
+import com.ofek2608.deep_pocket.api.struct.ItemConversions;
+import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-class DeepPocketClientApiImpl extends DeepPocketApiImpl implements DeepPocketClientApi {
-	private PlayerKnowledge knowledge = new PlayerKnowledge(conversions, Util.NIL_UUID);
+class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketHelper> implements DeepPocketClientApi {
+	private final Minecraft minecraft;
+	private PlayerKnowledge knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 	private boolean permitPublicPocket;
 
-	DeepPocketClientApiImpl() {}
+	DeepPocketClientApiImpl(DeepPocketClientHelper helper) {
+		super(helper);
+		this.minecraft = helper.getMinecraft();
+	}
 
 	@Override
 	public void setItemConversions(ItemConversions conversions) {
 		this.conversions = conversions;
-		this.knowledge = new PlayerKnowledge(conversions, Util.NIL_UUID);
+		this.knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 		MinecraftForge.EVENT_BUS.post(new DeepPocketItemConversionsUpdatedEvent(this, conversions));
 	}
 

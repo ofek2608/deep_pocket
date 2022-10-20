@@ -2,7 +2,7 @@ package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -33,7 +33,7 @@ class CBPocketSetItemCount {
 			DeepPocketClientApi api = DeepPocketClientApi.get();
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket != null)
-				counts.forEach(pocket.getItems()::put);
+				counts.forEach(pocket.getItemsMap()::put);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import com.ofek2608.deep_pocket.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;

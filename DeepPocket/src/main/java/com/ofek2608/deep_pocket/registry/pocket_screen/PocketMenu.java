@@ -3,6 +3,8 @@ package com.ofek2608.deep_pocket.registry.pocket_screen;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.PlayerKnowledge;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;

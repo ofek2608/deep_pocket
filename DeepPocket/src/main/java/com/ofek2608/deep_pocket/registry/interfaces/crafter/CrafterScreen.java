@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketClientUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;

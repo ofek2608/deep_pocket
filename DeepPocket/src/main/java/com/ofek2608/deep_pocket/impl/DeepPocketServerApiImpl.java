@@ -1,7 +1,10 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.logging.LogUtils;
+import com.ofek2608.deep_pocket.api.DeepPocketHelper;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.PlayerKnowledge;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -29,25 +32,26 @@ import org.slf4j.Logger;
 import java.util.*;
 import java.util.stream.Stream;
 
-class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketServerApi {
+final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> implements DeepPocketServerApi {
 	private static final Logger LOGGER = LogUtils.getLogger();
 	private final MinecraftServer server;
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
 	private final Map<UUID, PlayerKnowledge.Snapshot> knowledge = new HashMap<>();
 
-	DeepPocketServerApiImpl(MinecraftServer server, ItemConversions conversions) {
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions) {
+		super(helper);
 		this.server = server;
 		this.conversions = conversions;
 	}
 
-	DeepPocketServerApiImpl(MinecraftServer server, ItemConversions conversions, CompoundTag tag) {
-		this(server, conversions);
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions, CompoundTag tag) {
+		this(helper, server, conversions);
 		boolean errors = false;
 		// Loading: Pockets
 		boolean allowPublicPockets = DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get();
 		for (Tag savedPocket : tag.getList("pockets", 10)) {
 			try {
-				Pocket readPocket = new Pocket(server, conversions, allowPublicPockets, (CompoundTag)savedPocket);
+				Pocket readPocket = loadPocket(server, conversions, allowPublicPockets, (CompoundTag)savedPocket);
 				pocketSnapshots.put(readPocket.getPocketId(), readPocket.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
@@ -64,8 +68,9 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		// Loading: Knowledge
 		for (Tag savedKnowledge : tag.getList("knowledge", 10)) {
 			try {
-				PlayerKnowledge readKnowledge = new PlayerKnowledge(conversions, (CompoundTag)savedKnowledge);
-				knowledge.put(readKnowledge.getPlayer(), readKnowledge.createSnapshot());
+				UUID owner = ((CompoundTag)savedKnowledge).getUUID("player");
+				PlayerKnowledgeImpl readKnowledge = new PlayerKnowledgeImpl(conversions, (CompoundTag)savedKnowledge);
+				knowledge.put(owner, readKnowledge.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
 			}
@@ -74,10 +79,49 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			LOGGER.warn("There was error while trying to load Deep Pocket's saved data");
 	}
 
+	private Pocket loadPocket(MinecraftServer server, ItemConversions conversions, boolean allowPublicPocket, CompoundTag saved) {
+		Pocket pocket = helper.createPocket(conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
+
+		Map<ItemType,Long> items = pocket.getItemsMap();
+		Map<UUID,CraftingPattern> patterns = pocket.getPatternsMap();
+
+		for (Tag itemCount : saved.getList("itemCounts", 10)) {
+			ItemType type = ItemType.load(((CompoundTag) itemCount).getCompound("item"));
+			long count = ((CompoundTag)itemCount).getLong("count");
+			if (count == 0)
+				continue;
+			items.put(type, count < 0 ? -1 : count);
+		}
+		conversions.convertMap(items);
+		for (Tag savedPattern : saved.getList("patterns", 10)) {
+			CraftingPattern pattern;
+			try {
+				pattern = new WorldCraftingPattern((CompoundTag) savedPattern, server);
+			} catch (Exception exception) {
+				try {
+					pattern = new CraftingPattern((CompoundTag) savedPattern);
+				} catch (Exception ignored) {
+					continue;
+				}
+			}
+			patterns.put(pattern.getPatternId(), pattern);
+		}
+
+		if (!allowPublicPocket) {
+			PocketInfo info = pocket.getInfo();
+			if (info.securityMode == PocketSecurityMode.PUBLIC) {
+				info.securityMode = PocketSecurityMode.TEAM;
+				pocket.setInfo(info);
+			}
+		}
+
+		return pocket;
+	}
+
 	public CompoundTag save(CompoundTag tag) {
 		// Saving: Pockets
 		ListTag savedPockets = new ListTag();
-		getPockets().map(Pocket::save).forEach(savedPockets::add);
+		getPockets().map(DeepPocketServerApiImpl::savePocket).forEach(savedPockets::add);
 		tag.put("pockets", savedPockets);
 		// Saving: PlayerNameCache
 		ListTag savedPlayerNameCache = new ListTag();
@@ -95,6 +139,24 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 		tag.put("knowledge", savedKnowledge);
 		return tag;
 	}
+
+	private static CompoundTag savePocket(Pocket pocket) {
+		CompoundTag saved = new CompoundTag();
+		saved.putUUID("pocketId", pocket.getPocketId());
+		saved.putUUID("owner", pocket.getOwner());
+		saved.put("info", pocket.getInfo().save());
+		ListTag itemCounts = new ListTag();
+		for (var entry : pocket.getItemsMap().entrySet()) {
+			CompoundTag itemCount = new CompoundTag();
+			itemCount.put("item", entry.getKey().save());
+			itemCount.putDouble("count", entry.getValue());
+			itemCounts.add(itemCount);
+		}
+		saved.put("itemCounts", itemCounts);
+		return saved;
+	}
+
+
 
 	@Nullable
 	@Override
@@ -134,7 +196,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 
 	@Override
 	public PlayerKnowledge getKnowledge(UUID playerId) {
-		return knowledge.computeIfAbsent(playerId, id->new PlayerKnowledge(conversions, id).createSnapshot()).getKnowledge();
+		return knowledge.computeIfAbsent(playerId, id->new PlayerKnowledgeImpl(conversions).createSnapshot()).getKnowledge();
 	}
 
 	@Override
@@ -225,7 +287,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 	private PlayerKnowledge.Snapshot getKnowledgeSnapshot(UUID playerId) {
 		PlayerKnowledge.Snapshot snapshot = knowledge.get(playerId);
 		if (snapshot == null) {
-			snapshot = new PlayerKnowledge(conversions, playerId).createSnapshot();
+			snapshot = new PlayerKnowledgeImpl(conversions).createSnapshot();
 			knowledge.put(playerId, snapshot);
 		} else {
 			knowledge.put(playerId, snapshot.getKnowledge().createSnapshot());
@@ -379,7 +441,7 @@ class DeepPocketServerApiImpl extends DeepPocketApiImpl implements DeepPocketSer
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
 			Pocket pocket = entry.getKey();
 			UUID pocketId = pocket.getPocketId();
-			DeepPocketPacketHandler.cbPocketSetItemCount(packetTarget, pocketId, pocket.getItems());
+			DeepPocketPacketHandler.cbPocketSetItemCount(packetTarget, pocketId, pocket.getItemsMap());
 			Collection<CraftingPattern> patterns = pocket.getPatterns();
 			if (patterns.size() > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns.toArray(CraftingPattern[]::new), new UUID[0]);

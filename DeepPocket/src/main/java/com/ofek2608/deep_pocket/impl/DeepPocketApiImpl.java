@@ -12,10 +12,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-abstract class DeepPocketApiImpl implements DeepPocketApi {
+abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements DeepPocketApi {
+	protected final Helper helper;
 	protected @Nonnull ItemConversions conversions = ItemConversions.EMPTY;
 	protected final Map<UUID, Pocket.Snapshot> pocketSnapshots = new HashMap<>();
 	protected final Map<UUID, String> playerNameCache = new HashMap<>();
+
+	protected DeepPocketApiImpl(Helper helper) {
+		this.helper = helper;
+	}
 
 	@Override
 	public ItemConversions getItemConversions() {
@@ -35,7 +40,7 @@ abstract class DeepPocketApiImpl implements DeepPocketApi {
 	public @Nullable Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
 		if (pocketSnapshots.containsKey(pocketId))
 			return null;
-		Pocket newPocket = new Pocket(conversions, pocketId, owner, info);
+		Pocket newPocket = helper.createPocket(conversions, pocketId, owner, info);
 		pocketSnapshots.put(pocketId, newPocket.createSnapshot());
 		return newPocket;
 	}

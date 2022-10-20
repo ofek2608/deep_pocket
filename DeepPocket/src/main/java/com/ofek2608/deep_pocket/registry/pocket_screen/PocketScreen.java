@@ -13,7 +13,7 @@ import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;

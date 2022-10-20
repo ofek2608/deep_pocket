@@ -7,7 +7,7 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;

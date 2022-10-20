@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.client_screens;
 
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import net.minecraft.client.Minecraft;

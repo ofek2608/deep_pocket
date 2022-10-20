@@ -74,6 +74,9 @@ public class CaptureSet<E> extends AbstractSet<E> {
 
 		public CaptureSetMap() { }
 
-		public void validateKey(E e) { validateElement(e); }
+		public E validate(E key, E val) {
+			validateElement(key);
+			return val;
+		}
 	}
 }

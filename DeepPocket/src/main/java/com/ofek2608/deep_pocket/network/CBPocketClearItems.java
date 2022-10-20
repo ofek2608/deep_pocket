@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 

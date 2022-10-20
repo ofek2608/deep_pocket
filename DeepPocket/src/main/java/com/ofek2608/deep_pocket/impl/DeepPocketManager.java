@@ -24,11 +24,26 @@ import javax.annotation.Nullable;
 public final class DeepPocketManager {
 	private DeepPocketManager() {}
 
-	private static final DeepPocketClientApiImpl clientApi = new DeepPocketClientApiImpl();
+	private static DeepPocketHelperImpl helper;
+	private static DeepPocketClientHelperImpl clientHelper;
+	private static DeepPocketClientApiImpl clientApi;
 	private static DeepPocketServerApiImpl serverApi;
 
-	public static DeepPocketClientApi getClientApi() { return clientApi; }
-	public static @Nullable DeepPocketServerApi getServerApi() { return serverApi; }
+	public static DeepPocketHelper getHelper() {
+		DeepPocketHelper res = helper;
+		return res == null ? helper = new DeepPocketHelperImpl() : res;
+	}
+	public static DeepPocketClientHelper getClientHelper() {
+		DeepPocketClientHelper res = clientHelper;
+		return res == null ? clientHelper = new DeepPocketClientHelperImpl() : res;
+	}
+	public static DeepPocketClientApi getClientApi() {
+		DeepPocketClientApi res = clientApi;
+		return res == null ? clientApi = new DeepPocketClientApiImpl(getClientHelper()) : res;
+	}
+	public static @Nullable DeepPocketServerApi getServerApi() {
+		return serverApi;
+	}
 
 	@Mod.EventBusSubscriber(modid = DeepPocketMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 	private static final class ForgeEvents {
@@ -37,13 +52,14 @@ public final class DeepPocketManager {
 		@SubscribeEvent
 		public static void event(ServerStartedEvent event) {
 			MinecraftServer server = event.getServer();
+			DeepPocketHelper helper = getHelper();
 			ItemConversions.Builder conversionsBuilder = new ItemConversions.Builder();
 			MinecraftForge.EVENT_BUS.post(new DeepPocketBuildConversionsEvent(server, conversionsBuilder));
 			ItemConversions conversions = conversionsBuilder.build();
 			var dataStorage = server.overworld().getDataStorage();
 			DeepPocketSavedData savedData = dataStorage.computeIfAbsent(
-							tag->new DeepPocketSavedData(server, conversions, tag),
-							()->new DeepPocketSavedData(server, conversions),
+							tag->new DeepPocketSavedData(helper, server, conversions, tag),
+							()->new DeepPocketSavedData(helper, server, conversions),
 							DeepPocketMod.ID + "-server_api"
 			);
 			serverApi = savedData.api;
@@ -89,12 +105,12 @@ public final class DeepPocketManager {
 	private static final class DeepPocketSavedData extends SavedData {
 		private final DeepPocketServerApiImpl api;
 
-		private DeepPocketSavedData(MinecraftServer server, ItemConversions conversions) {
-			this.api = new DeepPocketServerApiImpl(server, conversions);
+		private DeepPocketSavedData(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions) {
+			this.api = new DeepPocketServerApiImpl(helper, server, conversions);
 		}
 
-		private DeepPocketSavedData(MinecraftServer server, ItemConversions conversions, CompoundTag tag) {
-			this.api = new DeepPocketServerApiImpl(server, conversions, tag);
+		private DeepPocketSavedData(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions, CompoundTag tag) {
+			this.api = new DeepPocketServerApiImpl(helper, server, conversions, tag);
 		}
 
 		@Override

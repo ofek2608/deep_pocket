@@ -61,8 +61,7 @@ public class CaptureMap<K,V> implements Map<K,V> {
 	@Nullable
 	@Override
 	public V put(K key, V value) {
-		validateKey(key);
-		value = validateValue(value);
+		value = validate(key, value);
 		if (Objects.equals(defaultValue(key), value))
 			return remove(key);
 		V oldValue = internal.put(key, value);
@@ -75,8 +74,7 @@ public class CaptureMap<K,V> implements Map<K,V> {
 		if (internal.containsKey(key))
 			return false;
 		try {
-			validateKey(key);
-			value = validateValue(value);
+			value = validate(key, value);
 		} catch (Exception exception) {
 			return false;
 		}
@@ -142,8 +140,7 @@ public class CaptureMap<K,V> implements Map<K,V> {
 
 
 	//For use in an extending class
-	public void validateKey(K key) throws IllegalArgumentException { }
-	public V validateValue(V val) throws IllegalArgumentException { return val; }
+	public V validate(K key, V val) throws IllegalArgumentException { return val; }
 	public V defaultValue(Object key) { return null; }
 
 

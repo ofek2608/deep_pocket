@@ -3,7 +3,7 @@ package com.ofek2608.deep_pocket.network;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
-import com.ofek2608.deep_pocket.api.struct.Pocket;
+import com.ofek2608.deep_pocket.api.Pocket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -42,7 +42,7 @@ class CBUpdatePatterns {
 			if (pocket == null)
 				return;
 			for (CraftingPattern pattern : addedPatterns)
-				pocket.addPattern(pattern);
+				pocket.getPatternsMap().put(pattern.getPatternId(), pattern);
 			for (UUID patternId : removedPatterns)
 				pocket.removePattern(patternId);
 		});
