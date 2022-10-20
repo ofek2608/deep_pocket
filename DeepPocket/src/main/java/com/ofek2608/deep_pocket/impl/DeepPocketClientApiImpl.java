@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHelper> implements DeepPocketClientApi {
+final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHelper> implements DeepPocketClientApi {
 	private Knowledge knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 	private boolean permitPublicPocket;
 
