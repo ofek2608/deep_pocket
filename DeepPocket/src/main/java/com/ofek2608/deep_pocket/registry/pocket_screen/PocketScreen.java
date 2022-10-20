@@ -3,10 +3,10 @@ package com.ofek2608.deep_pocket.registry.pocket_screen;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ofek2608.deep_pocket.DeepPocketClientUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
@@ -43,6 +43,7 @@ import java.util.function.Predicate;
 
 public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/pocket.png");
+	private final DeepPocketClientHelper dpClientHelper = DeepPocketClientHelper.get();
 
 	//render fields
 	private PocketDisplayMode pocketDisplayMode;
@@ -346,7 +347,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 				slotItem.setCount(maxStackSize);
 		}
 
-		DeepPocketClientUtils.renderItem(poseStack, x, y, slotItem, itemRenderer, font);
+		dpClientHelper.renderItem(poseStack, x, y, slotItem, itemRenderer, font);
 	}
 
 	private void renderSlotItemsRow(PoseStack poseStack, int x, int y, int slotIndex) {
@@ -361,7 +362,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			int x = 0;
 			int y = 0;
 			for (var pocketSlot : visiblePocketSlots) {
-				DeepPocketClientUtils.renderItemAmount(poseStack, xOffset + x * 16, yOffset + y * 16, pocketSlot, itemRenderer, font);
+				dpClientHelper.renderItemAmount(poseStack, xOffset + x * 16, yOffset + y * 16, pocketSlot, itemRenderer, font);
 
 				if (++x == 9) {
 					x = 0;
@@ -383,13 +384,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			slotIndex = 0;
 			for (int gridY = 0; gridY < 3; gridY++)
 				for (int gridX = 0; gridX < 3; gridX++)
-					DeepPocketClientUtils.renderItemAmount(poseStack, xOffset + 18 + 16 * gridX, yOffset + 16 * gridY, patternInput[slotIndex++], itemRenderer, font);
+					dpClientHelper.renderItemAmount(poseStack, xOffset + 18 + 16 * gridX, yOffset + 16 * gridY, patternInput[slotIndex++], itemRenderer, font);
 			slotIndex = 0;
 			for (int gridY = 0; gridY < 3; gridY++)
 				for (int gridX = 0; gridX < 3; gridX++)
-					DeepPocketClientUtils.renderItemAmount(poseStack, xOffset + 78 + 16 * gridX, yOffset + 16 * gridY, patternOutput[slotIndex++], itemRenderer, font);
+					dpClientHelper.renderItemAmount(poseStack, xOffset + 78 + 16 * gridX, yOffset + 16 * gridY, patternOutput[slotIndex++], itemRenderer, font);
 			if (!isEmptyPattern()) {
-				DeepPocketClientUtils.renderItem(poseStack, xOffset + 128, yOffset + 16,
+				dpClientHelper.renderItem(poseStack, xOffset + 128, yOffset + 16,
 								canCreatePattern() ?
 												CraftingPatternItem.createItem(patternInput, patternOutput) :
 												new ItemStack(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get()),
@@ -454,7 +455,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			itemstack = itemstack.copy();
 			itemstack.setCount(getQuickCraftRemaining());
 		}
-		DeepPocketClientUtils.renderItem(poseStack, mx - 8, my - 8, itemstack, itemRenderer, font);
+		dpClientHelper.renderItem(poseStack, mx - 8, my - 8, itemstack, itemRenderer, font);
 
 		poseStack.popPose();
 		this.setBlitOffset(0);

@@ -2,9 +2,9 @@ package com.ofek2608.deep_pocket.registry.items.crafting_pattern;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ofek2608.deep_pocket.DeepPocketClientUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
+import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class CraftingPatternClientTooltip implements ClientTooltipComponent {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/tooltip/crafting_pattern.png");
+	private final DeepPocketClientHelper dpClientHelper = DeepPocketClientHelper.get();
 	private final CraftingPatternTooltip param;
 	private final int gridSizeInput;
 	private final int gridSizeOutput;
@@ -52,10 +53,10 @@ public class CraftingPatternClientTooltip implements ClientTooltipComponent {
 		poseStack.translate(0, 0, blitOffset);
 		renderItems(gridSizeInput, gridSizeOutput, totalW, totalH, (x,y,slotIndex)->{
 			if (slotIndex < param.input.length)
-				DeepPocketClientUtils.renderItemAmount(poseStack, mx + x, my + y, param.input[slotIndex], itemRenderer, font);
+				dpClientHelper.renderItemAmount(poseStack, mx + x, my + y, param.input[slotIndex], itemRenderer, font);
 		}, (x,y,slotIndex)->{
 			if (slotIndex < param.output.length)
-				DeepPocketClientUtils.renderItemAmount(poseStack, mx + x, my + y, param.output[slotIndex], itemRenderer, font);
+				dpClientHelper.renderItemAmount(poseStack, mx + x, my + y, param.output[slotIndex], itemRenderer, font);
 		});
 		poseStack.popPose();
 	}

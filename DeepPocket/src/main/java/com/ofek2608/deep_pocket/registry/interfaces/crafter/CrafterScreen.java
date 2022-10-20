@@ -3,9 +3,9 @@ package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ofek2608.deep_pocket.DeepPocketClientUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
+import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.client.Minecraft;
@@ -21,6 +21,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/crafter_generic_54.png");
+	private final DeepPocketClientHelper dpClientHelper = DeepPocketClientHelper.get();
 	private final int containerRows;
 	private int hoveredSlotIndex;
 	private int quickCraftingType;
@@ -100,7 +101,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 			itemstack = itemstack.copy();
 			itemstack.setCount(getQuickCraftRemaining());
 		}
-		DeepPocketClientUtils.renderItem(poseStack, mx - 8, my - 8, itemstack, itemRenderer, font);
+		dpClientHelper.renderItem(poseStack, mx - 8, my - 8, itemstack, itemRenderer, font);
 
 		poseStack.popPose();
 		this.setBlitOffset(0);
@@ -124,7 +125,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 		if (!slotItem.isEmpty() && getPattern)
 			slotItem = CraftingPatternItem.getCachedDisplayedResult(slotItem);
 
-		DeepPocketClientUtils.renderItem(poseStack, x, y, slotItem, itemRenderer, font);
+		dpClientHelper.renderItem(poseStack, x, y, slotItem, itemRenderer, font);
 	}
 
 	private void renderSlotItemsContainer(PoseStack poseStack, int y, int rows, int slotIndex, boolean getPattern) {

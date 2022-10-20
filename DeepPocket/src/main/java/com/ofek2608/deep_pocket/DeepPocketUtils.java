@@ -93,56 +93,6 @@ public final class DeepPocketUtils {
 		return key == null ? ResourceLocation.DEFAULT_NAMESPACE : key.getNamespace();
 	}
 
-	private static final String[] NUMBER_SUFFIXES = {
-					"","K","M","B","T","Q",
-					"aa","ab","ac","ad","ae","af","ag","ah","ai","aj","ak","al","am","an","ao","ap","aq","ar","as","at","au","av","aw","ax","ay","az",
-					"ba","bb","bc","bd","be","bf","bg","bh","bi","bj","bk","bl","bm","bn","bo","bp","bq","br","bs","bt","bu","bv","bw","bx","by","bz",
-					"ca","cb","cc","cd","ce","cf","cg","ch","ci","cj","ck","cl","cm","cn","co","cp","cq","cr","cs","ct","cu","cv","cw","cx","cy","cz",
-					"da","db","dc","dd","de","df","dg","dh","di","dj","dk","dl","dm","dn","do","dp","dq","dr","ds"
-	};
-
-	public static String bigNumberToString(double num) {
-		if (Double.isNaN(num))
-			return "NaN";
-
-		String prefix;
-		if (num < 0) {
-			prefix = "-";
-			num = -num;
-		} else {
-			prefix = "";
-		}
-
-		if (Double.isInfinite(num))
-			return prefix + "Inf";
-
-		{
-			int numInt = (int)num;
-			if (numInt < 1000 && (double)numInt == num)
-				return prefix + numInt;
-		}
-
-		for (String suffix : NUMBER_SUFFIXES) {
-			if (num < 1000) {
-				String str = "" + (int)(num * 100);
-				return prefix + switch (str.length()) {
-					case 1 -> "0.0" + str;
-					case 2 -> "0." + str;
-					case 3 -> addDot(str, 1);
-					case 4 -> addDot(str.substring(0,3), 2);
-					case 5 -> str.substring(0,3);
-					default -> "999";
-				} + suffix;
-			}
-			num /= 1000;
-		}
-		return prefix + "Inf";
-	}
-
-	private static String addDot(String text, int index) {
-		return text.substring(0,index) + "." + text.substring(index);
-	}
-
 
 
 
@@ -194,6 +144,10 @@ public final class DeepPocketUtils {
 			a /= 1000;
 		}
 		return "Inf";
+	}
+
+	private static String addDot(String text, int index) {
+		return text.substring(0,index) + "." + text.substring(index);
 	}
 
 
