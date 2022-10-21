@@ -3,9 +3,13 @@ package com.ofek2608.deep_pocket.impl;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 
-final class ProvidedResourcesImpl implements ProvidedResources{
+final class ProvidedResourcesImpl implements ProvidedResources {
 	private final @Nullable ProvidedResourcesImpl parent;
 	private final ItemType[] types;
 	private final long[] provided;
@@ -172,5 +176,31 @@ final class ProvidedResourcesImpl implements ProvidedResources{
 			indexes[i] = i;
 
 		return new ProvidedResourcesImpl(this, types, indexes);
+	}
+
+	@Override
+	public void load(Tag saved) {
+		if (!(saved instanceof ListTag savedList))
+			return;
+		for (Tag savedElement : savedList) {
+			if (!(savedElement instanceof CompoundTag savedElementCompound))
+				continue;
+			ItemTypeAmount typeAmount = new ItemTypeAmount(savedElementCompound);
+			ItemType type = typeAmount.getItemType();
+			for (int i = 0; i < types.length; i++) {
+				if (types[i].equals(type)) {
+					provide(i, typeAmount.getAmount());
+					break;
+				}
+			}
+		}
+	}
+
+	@Override
+	public Tag save() {
+		ListTag saved = new ListTag();
+		for (int i = 0; i < types.length; i++)
+			saved.add(new ItemTypeAmount(types[i], provided[i]).save());
+		return saved;
 	}
 }

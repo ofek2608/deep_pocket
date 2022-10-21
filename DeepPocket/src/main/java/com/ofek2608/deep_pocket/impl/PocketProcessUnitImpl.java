@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessUnit;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
@@ -10,13 +11,15 @@ import java.util.*;
 import java.util.stream.Stream;
 
 final class PocketProcessUnitImpl implements PocketProcessUnit {
+	private final PocketProcessManager parent;
 	private final ProvidedResources resources;
 	private final Map<ItemType,Integer> typeIndexes;
 	private final long[] leftToProvide;
 	private final List<PocketProcessRecipe> recipes;
 
-	PocketProcessUnitImpl(DeepPocketHelper helper, ItemType[] types) {
+	PocketProcessUnitImpl(DeepPocketHelper helper, PocketProcessManager parent, ItemType[] types) {
 		types = types.clone();
+		this.parent = parent;
 		int len = types.length;
 		this.resources = helper.createProvidedResources(types);
 		this.typeIndexes = new HashMap<>();
@@ -24,6 +27,11 @@ final class PocketProcessUnitImpl implements PocketProcessUnit {
 			this.typeIndexes.put(types[i], i);
 		this.leftToProvide = new long[len];
 		this.recipes = new ArrayList<>();
+	}
+
+	@Override
+	public PocketProcessManager getParent() {
+		return parent;
 	}
 
 	@Override

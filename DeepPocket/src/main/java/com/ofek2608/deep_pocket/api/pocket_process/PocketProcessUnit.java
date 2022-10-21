@@ -8,6 +8,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import java.util.List;
 
 public interface PocketProcessUnit {
+	PocketProcessManager getParent();
 	int getTypeCount();
 	ItemType[] getTypes();
 	ItemType getType(int index);

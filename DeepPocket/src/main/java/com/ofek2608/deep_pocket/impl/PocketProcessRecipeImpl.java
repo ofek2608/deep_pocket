@@ -65,8 +65,10 @@ final class PocketProcessRecipeImpl implements PocketProcessRecipe {
 	}
 
 	@Override
-	public void addCrafter(UUID patternId) {
-		this.crafters.add(new PocketProcessCrafterImpl(this, resources.subProvidedResources(), patternId));
+	public PocketProcessCrafter addCrafter(UUID patternId) {
+		PocketProcessCrafter crafter = new PocketProcessCrafterImpl(this, resources.subProvidedResources(), patternId);
+		this.crafters.add(crafter);
+		return crafter;
 	}
 
 	@Override

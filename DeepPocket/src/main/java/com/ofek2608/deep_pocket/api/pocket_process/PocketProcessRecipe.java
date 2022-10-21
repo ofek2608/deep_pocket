@@ -19,6 +19,6 @@ public interface PocketProcessRecipe {
 
 
 	@UnmodifiableView List<PocketProcessCrafter> getCrafters();
-	void addCrafter(UUID patternId);
+	PocketProcessCrafter addCrafter(UUID patternId);
 	boolean executeCrafters(Pocket pocket);
 }

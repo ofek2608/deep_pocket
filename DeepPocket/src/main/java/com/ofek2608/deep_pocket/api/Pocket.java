@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -34,6 +35,7 @@ public interface Pocket {
 	@Nullable CraftingPattern getPattern(UUID patternId);
 	UUID addPattern(ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
 	void removePattern(UUID patternId);
+	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();
 

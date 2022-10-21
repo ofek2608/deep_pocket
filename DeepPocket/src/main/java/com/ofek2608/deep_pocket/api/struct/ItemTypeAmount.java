@@ -13,13 +13,12 @@ public final class ItemTypeAmount {
 	}
 
 	public ItemTypeAmount(CompoundTag saved) {
-		this.itemType = ItemType.load(saved.getCompound("itemType"));
+		this.itemType = ItemType.load(saved);
 		this.amount = saved.getLong("amount");
 	}
 
 	public CompoundTag save() {
-		CompoundTag saved = new CompoundTag();
-		saved.put("itemType", itemType.save());
+		CompoundTag saved = itemType.save();
 		saved.putLong("amount", amount);
 		return saved;
 	}

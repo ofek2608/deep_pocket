@@ -202,6 +202,11 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
+	public PocketProcessManager getProcesses() {
+		return processes;
+	}
+
+	@Override
 	public Snapshot createSnapshot() {
 		return new SnapshotImpl();
 	}

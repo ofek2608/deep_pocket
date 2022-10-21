@@ -5,8 +5,12 @@ import com.ofek2608.deep_pocket.api.DeepPocketHelper;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessUnit;
+import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
@@ -30,6 +34,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> implements DeepPocketServerApi {
@@ -107,6 +112,8 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			patterns.put(pattern.getPatternId(), pattern);
 		}
 
+		loadPManager(pocket.getProcesses(), saved.getList("processes", 10));
+
 		if (!allowPublicPocket) {
 			PocketInfo info = pocket.getInfo();
 			if (info.securityMode == PocketSecurityMode.PUBLIC) {
@@ -120,13 +127,61 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 
 	private Knowledge loadKnowledge(CompoundTag saved) {
 		Knowledge knowledge = helper.createKnowledge(conversions);
-		for (Tag itemTag : saved.getList("items", 10)) {
-			ItemType item = ItemType.load((CompoundTag) itemTag);
-			if (conversions.getValue(item) != null)
-				knowledge.add(item);
-		}
+		knowledge.add(loadTypeArray(saved.getList("items", 10)));
 		return knowledge;
 	}
+
+	private void loadPManager(PocketProcessManager manager, ListTag saved) {
+		for (Tag tag : saved)
+			if (tag instanceof CompoundTag savedUnit)
+				loadPUnit(manager, savedUnit);
+	}
+
+	private void loadPUnit(PocketProcessManager manager, CompoundTag saved) {
+		ItemType[] types = loadTypeArray(saved.getList("types", 10));
+		PocketProcessUnit unit = manager.addUnit(types);
+		unit.getResources().load(saved.getCompound("resources"));
+		long[] leftToProvide = saved.getLongArray("leftToProvide");
+		int leftToProvideLen = Math.min(leftToProvide.length, types.length);
+		for (int i = 0; i < leftToProvideLen; i++)
+			unit.setLeftToProvide(i, leftToProvide[i]);
+		for (Tag tag : saved.getList("recipes", 10))
+			if (tag instanceof CompoundTag savedRecipes)
+				loadPRecipe(unit, savedRecipes);
+	}
+
+	private void loadPRecipe(PocketProcessUnit unit, CompoundTag saved) {
+		ItemType result = ItemType.load(saved.getCompound("result"));
+		ItemType[] types = loadTypeArray(saved.getList("types", 10));
+		PocketProcessRecipe recipe = unit.addRecipe(result, types);
+		recipe.getResources().load(saved.getCompound("resources"));
+		recipe.setLeftToCraft(saved.getLong("leftToCraft"));
+		for (Tag tag : saved.getList("crafters", 10))
+			if (tag instanceof CompoundTag savedCrafter)
+				loadPCrafter(recipe, savedCrafter);
+	}
+
+	private void loadPCrafter(PocketProcessRecipe recipe, CompoundTag saved) {
+		try {
+			PocketProcessCrafter crafter = recipe.addCrafter(saved.getUUID("patternId"));
+			crafter.getResources().load(saved.getCompound("resources"));
+		} catch (Exception ignored) {}
+	}
+
+	private ItemType[] loadTypeArray(ListTag saved) {
+		return saved.stream()
+						.map(tag->tag instanceof CompoundTag compound ? compound : null)
+						.filter(Objects::nonNull)
+						.map(ItemType::load)
+						.filter(type->!type.isEmpty())
+						.toArray(ItemType[]::new);
+	}
+
+
+
+
+
+
 
 	public CompoundTag save(CompoundTag tag) {
 		// Saving: Pockets
@@ -162,18 +217,68 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			itemCounts.add(itemCount);
 		}
 		saved.put("itemCounts", itemCounts);
+		ListTag savedPatterns = new ListTag();
+		for (CraftingPattern pattern : pocket.getPatternsMap().values())
+			savedPatterns.add(pattern.save());
+		saved.put("patterns", savedPatterns);
+		saved.put("crafters", savePManager(pocket.getProcesses()));
 		return saved;
 	}
 
 	private static CompoundTag saveKnowledge(UUID playerId, Knowledge knowledge) {
 		CompoundTag saved = new CompoundTag();
 		saved.putUUID("player", playerId);
-		ListTag items = new ListTag();
-		for (ItemType item : knowledge.asSet())
-			items.add(item.save());
-		saved.put("items", items);
+		saved.put("items", saveTypeArray(knowledge.asSet().toArray(ItemType[]::new)));
 		return saved;
 	}
+
+	private static ListTag savePManager(PocketProcessManager manager) {
+		ListTag saved = new ListTag();
+		for (PocketProcessUnit unit : manager.getUnits())
+			saved.add(savePUnit(unit));
+		return saved;
+	}
+
+	private static CompoundTag savePUnit(PocketProcessUnit unit) {
+		CompoundTag saved = new CompoundTag();
+		saved.put("types", saveTypeArray(unit.getTypes()));
+		saved.put("resources", unit.getResources().save());
+		saved.putLongArray("leftToProvide", IntStream.range(0, unit.getTypeCount()).mapToLong(unit::getLeftToProvide).toArray());
+		ListTag savedRecipes = new ListTag();
+		for (PocketProcessRecipe recipe : unit.getRecipes())
+			savedRecipes.add(savePRecipe(recipe));
+		saved.put("recipes", savedRecipes);
+		return saved;
+	}
+
+	private static CompoundTag savePRecipe(PocketProcessRecipe recipe) {
+		CompoundTag saved = new CompoundTag();
+		saved.put("result", recipe.getResult().save());
+		saved.put("types", saveTypeArray(recipe.getResources().getTypes()));
+		saved.put("resources", recipe.getResources().save());
+		saved.putLong("leftToCraft", recipe.getLeftToCraft());
+		ListTag savedCrafters = new ListTag();
+		for (PocketProcessCrafter crafter : recipe.getCrafters())
+			savedCrafters.add(savePCrafter(crafter));
+		saved.put("crafters", savedCrafters);
+		return saved;
+	}
+
+	private static CompoundTag savePCrafter(PocketProcessCrafter crafter) {
+		CompoundTag saved = new CompoundTag();
+		saved.putUUID("patternId", crafter.getPatternId());
+		saved.put("resources", crafter.getResources().save());
+		return saved;
+	}
+
+	private static ListTag saveTypeArray(ItemType[] types) {
+		ListTag saved = new ListTag();
+		for (ItemType item : types)
+			saved.add(item.save());
+		return saved;
+	}
+
+
 
 
 
