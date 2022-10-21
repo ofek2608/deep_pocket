@@ -53,6 +53,8 @@ final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHe
 	@Override
 	public Stream<ItemTypeAmount> getSortedKnowledge(Pocket pocket) {
 		Map<ItemType,Long> counts = new HashMap<>();
+		for (ItemType type : helper.getCraftableItems(pocket).toList())
+			counts.put(type, 0L);
 		for (ItemType type : helper.getExtractableItems(pocket, getKnowledge()).toList()) {
 			long count = pocket.getMaxExtract(getKnowledge(), type);
 			if (count > 0)

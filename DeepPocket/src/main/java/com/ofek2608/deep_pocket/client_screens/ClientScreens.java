@@ -65,4 +65,8 @@ public final class ClientScreens {
 		if (player != null)
 			minecraft.setScreen(new BulkCraftingScreen(minecraft.screen, pocket, recipe));
 	}
+
+	public static void processRequest(int color, ItemType type, long amount) {
+		//TODO open a screen
+	}
 }

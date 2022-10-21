@@ -26,7 +26,7 @@ final class PocketProcessManagerImpl implements PocketProcessManager {
 
 	@Override
 	public PocketProcessUnit addUnit(ItemType[] types) {
-		PocketProcessUnit unit = new PocketProcessUnitImpl(helper, types);
+		PocketProcessUnit unit = new PocketProcessUnitImpl(helper, this, types);
 		units.add(unit);
 		return unit;
 	}

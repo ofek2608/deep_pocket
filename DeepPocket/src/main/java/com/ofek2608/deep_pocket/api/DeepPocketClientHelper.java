@@ -15,6 +15,7 @@ public interface DeepPocketClientHelper extends DeepPocketHelper {
 	Minecraft getMinecraft();
 
 	void renderItem(PoseStack poseStack, int x, int y, ItemStack itemStack, ItemRenderer itemRenderer, Font font);
+	void renderAmount(PoseStack poseStack, int x, int y, String amount, ItemRenderer itemRenderer, Font font);
 	void renderAmount(PoseStack poseStack, int x, int y, long amount, ItemRenderer itemRenderer, Font font);
 	void renderItemAmount(PoseStack poseStack, int x, int y, ItemStack itemStack, long amount, ItemRenderer itemRenderer, Font font);
 	void renderItemAmount(PoseStack poseStack, int x, int y, ItemAmount itemAmount, ItemRenderer itemRenderer, Font font);

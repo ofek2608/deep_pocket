@@ -18,6 +18,7 @@ public interface DeepPocketHelper {
 	ProvidedResources createProvidedResources(ItemType[] types);
 	PocketProcessManager createProcessManager();
 
+	Stream<ItemType> getCraftableItems(Pocket pocket);
 	Stream<ItemType> getExtractableItems(Pocket pocket, Knowledge knowledge);
-
+	Stream<ItemType> getExtractableOrCraftableItems(Pocket pocket, Knowledge knowledge);
 }

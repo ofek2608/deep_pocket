@@ -33,15 +33,18 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 	}
 
 	@Override
-	public void renderAmount(PoseStack poseStack, int x, int y, long amount, ItemRenderer itemRenderer, Font font) {
-		if (amount == 1)
-			return;
+	public void renderAmount(PoseStack poseStack, int x, int y, String amount, ItemRenderer itemRenderer, Font font) {
 		poseStack.pushPose();
-		String displayText = DeepPocketUtils.advancedToString(amount);
 		poseStack.translate(0.0D, 0.0D, itemRenderer.blitOffset + 200);
 		poseStack.scale(0.5f, 0.5f, 1f);
-		font.draw(poseStack, displayText, x * 2 + 32 - font.width(displayText), y * 2 + 24, 0xFFFFFF);
+		font.draw(poseStack, amount, x * 2 + 32 - font.width(amount), y * 2 + 24, 0xFFFFFF);
 		poseStack.popPose();
+	}
+
+	@Override
+	public void renderAmount(PoseStack poseStack, int x, int y, long amount, ItemRenderer itemRenderer, Font font) {
+		if (amount != 1)
+			renderAmount(poseStack, x, y, DeepPocketUtils.advancedToString(amount), itemRenderer, font);
 	}
 
 	@Override

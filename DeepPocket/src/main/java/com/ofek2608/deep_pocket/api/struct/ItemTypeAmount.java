@@ -41,7 +41,7 @@ public final class ItemTypeAmount {
 	}
 
 	public ItemType getItemType() {
-		return amount == 0 ? ItemType.EMPTY : itemType;
+		return itemType;
 	}
 
 	public long getAmount() {

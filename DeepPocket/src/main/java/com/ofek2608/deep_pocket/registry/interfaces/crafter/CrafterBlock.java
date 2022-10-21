@@ -10,7 +10,7 @@ import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -149,12 +150,24 @@ public class CrafterBlock extends Block implements EntityBlock {
 		public void load(CompoundTag pTag) {
 			super.load(pTag);
 			this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+			ContainerHelper.loadAllItems(pTag, this.items);
+			Arrays.fill(this.patterns, null);
+			ListTag savedPatterns = pTag.getList("patterns", 11);
+			for (int i = 0; i < 9 && i < savedPatterns.size(); i++) {
+				try {
+					patterns[i] = NbtUtils.loadUUID(savedPatterns.get(i));
+				} catch (Exception ignored) {}
+			}
 		}
 
 		@Override
 		protected void saveAdditional(CompoundTag tag) {
 			super.saveAdditional(tag);
 			ContainerHelper.saveAllItems(tag, this.items);
+			ListTag savedPatterns = new ListTag();
+			for (UUID pattern : patterns)
+				savedPatterns.add(pattern == null ? new IntArrayTag(new int[0]) : NbtUtils.createUUID(pattern));
+			tag.put("patterns", savedPatterns);
 		}
 
 
