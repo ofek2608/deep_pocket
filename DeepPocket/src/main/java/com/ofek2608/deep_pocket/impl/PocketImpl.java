@@ -5,6 +5,8 @@ import com.ofek2608.collections.CaptureReference;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
+import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.core.BlockPos;
@@ -22,14 +24,16 @@ final class PocketImpl implements Pocket {
 	private final CaptureReference<PocketInfo> pocketInfo;
 	private final PocketItems items;
 	private final PocketPatterns patterns;
+	private final PocketProcessManager processes;
 
-	PocketImpl(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
+	PocketImpl(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
 		this.conversions = conversions;
 		this.pocketId = pocketId;
 		this.owner = owner;
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
 		this.items = new PocketItems();
 		this.patterns = new PocketPatterns();
+		this.processes = processes;
 	}
 
 	private PocketImpl(PocketImpl copy) {
@@ -39,6 +43,7 @@ final class PocketImpl implements Pocket {
 		this.pocketInfo = new CaptureReference<>(copy.pocketInfo);
 		this.items = new PocketItems(copy.items);
 		this.patterns = new PocketPatterns(copy.patterns);
+		this.processes = copy.processes.recreate();
 	}
 
 	@Override public UUID getPocketId() { return pocketId; }
@@ -69,7 +74,9 @@ final class PocketImpl implements Pocket {
 	}
 
 	private void insertItem0(ItemType type, long count) {
-		items.computeIfPresent(type, (t,current)->current < 0 || count < 0 ? -1 : current + count);
+		long leftOver = processes.supplyItem(type, count);
+		if (leftOver != 0)
+			items.computeIfPresent(type, (t,current)->current < 0 || leftOver < 0 ? -1 : current + leftOver);
 	}
 
 	@Override
@@ -84,6 +91,13 @@ final class PocketImpl implements Pocket {
 		for (int i = 0; i < value.length; i++)
 			if (value[i] != 0)
 				insertItem0(conversions.getBaseItem(i), value[i]);
+	}
+
+	@Override
+	public void insertAll(ProvidedResources resources) {
+		int typeCount = resources.getTypeCount();
+		for (int i = 0; i < typeCount; i++)
+			insertItem(resources.getType(i), resources.take(i, -1));
 	}
 
 	private long getMaxExtract0(Map<ItemType,Long> counts) {

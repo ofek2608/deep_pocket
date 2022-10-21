@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 
 import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
 import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
@@ -291,9 +292,9 @@ public class CrafterBlock extends Block implements EntityBlock {
 
 
 		@Override
-		public boolean executePattern(Pocket pocket, WorldCraftingPattern pattern, long max) {
+		public long executePattern(Pocket pocket, WorldCraftingPattern pattern, ProvidedResources resources, long max) {
 			//TODO implement
-			return false;
+			return 0;
 		}
 	}
 }

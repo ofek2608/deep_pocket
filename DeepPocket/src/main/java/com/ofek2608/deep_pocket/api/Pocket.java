@@ -25,6 +25,7 @@ public interface Pocket {
 	Map<ItemType,Long> getItemsMap();
 	long getItemCount(ItemType type);
 	void insertItem(ItemType type, long count);
+	void insertAll(ProvidedResources resources);
 	long getMaxExtract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts);
 	long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount);
 	long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
@@ -36,7 +37,7 @@ public interface Pocket {
 	Snapshot createSnapshot();
 	Pocket copy();
 
-	public interface Snapshot {
+	interface Snapshot {
 		Pocket getPocket();
 		boolean didChangedInfo();
 		@UnmodifiableView Map<ItemType,Long> getChangedItems();
