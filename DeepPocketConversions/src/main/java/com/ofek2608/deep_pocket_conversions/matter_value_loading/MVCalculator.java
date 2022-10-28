@@ -52,7 +52,12 @@ public final class MVCalculator {
 		// Adding recipesList to recipesCompilers
 		recipesByResult.forEach((type, compilableRecipes) -> recipesCompilers.put(
 						type,
-						ctx->ValueRule.min(compilableRecipes.stream().map(compilableRecipe->compilableRecipe.compile(ctx)).toArray(ValueRule[]::new))
+						ctx->ValueRule.min(
+										compilableRecipes.stream()
+														.map(compilableRecipe->compilableRecipe.compile(ctx))
+														.filter(Objects::nonNull)
+														.toArray(ValueRule[]::new)
+						)
 		));
 		// Adding overrideRecipes to recipesCompilers
 		overrideRecipes.forEach(((type, code) -> recipesCompilers.put(type, ctx->parse(ctx, type, code))));
