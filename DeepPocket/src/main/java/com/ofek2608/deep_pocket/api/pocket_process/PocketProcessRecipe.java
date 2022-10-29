@@ -15,7 +15,7 @@ public interface PocketProcessRecipe {
 
 	long getLeftToCraft();
 	void setLeftToCraft(long leftToCraft);
-	void removeLeftToCraft(long crafted);
+	boolean removeLeftToCraft(long crafted);
 
 
 	@UnmodifiableView List<PocketProcessCrafter> getCrafters();

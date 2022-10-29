@@ -30,7 +30,7 @@ public final class WorldCraftingPattern extends CraftingPattern {
 	@Override
 	public CompoundTag save() {
 		CompoundTag saved = super.save();
-		saved.putString("level", level.dimension().toString());
+		saved.putString("level", level.dimension().location().toString());
 		saved.putLong("pos", pos.asLong());
 		return saved;
 	}

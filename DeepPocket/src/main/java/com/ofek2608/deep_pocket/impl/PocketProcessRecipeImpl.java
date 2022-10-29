@@ -51,11 +51,13 @@ final class PocketProcessRecipeImpl implements PocketProcessRecipe {
 	}
 
 	@Override
-	public void removeLeftToCraft(long crafted) {
+	public boolean removeLeftToCraft(long crafted) {
 		if (crafted < 0)
 			this.leftToCraft = 0;
 		else if (0 <= this.leftToCraft)
 			this.leftToCraft = Math.max(this.leftToCraft - crafted, 0);
+
+		return this.leftToCraft == 0;
 	}
 
 	@Contract(pure = true)

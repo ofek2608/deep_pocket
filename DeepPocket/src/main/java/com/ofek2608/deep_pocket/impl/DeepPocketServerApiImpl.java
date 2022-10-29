@@ -2,10 +2,7 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.DeepPocketHelper;
-import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.Knowledge;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
@@ -101,17 +98,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		}
 		conversions.convertMap(items);
 		for (Tag savedPattern : saved.getList("patterns", 10)) {
-			CraftingPattern pattern;
-			try {
-				pattern = new WorldCraftingPattern((CompoundTag) savedPattern, server);
-			} catch (Exception exception) {
-				try {
-					pattern = new CraftingPattern((CompoundTag) savedPattern);
-				} catch (Exception ignored) {
-					continue;
-				}
-			}
-			patterns.put(pattern.getPatternId(), pattern);
+			CraftingPattern pattern = loadPattern((CompoundTag)savedPattern);
+			if (pattern != null)
+				patterns.put(pattern.getPatternId(), pattern);
 		}
 		for (Tag savedDefaultPattern : saved.getList("defaultPatterns", 10)) {
 			ItemType type = ItemType.load(((CompoundTag) savedDefaultPattern).getCompound("item"));
@@ -135,6 +124,15 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		}
 
 		return pocket;
+	}
+
+	private @Nullable CraftingPattern loadPattern(CompoundTag saved) {
+		try {
+			WorldCraftingPattern pattern = new WorldCraftingPattern(saved, server);
+			if (pattern.getLevel().getBlockEntity(pattern.getPos()) instanceof PatternSupportedBlockEntity entity && entity.containsPattern(pattern.getPatternId()))
+				return pattern;
+		} catch (Exception ignored) {}
+		return null;
 	}
 
 	private Knowledge loadKnowledge(CompoundTag saved) {
@@ -444,8 +442,10 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			if (pattern == null)
 				return;
 			var inputCountMap = pattern.getInputCountMap();
-			for (var entry : inputCountMap.entrySet())
-				unitRequirements.compute(entry.getKey(), (t,oldAmount) -> oldAmount == null ? entry.getValue() : DeepPocketUtils.advancedSum(oldAmount, entry.getValue()));
+			for (var entry : inputCountMap.entrySet()) {
+				long add = DeepPocketUtils.advancedMul(entry.getValue(), request.getAmount());
+				unitRequirements.compute(entry.getKey(), (t, oldAmount) -> oldAmount == null ? add : DeepPocketUtils.advancedSum(oldAmount, add));
+			}
 			recipeRequirements.add(inputCountMap.keySet().toArray(ItemType[]::new));
 		}
 		ItemType[] types = unitRequirements.keySet().toArray(ItemType[]::new);
@@ -455,6 +455,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		for (int i = 0; i < requests.length; i++) {
 			RecipeRequest request = requests[i];
 			PocketProcessRecipe recipe = unit.addRecipe(request.getResult(), recipeRequirements.get(i));
+			recipe.setLeftToCraft(request.getAmount());
 			List.of(request.getPatterns()).forEach(recipe::addCrafter);
 		}
 	}
@@ -477,6 +478,12 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		//======
 		List<Pocket> pockets = getPockets().toList();
 		List<ServerPlayer> onlinePLayers = server.getPlayerList().getPlayers();
+
+		//==============
+		// Recipes tick
+		//==============
+		for (Pocket pocket : pockets)
+			pocket.getProcesses().executeCrafters(pocket);
 
 		//==================
 		// Adding knowledge

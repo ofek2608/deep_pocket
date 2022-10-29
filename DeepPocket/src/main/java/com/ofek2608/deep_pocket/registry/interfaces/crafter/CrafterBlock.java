@@ -1,14 +1,21 @@
 package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 
+import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.struct.CrafterContext;
+import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
+import com.ofek2608.deep_pocket.registry.ProtoMenu;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.IntArrayTag;
@@ -20,10 +27,15 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.RecipeManager;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -32,6 +44,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
 import net.minecraftforge.network.PacketDistributor;
@@ -39,6 +52,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 
 public class CrafterBlock extends Block implements EntityBlock {
@@ -304,12 +318,112 @@ public class CrafterBlock extends Block implements EntityBlock {
 		};
 
 
-
+		@Override
+		public boolean containsPattern(UUID patternId) {
+			for (UUID thisPatternId : patterns)
+				if (thisPatternId.equals(patternId))
+					return true;
+			return false;
+		}
 
 		@Override
-		public long executePattern(Pocket pocket, WorldCraftingPattern pattern, ProvidedResources resources, long max) {
-			//TODO implement
-			return 0;
+		public boolean executePattern(CrafterContext ctx) {
+			Pocket pocket = ctx.pocket;
+			WorldCraftingPattern pattern = ctx.pattern;
+			ProvidedResources resources = ctx.resources;
+			PocketProcessRecipe pocketProcessRecipe = ctx.recipe;
+
+			if (!containsPattern(pattern.getPatternId()))
+				throw new IllegalArgumentException();
+			long[] requirements = PatternSupportedBlockEntity.getRequirements(pattern, resources);
+			ServerLevel level = pattern.getLevel();
+
+			Direction facing = getBlockState().getValue(FACING);
+			BlockPos pos = getBlockPos().relative(facing);
+			if (level.getBlockState(pos).is(Blocks.CRAFTING_TABLE))
+				return executeCraftingTable(level, pocket, pattern.getInput(), resources, requirements, pocketProcessRecipe);
+
+			BlockEntity entity = level.getBlockEntity(pos);
+			if (entity == null)
+				return false;
+			Optional<IItemHandler> itemHandler = entity.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite()).resolve();
+			if (itemHandler.isEmpty())
+				return false;
+			return executeAdvanced(resources, requirements, itemHandler.get(), pocketProcessRecipe);
+		}
+
+		private boolean executeCraftingTable(ServerLevel level, Pocket pocket, ItemTypeAmount[] input, ProvidedResources resources, long[] requirements, PocketProcessRecipe pocketProcessRecipe) {
+			if (input.length != 9)
+				return false;
+			CraftingContainer container = new CraftingContainer(ProtoMenu.INSTANCE, 3, 3);
+			for (int i = 0; i < 9; i++) {
+				ItemTypeAmount typeAmount = input[i];
+				if (typeAmount.isEmpty())
+					continue;
+				if (typeAmount.getAmount() != 1)
+					return false;
+				container.setItem(i, typeAmount.getItemType().create());
+			}
+			RecipeManager recipeManager = level.getServer().getRecipeManager();
+			Optional<CraftingRecipe> recipe = recipeManager.getRecipeFor(RecipeType.CRAFTING, container, level);
+			if (recipe.isEmpty())
+				return false;
+
+			resources.returnAllToParent();
+			long got = resources.requestFromParent(requirements, pocketProcessRecipe.getLeftToCraft());
+			for (int i = 0; i < resources.getTypeCount(); i++)
+				resources.take(i, -1);
+
+			insertPocket(pocket, got, recipe.get().assemble(container));
+			for (ItemStack result : recipe.get().getRemainingItems(container))
+				insertPocket(pocket, got, result);
+
+			return pocketProcessRecipe.removeLeftToCraft(got);
+		}
+
+		private void insertPocket(Pocket pocket, long times, ItemStack stack) {
+			if (stack.isEmpty())
+				return;
+			pocket.insertItem(new ItemType(stack), DeepPocketUtils.advancedMul(times, stack.getCount()));
+		}
+
+		private boolean executeAdvanced(ProvidedResources resources, long[] requirements, IItemHandler handler, PocketProcessRecipe pocketProcessRecipe) {
+			if (insertItemsToHandler(resources, handler))
+				return false;
+			if (pocketProcessRecipe.getLeftToCraft() == 0)
+				return true;
+
+			if (resources.requestFromParent(requirements, 1) != 1)
+				return false;
+			pocketProcessRecipe.removeLeftToCraft(1);
+			insertItemsToHandler(resources, handler);
+			return false;
+		}
+
+		private boolean insertItemsToHandler(ProvidedResources resources, IItemHandler handler) {
+			boolean containItems = false;
+			for (int i = 0; i < resources.getTypeCount(); i++) {
+				long provided = resources.getProvided(i);
+				if (provided == 0)
+					continue;
+				containItems = true;
+				resources.take(i, insertItemToHandler(resources.getType(i), provided, handler));
+			}
+			return containItems;
+		}
+
+		private long insertItemToHandler(ItemType type, long provided, IItemHandler handler) {
+			long taken = 0;
+			for (int slotIndex = 0; slotIndex < handler.getSlots(); slotIndex++) {
+				int slotLimit = handler.getSlotLimit(slotIndex);
+				if (slotLimit <= 0)
+					continue;
+				int startingCount = provided < 0 ? slotLimit : (int)Math.min(provided - taken, slotLimit);
+				ItemStack stack = type.create(startingCount);
+				ItemStack remaining = handler.insertItem(slotIndex, stack, false);
+				taken = DeepPocketUtils.advancedSum(taken, remaining.isEmpty() ? startingCount : startingCount - remaining.getCount());
+			}
+			return taken;
 		}
 	}
 }

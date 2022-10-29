@@ -4,9 +4,11 @@ package com.ofek2608.deep_pocket.impl;
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.struct.CrafterContext;
 import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
 
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 final class PocketProcessCrafterImpl implements PocketProcessCrafter {
 	private final PocketProcessRecipe parent;
@@ -37,11 +39,9 @@ final class PocketProcessCrafterImpl implements PocketProcessCrafter {
 	@Override
 	public boolean executeCrafter(Pocket pocket) {
 		if (pocket.getPattern(patternId) instanceof WorldCraftingPattern pattern && (pattern.getLevel().getBlockEntity(pattern.getPos()) instanceof PatternSupportedBlockEntity blockEntity)) {
-			long leftToCraft = parent.getLeftToCraft();
 			try {
-				long crafted = blockEntity.executePattern(pocket, pattern, resources, leftToCraft);
-				parent.removeLeftToCraft(crafted);
-				return false;
+				if (!blockEntity.executePattern(new CrafterContext(pocket, pattern, this, parent, resources)))
+					return false;
 			} catch (Exception ignored) {}
 		}
 		resources.returnAllToParent();
