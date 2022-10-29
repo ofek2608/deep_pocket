@@ -179,10 +179,8 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	}
 
 	@Override
-	public void load(Tag saved) {
-		if (!(saved instanceof ListTag savedList))
-			return;
-		for (Tag savedElement : savedList) {
+	public void load(ListTag saved) {
+		for (Tag savedElement : saved) {
 			if (!(savedElement instanceof CompoundTag savedElementCompound))
 				continue;
 			ItemTypeAmount typeAmount = new ItemTypeAmount(savedElementCompound);
@@ -197,7 +195,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	}
 
 	@Override
-	public Tag save() {
+	public ListTag save() {
 		ListTag saved = new ListTag();
 		for (int i = 0; i < types.length; i++)
 			saved.add(new ItemTypeAmount(types[i], provided[i]).save());

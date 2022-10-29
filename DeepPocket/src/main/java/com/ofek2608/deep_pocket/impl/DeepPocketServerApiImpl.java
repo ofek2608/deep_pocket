@@ -150,7 +150,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	private void loadPUnit(PocketProcessManager manager, CompoundTag saved) {
 		ItemType[] types = loadTypeArray(saved.getList("types", 10));
 		PocketProcessUnit unit = manager.addUnit(types);
-		unit.getResources().load(saved.getCompound("resources"));
+		unit.getResources().load(saved.getList("resources", 10));
 		long[] leftToProvide = saved.getLongArray("leftToProvide");
 		int leftToProvideLen = Math.min(leftToProvide.length, types.length);
 		for (int i = 0; i < leftToProvideLen; i++)
@@ -164,7 +164,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		ItemType result = ItemType.load(saved.getCompound("result"));
 		ItemType[] types = loadTypeArray(saved.getList("types", 10));
 		PocketProcessRecipe recipe = unit.addRecipe(result, types);
-		recipe.getResources().load(saved.getCompound("resources"));
+		recipe.getResources().load(saved.getList("resources", 10));
 		recipe.setLeftToCraft(saved.getLong("leftToCraft"));
 		for (Tag tag : saved.getList("crafters", 10))
 			if (tag instanceof CompoundTag savedCrafter)
@@ -174,7 +174,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	private void loadPCrafter(PocketProcessRecipe recipe, CompoundTag saved) {
 		try {
 			PocketProcessCrafter crafter = recipe.addCrafter(saved.getUUID("patternId"));
-			crafter.getResources().load(saved.getCompound("resources"));
+			crafter.getResources().load(saved.getList("resources", 10));
 		} catch (Exception ignored) {}
 	}
 
@@ -231,12 +231,13 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		for (CraftingPattern pattern : pocket.getPatternsMap().values())
 			savedPatterns.add(pattern.save());
 		saved.put("patterns", savedPatterns);
+		saved.put("processes", savePManager(pocket.getProcesses()));
 		ListTag savedDefaultPatterns = new ListTag();
 		for (var entry : pocket.getDefaultPatternsMap().entrySet()) {
 			CompoundTag savedDefaultPattern = new CompoundTag();
 			savedDefaultPattern.put("item", entry.getKey().save());
 			if (entry.getValue().isPresent())
-				savedDefaultPattern.putUUID("count", entry.getValue().get());
+				savedDefaultPattern.putUUID("pattern", entry.getValue().get());
 			savedDefaultPatterns.add(savedDefaultPattern);
 		}
 		saved.put("defaultPatterns", savedDefaultPatterns);
@@ -458,6 +459,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			recipe.setLeftToCraft(request.getAmount());
 			List.of(request.getPatterns()).forEach(recipe::addCrafter);
 		}
+
+		for (ItemType type : types)
+			pocket.getItemsMap().computeIfPresent(type, (t,count) -> unit.supplyItem(type, count));
 	}
 
 

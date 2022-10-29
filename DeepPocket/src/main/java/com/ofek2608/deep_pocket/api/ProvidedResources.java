@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 
 public interface ProvidedResources {
@@ -20,6 +21,6 @@ public interface ProvidedResources {
 	ProvidedResources subProvidedResources(int[] indexes);
 	ProvidedResources subProvidedResources();
 
-	void load(Tag saved);
-	Tag save();
+	void load(ListTag saved);
+	ListTag save();
 }
