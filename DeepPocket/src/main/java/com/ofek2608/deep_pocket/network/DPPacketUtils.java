@@ -6,6 +6,8 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -33,5 +35,16 @@ final class DPPacketUtils {
 		DPPacketUtils.encodeItemTypeArray(buf, types);
 		for (ItemType type : types)
 			writer.accept(buf, map.get(type));
+	}
+
+	static Map<ItemType, Optional<UUID>> decodeItemTypeUUIDMap(FriendlyByteBuf buf) {
+		return DPPacketUtils.decodeItemTypeMap(buf, b->b.readBoolean() ? Optional.of(b.readUUID()) : Optional.empty());
+	}
+
+	static void encodeItemTypeUUIDMap(FriendlyByteBuf buf, Map<ItemType,Optional<UUID>> map) {
+		DPPacketUtils.encodeItemTypeMap(buf, map, (b,uuid)->{
+			b.writeBoolean(uuid.isPresent());
+			uuid.ifPresent(b::writeUUID);
+		});
 	}
 }

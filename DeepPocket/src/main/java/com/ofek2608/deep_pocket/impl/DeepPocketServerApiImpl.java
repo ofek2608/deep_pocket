@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.logging.LogUtils;
+import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketHelper;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Knowledge;
@@ -89,6 +90,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 
 		Map<ItemType,Long> items = pocket.getItemsMap();
 		Map<UUID,CraftingPattern> patterns = pocket.getPatternsMap();
+		Map<ItemType,Optional<UUID>> defaultPatterns = pocket.getDefaultPatternsMap();
 
 		for (Tag itemCount : saved.getList("itemCounts", 10)) {
 			ItemType type = ItemType.load(((CompoundTag) itemCount).getCompound("item"));
@@ -110,6 +112,16 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 				}
 			}
 			patterns.put(pattern.getPatternId(), pattern);
+		}
+		for (Tag savedDefaultPattern : saved.getList("defaultPatterns", 10)) {
+			ItemType type = ItemType.load(((CompoundTag) savedDefaultPattern).getCompound("item"));
+			Optional<UUID> patternId;
+			try {
+				patternId = Optional.of(((CompoundTag) savedDefaultPattern).getUUID("pattern"));
+			} catch (Exception e) {
+				patternId = Optional.empty();
+			}
+			defaultPatterns.put(type, patternId);
 		}
 
 		loadPManager(pocket.getProcesses(), saved.getList("processes", 10));
@@ -221,6 +233,15 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		for (CraftingPattern pattern : pocket.getPatternsMap().values())
 			savedPatterns.add(pattern.save());
 		saved.put("patterns", savedPatterns);
+		ListTag savedDefaultPatterns = new ListTag();
+		for (var entry : pocket.getDefaultPatternsMap().entrySet()) {
+			CompoundTag savedDefaultPattern = new CompoundTag();
+			savedDefaultPattern.put("item", entry.getKey().save());
+			if (entry.getValue().isPresent())
+				savedDefaultPattern.putUUID("count", entry.getValue().get());
+			savedDefaultPatterns.add(savedDefaultPattern);
+		}
+		saved.put("defaultPatterns", savedDefaultPatterns);
 		saved.put("crafters", savePManager(pocket.getProcesses()));
 		return saved;
 	}
@@ -404,8 +425,39 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		destroyPocket(pocketId);
 	}
 
+	@Override
+	public void requestProcessFor(ServerPlayer player, UUID pocketId, RecipeRequest[] requests) {
+		if (requests.length == 0)
+			return;
+		for (RecipeRequest request : requests)
+			if (request.getPatternsCount() == 0)
+				return;
+		Pocket pocket = getPocket(pocketId);
+		if (pocket == null || !pocket.canAccess(player))
+			return;
 
-
+		Map<ItemType,Long> unitRequirements = new HashMap<>();
+		List<ItemType[]> recipeRequirements = new ArrayList<>();
+		for (RecipeRequest request : requests) {
+			UUID patternId = request.getPattern(0);
+			CraftingPattern pattern = pocket.getPattern(patternId);
+			if (pattern == null)
+				return;
+			var inputCountMap = pattern.getInputCountMap();
+			for (var entry : inputCountMap.entrySet())
+				unitRequirements.compute(entry.getKey(), (t,oldAmount) -> oldAmount == null ? entry.getValue() : DeepPocketUtils.advancedSum(oldAmount, entry.getValue()));
+			recipeRequirements.add(inputCountMap.keySet().toArray(ItemType[]::new));
+		}
+		ItemType[] types = unitRequirements.keySet().toArray(ItemType[]::new);
+		PocketProcessUnit unit = pocket.getProcesses().addUnit(types);
+		for (int i = 0; i < types.length; i++)
+			unit.setLeftToProvide(i, unitRequirements.get(types[i]));
+		for (int i = 0; i < requests.length; i++) {
+			RecipeRequest request = requests[i];
+			PocketProcessRecipe recipe = unit.addRecipe(request.getResult(), recipeRequirements.get(i));
+			List.of(request.getPatterns()).forEach(recipe::addCrafter);
+		}
+	}
 
 
 	private Knowledge.Snapshot getKnowledgeSnapshot(UUID playerId) {
@@ -545,6 +597,12 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			UUID[] removedPatterns = snapshot.getRemovedPatterns();
 			if (addedPatterns.length > 0 || removedPatterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, addedPatterns, removedPatterns);
+			//Update default patterns
+			var addedDefaultPatterns = snapshot.getAddedDefaultPatterns();
+			var removedDefaultPatterns = snapshot.getRemovedDefaultPatterns();
+			if (addedDefaultPatterns.size() > 0 || removedDefaultPatterns.length > 0)
+				DeepPocketPacketHandler.cbUpdateDefaultPatterns(packetTarget, pocketId, addedDefaultPatterns, removedDefaultPatterns);
+
 		}
 		//Pocket Clear
 		for (var entry : toSendPocketClear.entrySet()) {
@@ -559,6 +617,12 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			).toArray(UUID[]::new);
 			if (patternsToRemove.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, new CraftingPattern[0], patternsToRemove);
+			ItemType[] defaultPatternsToRemove = Stream.concat(
+							pocket.getDefaultPatternsMap().keySet().stream(),
+							Stream.of(pocketSnapshot.getRemovedDefaultPatterns())
+			).toArray(ItemType[]::new);
+			if (defaultPatternsToRemove.length > 0)
+				DeepPocketPacketHandler.cbUpdateDefaultPatterns(packetTarget, pocketId, Collections.emptyMap(), defaultPatternsToRemove);
 		}
 		//Pocket Fill
 		for (var entry : toSendPocketFill.entrySet()) {
@@ -569,6 +633,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			CraftingPattern[] patterns = pocket.getPatternsMap().values().toArray(CraftingPattern[]::new);
 			if (patterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns, new UUID[0]);
+			var defaultPatterns = pocket.getDefaultPatternsMap();
+			if (defaultPatterns.size() > 0)
+				DeepPocketPacketHandler.cbUpdateDefaultPatterns(packetTarget, pocketId, defaultPatterns, new ItemType[0]);
 		}
 
 		//======

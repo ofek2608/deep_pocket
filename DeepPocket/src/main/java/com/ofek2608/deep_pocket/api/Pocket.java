@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface Pocket {
@@ -35,6 +36,9 @@ public interface Pocket {
 	@Nullable CraftingPattern getPattern(UUID patternId);
 	UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
 	void removePattern(UUID patternId);
+	Map<ItemType,Optional<UUID>> getDefaultPatternsMap();
+	Optional<UUID> getDefaultPattern(ItemType type);
+	void setDefaultPattern(ItemType type, @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<UUID> patternId);
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();
@@ -44,6 +48,8 @@ public interface Pocket {
 		boolean didChangedInfo();
 		@UnmodifiableView Map<ItemType,Long> getChangedItems();
 		CraftingPattern[] getAddedPatterns();
+		@UnmodifiableView Map<ItemType,Optional<UUID>> getAddedDefaultPatterns();
+		ItemType[] getRemovedDefaultPatterns();
 		UUID[] getRemovedPatterns();
 	}
 }

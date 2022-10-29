@@ -26,13 +26,7 @@ public final class DeepPocketMod {
 	/*
 	 * TODO before version 0.0.5
 	 *  - Implement CrafterBlock.ent#executePattern
-	 *  - Add processes class:
-	 *    > Pockets should have processes, inserted items should get inserted to processes
-	 *    > There should be a window to show the processes.
-	 *  - Add a way to create a process: in the pocket screen
-	 *      when you press on an item while holding ctrl you can craft the item using ClientScreens#selectNumber
-	 *      and then opening a gui to show the required crafting, and warning if there are any. with a confirm/cancel options.
-	 *      if confirmed, sent to the server and he adds it as a process.
+	 *  - There should be a window to show the processes.
 	 * TODO before version 1.0.0
 	 *  - test multiplayer
 	 *  - Make more commands

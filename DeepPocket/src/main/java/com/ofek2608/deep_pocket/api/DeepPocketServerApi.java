@@ -1,11 +1,15 @@
 package com.ofek2608.deep_pocket.api;
 
+import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
+import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
 import com.ofek2608.deep_pocket.impl.DeepPocketManager;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -20,4 +24,5 @@ public interface DeepPocketServerApi extends DeepPocketApi {
 	void createPocketFor(ServerPlayer player, PocketInfo info);
 	void changePocketSettingsFrom(ServerPlayer player, UUID pocketId, PocketInfo info);
 	void destroyPocketFor(ServerPlayer player, UUID pocketId);
+	void requestProcessFor(ServerPlayer player, UUID pocketId, RecipeRequest[] requests);
 }

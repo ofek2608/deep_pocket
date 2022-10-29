@@ -11,7 +11,6 @@ import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -63,8 +62,8 @@ class RecipeSelectionScreen extends Screen {
 		my -= topPos;
 
 		//hover checks
-		hoverPrevPage = VIEW_HEIGHT - 21 <= my && my <= VIEW_HEIGHT - 6 && 99 <= mx && mx <= 115;
-		hoverNextPage = VIEW_HEIGHT - 21 <= my && my <= VIEW_HEIGHT - 6 && 119 <= mx && mx <= 135;
+		hoverPrevPage = VIEW_HEIGHT - 21 <= my && my <= VIEW_HEIGHT - 6 && 99 <= mx && mx <= 114;
+		hoverNextPage = VIEW_HEIGHT - 21 <= my && my <= VIEW_HEIGHT - 6 && 119 <= mx && mx <= 134;
 		if (5 <= mx && mx <= 212 && 17 <= my && my <= 16 + 16 * DISPLAY_PATTERN_COUNT)
 			hoveredPattern = (my - 17) / 16;
 		else
@@ -260,12 +259,6 @@ class RecipeSelectionScreen extends Screen {
 		FRAME_MIDDLE(0, 19, 218, 16),
 		FRAME_BOTTOM(0, 35, 218, 24),
 		PATTERN_N(0, 59, 218, 16), PATTERN_H(0, 75, 218, 16),
-
-//		TOP(0, 0, 154, 19),
-//		BORDERS(0, 19, 154, 22),
-//		BOTTOM(0, 41, 154, 25),
-//		POCKET_N(0, 88, 154, 22),
-//		POCKET_H(0, 110, 154, 22),
 		PREV_PAGE_N(218, 0, 16, 16), PREV_PAGE_H(218, 16, 16, 16),
 		NEXT_PAGE_N(234, 0, 16, 16), NEXT_PAGE_H(234, 16, 16, 16),
 		MORE_ITEMS(218, 32, 16, 16),

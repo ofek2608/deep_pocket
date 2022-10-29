@@ -24,6 +24,7 @@ final class PocketImpl implements Pocket {
 	private final CaptureReference<PocketInfo> pocketInfo;
 	private final PocketItems items;
 	private final PocketPatterns patterns;
+	private final PocketDefaultPatterns defaultPatterns;
 	private final PocketProcessManager processes;
 
 	PocketImpl(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
@@ -33,6 +34,7 @@ final class PocketImpl implements Pocket {
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
 		this.items = new PocketItems();
 		this.patterns = new PocketPatterns();
+		this.defaultPatterns = new PocketDefaultPatterns();
 		this.processes = processes;
 	}
 
@@ -43,6 +45,7 @@ final class PocketImpl implements Pocket {
 		this.pocketInfo = new CaptureReference<>(copy.pocketInfo);
 		this.items = new PocketItems(copy.items);
 		this.patterns = new PocketPatterns(copy.patterns);
+		this.defaultPatterns = new PocketDefaultPatterns(copy.defaultPatterns);
 		this.processes = copy.processes.recreate();
 	}
 
@@ -202,6 +205,21 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
+	public Map<ItemType, Optional<UUID>> getDefaultPatternsMap() {
+		return defaultPatterns;
+	}
+
+	@Override
+	public Optional<UUID> getDefaultPattern(ItemType type) {
+		return defaultPatterns.get(type);
+	}
+
+	@Override
+	public void setDefaultPattern(ItemType type, Optional<UUID> patternId) {
+		defaultPatterns.put(type, patternId);
+	}
+
+	@Override
 	public PocketProcessManager getProcesses() {
 		return processes;
 	}
@@ -221,6 +239,7 @@ final class PocketImpl implements Pocket {
 		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
 		private final CaptureMap<ItemType,Long>.Snapshot itemsSnapshot = items.createSnapshot();
 		private final CaptureMap<UUID,CraftingPattern>.Snapshot patternsSnapshot = patterns.createSnapshot();
+		private final CaptureMap<ItemType,Optional<UUID>>.Snapshot defaultPatternsSnapshot = defaultPatterns.createSnapshot();
 
 		@Override
 		public PocketImpl getPocket() {
@@ -240,6 +259,16 @@ final class PocketImpl implements Pocket {
 		@Override
 		public CraftingPattern[] getAddedPatterns() {
 			return patternsSnapshot.getAddedValues().toArray(CraftingPattern[]::new);
+		}
+
+		@Override
+		public @UnmodifiableView Map<ItemType, Optional<UUID>> getAddedDefaultPatterns() {
+			return defaultPatternsSnapshot.getAddedAsMap();
+		}
+
+		@Override
+		public ItemType[] getRemovedDefaultPatterns() {
+			return defaultPatternsSnapshot.getRemovedKeys().toArray(new ItemType[0]);
 		}
 
 		@Override
@@ -282,6 +311,20 @@ final class PocketImpl implements Pocket {
 			Objects.requireNonNull(key);
 			Objects.requireNonNull(val);
 			if (!val.getPatternId().equals(key))
+				throw new IllegalArgumentException();
+			return val;
+		}
+	}
+
+	private static final class PocketDefaultPatterns extends CaptureMap<ItemType,Optional<UUID>> {
+		public PocketDefaultPatterns() { }
+		public PocketDefaultPatterns(Map<? extends ItemType, ? extends Optional<UUID>> m) { super(m); }
+
+		@Override
+		public Optional<UUID> validate(ItemType key, Optional<UUID> val) {
+			Objects.requireNonNull(key);
+			Objects.requireNonNull(val);
+			if (key.isEmpty())
 				throw new IllegalArgumentException();
 			return val;
 		}

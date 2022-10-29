@@ -23,8 +23,8 @@ public sealed class CraftingPattern permits WorldCraftingPattern {
 
 	public CraftingPattern(CompoundTag saved) {
 		this.patternId = saved.getUUID("patternId");
-		this.input = DeepPocketUtils.loadArray(saved.getList("input", 8), ItemTypeAmount[]::new, ItemTypeAmount::new);
-		this.output = DeepPocketUtils.loadArray(saved.getList("output", 8), ItemTypeAmount[]::new, ItemTypeAmount::new);
+		this.input = DeepPocketUtils.loadArray(saved.getList("input", 10), ItemTypeAmount[]::new, ItemTypeAmount::new);
+		this.output = DeepPocketUtils.loadArray(saved.getList("output", 10), ItemTypeAmount[]::new, ItemTypeAmount::new);
 	}
 
 	public CompoundTag save() {

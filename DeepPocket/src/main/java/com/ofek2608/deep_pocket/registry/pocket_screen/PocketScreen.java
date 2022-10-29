@@ -626,11 +626,12 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		ItemType clickedType = clickedTypeAmount == null ? null : clickedTypeAmount.getItemType();
 		if (clickedType != null && !clickedType.isEmpty() && isCrafting(clickedTypeAmount)) {
 			Pocket pocket = menu.getPocket();
-			int color = pocket == null ? 0xFFFFFF : pocket.getColor();
-			ClientScreens.selectNumber(Component.literal("Request Crafting"), color, 0L, craftCount->{
+			if (pocket == null)
+				return;
+			ClientScreens.selectNumber(Component.literal("Request Crafting"), pocket.getColor(), 0L, selectedAmount->{
 				Minecraft.getInstance().setScreen(this);
-				if (craftCount != 0)
-					ClientScreens.processRequest(color, clickedType, craftCount);
+				if (selectedAmount != 0)
+					ClientScreens.processRequest(pocket, clickedType, selectedAmount);
 			});
 			return;
 		}

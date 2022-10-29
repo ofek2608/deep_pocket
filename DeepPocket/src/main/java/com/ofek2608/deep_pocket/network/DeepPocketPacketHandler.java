@@ -38,6 +38,7 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, CBPocketClearItems.class, CBPocketClearItems::encode, CBPocketClearItems::new, CBPocketClearItems::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBUpdatePatterns.class, CBUpdatePatterns::encode, CBUpdatePatterns::new, CBUpdatePatterns::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBUpdateDefaultPatterns.class, CBUpdateDefaultPatterns::encode, CBUpdateDefaultPatterns::new, CBUpdateDefaultPatterns::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBKnowledgeAdd.class, CBKnowledgeAdd::encode, CBKnowledgeAdd::new, CBKnowledgeAdd::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBKnowledgeRem.class, CBKnowledgeRem::encode, CBKnowledgeRem::new, CBKnowledgeRem::handle, clientbound);
@@ -56,6 +57,7 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, SBRequestRecipe.class, SBRequestRecipe::encode, SBRequestRecipe::new, SBRequestRecipe::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBClearCraftingGrid.class, SBClearCraftingGrid::encode, SBClearCraftingGrid::new, SBClearCraftingGrid::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBBulkCrafting.class, SBBulkCrafting::encode, SBBulkCrafting::new, SBBulkCrafting::handle, serverbound);
+		CHANNEL.registerMessage(++pid, SBRequestProcess.class, SBRequestProcess::encode, SBRequestProcess::new, SBRequestProcess::handle, serverbound);
 
 		CHANNEL.registerMessage(++pid, SBPocketSignalSettings.class, SBPocketSignalSettings::encode, SBPocketSignalSettings::new, SBPocketSignalSettings::handle, serverbound);
 	}
@@ -74,6 +76,7 @@ public final class DeepPocketPacketHandler {
 	public static void cbPocketClearItems(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearItems(pocketId)); }
 
 	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, CraftingPattern[] addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
+	public static void cbUpdateDefaultPatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Optional<UUID>> addedDefaults, ItemType[] removedDefaults) { CHANNEL.send(target, new CBUpdateDefaultPatterns(pocketId, addedDefaults, removedDefaults)); }
 
 	public static void cbKnowledgeAdd(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeAdd(types)); }
 	public static void cbKnowledgeRem(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeRem(types)); }
@@ -92,6 +95,7 @@ public final class DeepPocketPacketHandler {
 	public static void sbRequestRecipe(ItemType[] items) { CHANNEL.send(serverTarget(), new SBRequestRecipe(items)); }
 	public static void sbClearCraftingGrid(boolean up) { CHANNEL.send(serverTarget(), new SBClearCraftingGrid(up)); }
 	public static void sbBulkCrafting(long count) { CHANNEL.send(serverTarget(), new SBBulkCrafting(count)); }
+	public static void sbRequestProcess(RecipeRequest[] requests, Map<ItemType, Optional<UUID>> setDefaultPatterns) { CHANNEL.send(serverTarget(), new SBRequestProcess(requests, setDefaultPatterns)); }
 
 	public static void sbPocketSignalSettings(BlockPos pos, SignalSettings settings) { CHANNEL.send(serverTarget(), new SBPocketSignalSettings(pos, settings)); }
 

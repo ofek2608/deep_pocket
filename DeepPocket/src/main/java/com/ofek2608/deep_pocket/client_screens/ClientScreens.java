@@ -53,6 +53,13 @@ public final class ClientScreens {
 			minecraft.setScreen(new NumberSelectionScreen(title, color, initialValue, onSelect));
 	}
 
+	public static void selectRecipe(Pocket pocket, ItemType requiredOutput, Consumer<CraftingPattern> onSelect) {
+		Minecraft minecraft = Minecraft.getInstance();
+		Player player = minecraft.player;
+		if (player != null)
+			minecraft.setScreen(new RecipeSelectionScreen(player, pocket, requiredOutput, onSelect));
+	}
+
 	public static void configureSignalBlock(int color, BlockPos pos, SignalSettings settings) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
@@ -67,14 +74,10 @@ public final class ClientScreens {
 			minecraft.setScreen(new BulkCraftingScreen(minecraft.screen, pocket, recipe));
 	}
 
-	public static void processRequest(int color, ItemType type, long amount) {
-		//TODO open a screen
-	}
-
-	public static void selectRecipe(Pocket pocket, ItemType requiredOutput, Consumer<CraftingPattern> onSelect) {
+	public static void processRequest(Pocket pocket, ItemType requestedType, long requestedAmount) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)
-			minecraft.setScreen(new RecipeSelectionScreen(player, pocket, requiredOutput, onSelect));
+			minecraft.setScreen(new RequestProcessScreen(minecraft.screen, pocket, requestedType, requestedAmount));
 	}
 }

@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.Mod;
 @SuppressWarnings("SameReturnValue")
 @Mod.EventBusSubscriber(modid = DeepPocketMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 class DeepPocketCommands {
-	private static final boolean DEBUG_MODE = true;
+	private static final boolean DEBUG_MODE = false;
 	@SubscribeEvent
 	public static void event(RegisterCommandsEvent event) {
 		var prefix = Commands.literal("deep_pocket");
