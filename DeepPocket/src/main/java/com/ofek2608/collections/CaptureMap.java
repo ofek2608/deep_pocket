@@ -242,6 +242,7 @@ public class CaptureMap<K,V> implements Map<K,V> {
 	/* ------------------------------------------------------------ */
 	// iterators
 
+	@SuppressWarnings("unused")
 	abstract class HashIterator {
 		private final Iterator<Entry<K,V>> internalIterator = internal.entrySet().iterator();
 		private Entry<K,V> current;

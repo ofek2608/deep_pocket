@@ -495,6 +495,7 @@ class RequestProcessScreen extends Screen {
 			Screen.blit(stack, x, y, u, v, w, h, 256, 256);
 		}
 
+		@SuppressWarnings("SameParameterValue")
 		private void blit(PoseStack stack, int x, int y, int displayW, int displayH) {
 			Screen.blit(stack, x, y, displayW, displayH, u, v, w, h, 256, 256);
 		}

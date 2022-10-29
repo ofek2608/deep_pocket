@@ -16,7 +16,7 @@ public final class RecipeRequest {
 		this.patterns = patterns.clone();
 	}
 
-	private RecipeRequest(ItemType result, long amount, UUID[] patterns, int a) {
+	private RecipeRequest(ItemType result, long amount, UUID[] patterns, @SuppressWarnings("SameParameterValue") int a) {
 		this.result = result;
 		this.amount = amount;
 		this.patterns = patterns;

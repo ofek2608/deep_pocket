@@ -116,7 +116,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 			if (maxMultiplier < 0 || limit < maxMultiplier)
 				maxMultiplier = maxRequest;
 		}
-		return 0;
+		return maxMultiplier;
 	}
 
 	@Override
