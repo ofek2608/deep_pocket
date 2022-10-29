@@ -8,13 +8,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public final class WorldCraftingPattern extends CraftingPattern {
 	private final ServerLevel level;
 	private final BlockPos pos;
 
-	public WorldCraftingPattern(UUID patternId, ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
+	public WorldCraftingPattern(UUID patternId, ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
 		super(patternId, input, output);
 		this.level = level;
 		this.pos = pos;
@@ -22,7 +23,7 @@ public final class WorldCraftingPattern extends CraftingPattern {
 
 	public WorldCraftingPattern(CompoundTag saved, MinecraftServer server) {
 		super(saved);
-		this.level = server.getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(saved.getString("level"))));
+		this.level = Objects.requireNonNull(server.getLevel(ResourceKey.create(Registry.DIMENSION_REGISTRY, new ResourceLocation(saved.getString("level")))));
 		this.pos = BlockPos.of(saved.getLong("pos"));
 	}
 

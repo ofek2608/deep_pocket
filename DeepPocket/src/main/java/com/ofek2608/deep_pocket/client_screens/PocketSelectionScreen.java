@@ -158,6 +158,14 @@ class PocketSelectionScreen extends Screen {
 		drawPageText(stack, "/", leftPos + 77, topPos + 203);
 		drawPageText(stack, "" + (pageIndex + 1), leftPos + 67, topPos + 203);
 		drawPageText(stack, "" + pageCount, leftPos + 87, topPos + 203);
+
+
+		if (hoverNextPage)
+			renderTooltip(stack, Component.literal("Next Page"), mx, my);
+		if (hoverPrevPage)
+			renderTooltip(stack, Component.literal("Previous Page"), mx, my);
+		if (0 <= hoveredPocket && hoveredPocket < visiblePockets.length && visiblePockets[hoveredPocket] != null)
+			renderTooltip(stack, Component.literal("Select"), mx, my);
 	}
 
 	private void drawPageText(PoseStack stack, String text, int x, int y) {

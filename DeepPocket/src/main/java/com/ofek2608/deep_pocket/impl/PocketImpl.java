@@ -187,7 +187,7 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
-	public UUID addPattern(ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
+	public UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
 		UUID patternId;
 		do {
 			patternId = UUID.randomUUID();

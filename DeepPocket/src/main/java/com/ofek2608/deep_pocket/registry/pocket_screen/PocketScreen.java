@@ -7,13 +7,12 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
+import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
-import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
-import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -31,7 +30,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.client.event.ContainerScreenEvent;
 
 import javax.annotation.Nullable;
@@ -62,7 +60,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	//focus fields
 	private boolean focusSearch;
 	private boolean focusScroll;
-	private final ItemAmount[] patternInput = new ItemAmount[9];
+	private final ItemTypeAmount[] patternInput = new ItemTypeAmount[9];
 	private final ItemTypeAmount[] patternOutput = new ItemTypeAmount[9];
 	//simulate fields
 	private int quickCraftingType;
@@ -76,7 +74,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 
 	private void clearPattern() {
-		Arrays.fill(patternInput, new ItemAmount(Items.AIR, 0));
+		Arrays.fill(patternInput, new ItemTypeAmount(ItemType.EMPTY, 0));
 		Arrays.fill(patternOutput, new ItemTypeAmount(ItemType.EMPTY, 0));
 	}
 
@@ -84,7 +82,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		clearPattern();
 		int inputLen = Math.min(input.length, 9);
 		for (int i = 0; i < inputLen; i++)
-			patternInput[i] = new ItemAmount(input[i].getItem(), 1);
+			patternInput[i] = new ItemTypeAmount(input[i], 1);
 		patternOutput[0] = new ItemTypeAmount(new ItemType(output), output.getCount());
 	}
 
@@ -486,7 +484,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			return menu.getSlot(hoverSlotIndex);
 		hoverSlotIndex -= menuSlotCount;
 		if (hoverSlotIndex < 9)
-			return new FakeConstantSlot(new ItemStack(patternInput[hoverSlotIndex].getItem()), 0, 0);
+			return new FakeConstantSlot(patternInput[hoverSlotIndex].getItemType().create(), 0, 0);
 		hoverSlotIndex -= 9;
 		if (hoverSlotIndex < 9)
 			return new FakeConstantSlot(patternOutput[hoverSlotIndex].getItemType().create(), 0, 0);
@@ -578,7 +576,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			return;
 		ItemStack item;
 		if (index < 9)
-			item = new ItemStack(patternInput[index].getItem());
+			item = patternInput[index].getItemType().create();
 		else if (index < 18)
 			item = patternOutput[index - 9].getItemType().create();
 		else if (isEmptyPattern())
@@ -676,7 +674,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 				carried = ItemStack.EMPTY;
 			long count = carried.isEmpty() ? 0 : button == InputConstants.MOUSE_BUTTON_LEFT ? carried.getCount() : 1;
 			if (0 <= clickedSlot && clickedSlot < 9)
-				patternInput[clickedSlot] = new ItemAmount(carried.getItem(), count);
+				patternInput[clickedSlot] = new ItemTypeAmount(new ItemType(carried), count);
 			else if (9 <= clickedSlot && clickedSlot < 18)
 				patternOutput[clickedSlot - 9] = new ItemTypeAmount(new ItemType(carried), count);
 			return;
@@ -685,7 +683,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		long currentAmount;
 		if (0 <= clickedSlot && clickedSlot < 9) {
 			currentAmount = patternInput[clickedSlot].getAmount();
-			resultConsumer = newAmount->patternInput[clickedSlot] = new ItemAmount(patternInput[clickedSlot].getItem(), newAmount);
+			resultConsumer = newAmount->patternInput[clickedSlot] = new ItemTypeAmount(patternInput[clickedSlot].getItemType(), newAmount);
 		} else if (9 <= clickedSlot && clickedSlot < 18) {
 			currentAmount = patternOutput[clickedSlot - 9].getAmount();
 			resultConsumer = newAmount->patternOutput[clickedSlot - 9] = new ItemTypeAmount(patternOutput[clickedSlot - 9].getItemType(), newAmount);
@@ -905,7 +903,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	public void acceptJEIGhostIngredient(int targetIndex, ItemStack ghostIngredient) {
 		if (0 <= targetIndex && targetIndex < 9) {
-			patternInput[targetIndex] = new ItemAmount(ghostIngredient.getItem(), ghostIngredient.getCount());
+			patternInput[targetIndex] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
 		} else if (9 <= targetIndex && targetIndex < 18) {
 			patternOutput[targetIndex - 9] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
 		}

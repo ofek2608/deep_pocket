@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.client_screens;
 
+import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
@@ -68,5 +69,12 @@ public final class ClientScreens {
 
 	public static void processRequest(int color, ItemType type, long amount) {
 		//TODO open a screen
+	}
+
+	public static void selectRecipe(Pocket pocket, ItemType requiredOutput, Consumer<CraftingPattern> onSelect) {
+		Minecraft minecraft = Minecraft.getInstance();
+		Player player = minecraft.player;
+		if (player != null)
+			minecraft.setScreen(new RecipeSelectionScreen(player, pocket, requiredOutput, onSelect));
 	}
 }

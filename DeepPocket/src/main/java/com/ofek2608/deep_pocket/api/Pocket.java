@@ -33,7 +33,7 @@ public interface Pocket {
 	long getMaxExtract(@Nullable Knowledge knowledge, ItemType ... items);
 	Map<UUID,CraftingPattern> getPatternsMap();
 	@Nullable CraftingPattern getPattern(UUID patternId);
-	UUID addPattern(ItemAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
+	UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
 	void removePattern(UUID patternId);
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();

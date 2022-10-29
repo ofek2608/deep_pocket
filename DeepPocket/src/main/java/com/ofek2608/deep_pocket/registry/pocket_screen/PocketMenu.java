@@ -360,7 +360,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		setCarried(type.create(currentCount + extracted.getCount()));
 	}
 
-	public void createPattern(ServerPlayer player, ItemAmount[] input, ItemTypeAmount[] output, boolean toCarry) {
+	public void createPattern(ServerPlayer player, ItemTypeAmount[] input, ItemTypeAmount[] output, boolean toCarry) {
 		if (input.length != 9 || output.length != 9)
 			return;
 		boolean empty = true;

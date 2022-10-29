@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import net.minecraft.network.FriendlyByteBuf;
@@ -11,11 +10,11 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 class SBPatternCreate {
-	private final ItemAmount[] input;
+	private final ItemTypeAmount[] input;
 	private final ItemTypeAmount[] output;
 	private final boolean toCarry;
 
-	SBPatternCreate(ItemAmount[] input, ItemTypeAmount[] output, boolean toCarry) {
+	SBPatternCreate(ItemTypeAmount[] input, ItemTypeAmount[] output, boolean toCarry) {
 		this.input = input;
 		this.output = output;
 		this.toCarry = toCarry;
@@ -23,14 +22,14 @@ class SBPatternCreate {
 
 	SBPatternCreate(FriendlyByteBuf buf) {
 		this(
-						DeepPocketUtils.decodeArray(buf, ItemAmount[]::new, ItemAmount::decode),
+						DeepPocketUtils.decodeArray(buf, ItemTypeAmount[]::new, ItemTypeAmount::decode),
 						DeepPocketUtils.decodeArray(buf, ItemTypeAmount[]::new, ItemTypeAmount::decode),
 						buf.readBoolean()
 		);
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		DeepPocketUtils.encodeArray(buf, input, ItemAmount::encode);
+		DeepPocketUtils.encodeArray(buf, input, ItemTypeAmount::encode);
 		DeepPocketUtils.encodeArray(buf, output, ItemTypeAmount::encode);
 		buf.writeBoolean(toCarry);
 	}
