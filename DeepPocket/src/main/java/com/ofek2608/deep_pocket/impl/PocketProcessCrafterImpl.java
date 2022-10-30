@@ -8,7 +8,6 @@ import com.ofek2608.deep_pocket.api.struct.CrafterContext;
 import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
 
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 final class PocketProcessCrafterImpl implements PocketProcessCrafter {
 	private final PocketProcessRecipe parent;

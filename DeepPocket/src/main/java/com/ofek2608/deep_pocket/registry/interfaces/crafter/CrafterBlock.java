@@ -120,7 +120,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 	}
 
 	public static class Ent extends BlockEntityWithPocket implements Container, PatternSupportedBlockEntity {
-		protected NonNullList<ItemStack> items;
+		protected final NonNullList<ItemStack> items;
 		protected final UUID[] patterns;
 
 		public Ent(BlockEntityType<?> type, BlockPos pos, BlockState state, int size) {

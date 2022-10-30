@@ -37,12 +37,8 @@ class SBOpenPocket {
 			if (pocketId == null)
 				return;
 			switch (type) {
-				case 0:
-					api.openPocket(player, pocketId);
-					break;
-				case 1:
-					api.openProcesses(player, pocketId);
-					break;
+				case 0 -> api.openPocket(player, pocketId);
+				case 1 -> api.openProcesses(player, pocketId);
 			}
 		});
 		ctxSupplier.get().setPacketHandled(true);

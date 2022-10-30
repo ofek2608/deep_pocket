@@ -31,10 +31,6 @@ class PocketSettingsScreen extends Screen {
 	private final @Nullable Screen backScreen;
 	private final @Nullable UUID pocketId;
 	private final PocketInfo pocketInfo;
-//	private final StringBuilder name;
-//	private @Nonnull ItemType icon;
-//	private int color;
-//	private @Nonnull PocketSecurityMode securityMode;
 
 	//Update Fields
 	private int leftPos;
@@ -43,6 +39,7 @@ class PocketSettingsScreen extends Screen {
 	private boolean hoverName;
 	private int hoverSlider;
 	private boolean hoverSecurityMode;
+	private boolean hoverDelete;
 	private boolean hoverCancel;
 	private boolean hoverConfirm;
 	private boolean holdingShift;
@@ -68,6 +65,7 @@ class PocketSettingsScreen extends Screen {
 		hoverName = 25 <= mx && mx <= 148 && 8 <= my && my <= 17;
 		hoverSlider = focusSlider >= 0 ? focusSlider : 5 <= mx && mx <= 28 && 25 <= my && my <= 56 ? (mx - 5) / 8 : -1;
 		hoverSecurityMode = 41 <= mx && mx <= 81 && 25 <= my && my <= 34;
+		hoverDelete = 93 <= mx && mx <= 108 && 41 <= my && my <= 56;
 		hoverCancel = 113 <= mx && mx <= 128 && 41 <= my && my <= 56;
 		hoverConfirm = 133 <= mx && mx <= 148 && 41 <= my && my <= 56;
 		holdingShift = Screen.hasShiftDown();
@@ -89,6 +87,7 @@ class PocketSettingsScreen extends Screen {
 		Sprites.BASE.blit(stack, leftPos, topPos);
 		(hoverIcon ? Sprites.ICON_H : Sprites.ICON_N).blit(stack, leftPos + 5, topPos + 5);
 		(hoverSecurityMode ? Sprites.SECURITY_H : Sprites.SECURITY_N).blit(stack, leftPos + 41, topPos + 25);
+		(pocketId == null ? Sprites.HIDDEN_BUTTON : hoverDelete ? Sprites.DELETE_H : Sprites.DELETE_N).blit(stack, leftPos + 93, topPos + 41);
 		(hoverCancel ? Sprites.CANCEL_H : Sprites.CANCEL_N).blit(stack, leftPos + 113, topPos + 41);
 		(hoverConfirm ? Sprites.CONFIRM_H : Sprites.CONFIRM_N).blit(stack, leftPos + 133, topPos + 41);
 		for (int channelIndex = 0; channelIndex < 3; channelIndex++) {
@@ -105,14 +104,17 @@ class PocketSettingsScreen extends Screen {
 			renderTooltip(stack, Component.literal("Change Icon"), mx, my);
 		if (hoverSecurityMode)
 			renderTooltip(stack, Component.literal("Change Security Mode"), mx, my);
-		if (hoverCancel) {
-			if (pocketId == null)
-				renderTooltip(stack, Component.literal("Cancel"), mx, my);
-			else if (holdingShift)
-				renderTooltip(stack, Component.literal("Delete").withStyle(ChatFormatting.RED), mx, my);
-			else
-				renderTooltip(stack, List.of(Component.literal("Cancel"), Component.literal("[Press shift to delete]").withStyle(ChatFormatting.GRAY)), Optional.empty(), mx, my);
+		if (hoverDelete && pocketId != null) {
+			renderTooltip(stack, List.of(
+							Component.literal("Delete").withStyle(holdingShift ? ChatFormatting.RED : ChatFormatting.WHITE),
+							Component.literal("Warning:").withStyle(ChatFormatting.GRAY),
+							Component.literal("It will delete all the items inside the pocket.").withStyle(ChatFormatting.GRAY),
+							Component.empty(),
+							Component.literal("[Press shift to confirm]").withStyle(ChatFormatting.GRAY)
+			), Optional.empty(), mx, my);
 		}
+		if (hoverCancel)
+			renderTooltip(stack, Component.literal("Cancel"), mx, my);
 		if (hoverConfirm)
 			renderTooltip(stack, Component.literal("Confirm"), mx, my);
 	}
@@ -147,14 +149,17 @@ class PocketSettingsScreen extends Screen {
 			};
 			return true;
 		}
-		if (hoverCancel) {
+		if (hoverDelete && pocketId != null) {
 			DeepPocketUtils.playClickSound();
-			if (pocketId != null && holdingShift) {
+			if (holdingShift) {
 				DeepPocketPacketHandler.sbDestroyPocket(pocketId);
 				if (minecraft != null)
 					minecraft.setScreen(null);
-				return true;
 			}
+			return true;
+		}
+		if (hoverCancel) {
+			DeepPocketUtils.playClickSound();
 			onClose();
 			return true;
 		}
@@ -249,12 +254,15 @@ class PocketSettingsScreen extends Screen {
 		OUTLINE(0, 62, 154, 62),
 		ICON_N(240, 0, 16, 16),
 		ICON_H(240, 16, 16, 16),
+		HIDDEN_BUTTON(240, 32, 16, 16),
 		SECURITY_N(154, 0, 41, 10),
 		SECURITY_H(154, 10, 41, 10),
 		CANCEL_N(154, 20, 16, 16),
 		CANCEL_H(154, 36, 16, 16),
 		CONFIRM_N(170, 20, 16, 16),
 		CONFIRM_H(170, 36, 16, 16),
+		DELETE_N(186, 20, 16, 16),
+		DELETE_H(186, 36, 16, 16),
 		SLIDER_N(154, 52, 8, 2),
 		SLIDER_H(154, 54, 8, 2),
 		;
