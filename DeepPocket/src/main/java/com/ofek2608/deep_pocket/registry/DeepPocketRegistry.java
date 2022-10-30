@@ -9,6 +9,7 @@ import com.ofek2608.deep_pocket.registry.items.PocketFactoryItem;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.items.PocketLinkItem;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
+import com.ofek2608.deep_pocket.registry.process_screen.ProcessMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
@@ -66,6 +67,7 @@ public final class DeepPocketRegistry {
 	public static final RegistryObject<CraftingPatternItem> CRAFTING_PATTERN_ITEM = ITEMS.register("crafting_pattern", ()->new CraftingPatternItem(itemProperties(1)));
 
 	public static final RegistryObject<MenuType<PocketMenu>> POCKET_MENU = MENU_TYPES.register("pocket", ()->new MenuType<>(PocketMenu::new));
+	public static final RegistryObject<MenuType<ProcessMenu>> PROCESS_MENU = MENU_TYPES.register("process", ()->new MenuType<>(ProcessMenu::new));
 	public static final RegistryObject<MenuType<CrafterMenu>> CRAFTER_MENU = MENU_TYPES.register("crafter", ()->new MenuType<>(CrafterMenu::new));
 
 	public static final RegistryObject<PassiveImporter> PASSIVE_IMPORTER_BLOCK = BLOCKS.register("passive_importer", ()->new PassiveImporter(blockProperties()));

@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface PocketProcessUnit {
 	PocketProcessManager getParent();
+	int getId();
 	int getTypeCount();
 	ItemType[] getTypes();
 	ItemType getType(int index);
@@ -20,6 +21,9 @@ public interface PocketProcessUnit {
 
 	@UnmodifiableView List<PocketProcessRecipe> getRecipes();
 	PocketProcessRecipe addRecipe(ItemType result, ItemType[] ingredients);
+
+	void stop();
+	void forceStop();
 
 	long supplyItem(ItemType item, long amount);
 	boolean executeCrafters(Pocket pocket);

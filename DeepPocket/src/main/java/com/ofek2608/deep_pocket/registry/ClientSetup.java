@@ -8,6 +8,7 @@ import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternClientTooltip;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketScreen;
+import com.ofek2608.deep_pocket.registry.process_screen.ProcessScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -23,6 +24,7 @@ class ClientSetup {
 	@SubscribeEvent
 	public static void event(FMLClientSetupEvent event) {
 		MenuScreens.register(DeepPocketRegistry.POCKET_MENU.get(), PocketScreen::new);
+		MenuScreens.register(DeepPocketRegistry.PROCESS_MENU.get(), ProcessScreen::new);
 		MenuScreens.register(DeepPocketRegistry.CRAFTER_MENU.get(), CrafterScreen::new);
 	}
 

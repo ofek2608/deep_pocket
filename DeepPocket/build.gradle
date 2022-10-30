@@ -5,7 +5,7 @@ plugins {
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
 }
 
-version = '0.0.6'
+version = '0.0.7'
 group = 'com.ofek2608.deep_pocket' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 //noinspection GroovyUnusedAssignment
 archivesBaseName = 'deep_pocket'

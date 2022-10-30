@@ -11,18 +11,22 @@ import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessUnit;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
-import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
+import com.ofek2608.deep_pocket.registry.process_screen.ProcessMenu;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuConstructor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.network.NetworkHooks;
@@ -32,6 +36,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -343,17 +348,24 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		return knowledge.computeIfAbsent(playerId, id->helper.createKnowledge(conversions).createSnapshot()).getKnowledge();
 	}
 
-	@Override
-	public void openPocket(ServerPlayer player, UUID pocketId) {
+	private void open(ServerPlayer player, UUID pocketId, Function<Pocket, MenuConstructor> menu) {
 		if (player.containerMenu != player.inventoryMenu)
 			return;
 		Pocket pocket = getPocket(pocketId);
 		if (pocket == null)
 			return;
-		NetworkHooks.openScreen(player, PocketMenu.MENU_PROVIDER);
-		if (player.containerMenu instanceof MenuWithPocket menu)
-			menu.setPocket(pocket);
+		NetworkHooks.openScreen(player, new SimpleMenuProvider(menu.apply(pocket), Component.empty()));
 		DeepPocketPacketHandler.cbSetViewedPocket(PacketDistributor.PLAYER.with(()->player), pocket.getPocketId());
+	}
+
+	@Override
+	public void openPocket(ServerPlayer player, UUID pocketId) {
+		open(player, pocketId, pocket -> (int id, Inventory inv, Player player0)-> new PocketMenu(id, inv, pocket));
+	}
+
+	@Override
+	public void openProcesses(ServerPlayer player, UUID pocketId) {
+		open(player, pocketId, pocket -> (int id, Inventory inv, Player player0)-> new ProcessMenu(id, player0, pocket));
 	}
 
 	private static @Nullable InteractionHand getHandForItem(Player player, Item item) {
@@ -648,6 +660,11 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			if (defaultPatterns.size() > 0)
 				DeepPocketPacketHandler.cbUpdateDefaultPatterns(packetTarget, pocketId, defaultPatterns, new ItemType[0]);
 		}
+
+		//Data for menus
+		for (ServerPlayer players : onlinePLayers)
+			if (players.containerMenu instanceof ProcessMenu menu)
+				menu.sendUpdate();
 
 		//======
 		// Post

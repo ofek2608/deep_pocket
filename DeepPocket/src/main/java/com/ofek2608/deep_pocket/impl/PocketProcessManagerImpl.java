@@ -14,6 +14,7 @@ import java.util.List;
 final class PocketProcessManagerImpl implements PocketProcessManager {
 	private final DeepPocketHelper helper;
 	private final List<PocketProcessUnit> units = new ArrayList<>();
+	private int nextUnitId = 0;
 
 	PocketProcessManagerImpl(DeepPocketHelper helper) {
 		this.helper = helper;
@@ -26,7 +27,7 @@ final class PocketProcessManagerImpl implements PocketProcessManager {
 
 	@Override
 	public PocketProcessUnit addUnit(ItemType[] types) {
-		PocketProcessUnit unit = new PocketProcessUnitImpl(helper, this, types);
+		PocketProcessUnit unit = new PocketProcessUnitImpl(helper, this, nextUnitId++, types);
 		units.add(unit);
 		return unit;
 	}

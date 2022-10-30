@@ -16,7 +16,7 @@ public final class DeepPocketPacketHandler {
 	private DeepPocketPacketHandler() {}
 	@SuppressWarnings("EmptyMethod") public static void loadClass() {}
 
-	private static final String PROTOCOL_VERSION = "0.0.5";
+	private static final String PROTOCOL_VERSION = "0.0.7";
 	private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(DeepPocketMod.loc("main"), ()->PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
 	static {
@@ -44,6 +44,7 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, CBKnowledgeRem.class, CBKnowledgeRem::encode, CBKnowledgeRem::new, CBKnowledgeRem::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBSetViewedPocket.class, CBSetViewedPocket::encode, CBSetViewedPocket::new, CBSetViewedPocket::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBSetViewedProcessData.class, CBSetViewedProcessData::encode, CBSetViewedProcessData::new, CBSetViewedProcessData::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, SBOpenPocket.class, SBOpenPocket::encode, SBOpenPocket::new, SBOpenPocket::handle, serverbound);
 		CHANNEL.registerMessage(++pid, SBSelectPocket.class, SBSelectPocket::encode, SBSelectPocket::new, SBSelectPocket::handle, serverbound);
@@ -82,8 +83,9 @@ public final class DeepPocketPacketHandler {
 	public static void cbKnowledgeRem(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeRem(types)); }
 
 	public static void cbSetViewedPocket(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBSetViewedPocket(pocketId)); }
+	public static void cbSetViewedProcessData(PacketDistributor.PacketTarget target, ProcessUnitClientData data) { CHANNEL.send(target, new CBSetViewedProcessData(data)); }
 
-	public static void sbOpenPocket() { CHANNEL.send(serverTarget(), new SBOpenPocket()); }
+	public static void sbOpenPocket(int type) { CHANNEL.send(serverTarget(), new SBOpenPocket(type)); }
 	public static void sbSelectPocket(UUID pocketId) { CHANNEL.send(serverTarget(), new SBSelectPocket(pocketId)); }
 	public static void sbCreatePocket(PocketInfo info) { CHANNEL.send(serverTarget(), new SBCreatePocket(info)); }
 	public static void sbChangePocketSettings(UUID pocketId, PocketInfo info) { CHANNEL.send(serverTarget(), new SBChangePocketSettings(pocketId, info)); }

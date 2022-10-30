@@ -783,7 +783,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			scroll--;
 		else if (pDelta < 0)
 			scroll++;
-		return super.mouseScrolled(pMouseX, pMouseY, pDelta);
+		return true;
 	}
 
 	@Override

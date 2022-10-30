@@ -17,6 +17,7 @@ public interface DeepPocketServerApi extends DeepPocketApi {
 	Knowledge getKnowledge(UUID playerId);
 
 	void openPocket(ServerPlayer player, UUID pocketId);
+	void openProcesses(ServerPlayer player, UUID pocketId);
 	void selectPocketFor(ServerPlayer player, UUID pocketId);
 	void createPocketFor(ServerPlayer player, PocketInfo info);
 	void changePocketSettingsFrom(ServerPlayer player, UUID pocketId, PocketInfo info);

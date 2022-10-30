@@ -32,7 +32,7 @@ class RequestProcessScreen extends Screen {
 	private final DeepPocketClientHelper dpClientHelper = DeepPocketClientHelper.get();
 	private static final int DISPLAY_ROW_COUNT = 9;
 	private static final int VIEW_WIDTH = 172;
-	private static final int VIEW_HEIGHT = 48 + DISPLAY_ROW_COUNT * 18;
+	private static final int VIEW_HEIGHT = 50 + DISPLAY_ROW_COUNT * 18;
 	private final @Nullable Screen backScreen;
 	private final Pocket pocket;
 	private final ItemType requestedType;
@@ -451,6 +451,15 @@ class RequestProcessScreen extends Screen {
 	}
 
 	@Override
+	public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
+		if (pDelta > 0)
+			scroll--;
+		else if (pDelta < 0)
+			scroll++;
+		return true;
+	}
+
+	@Override
 	public void onClose() {
 		if (minecraft != null)
 			minecraft.setScreen(backScreen);
@@ -469,17 +478,17 @@ class RequestProcessScreen extends Screen {
 		FRAME_MIDDLE(0, 93, 184, 18),
 		FRAME_BOTTOM(0, 111 , 184, 25),
 
-		BUTTON_CANCEL_N(192, 0, 16, 16), BUTTON_CANCEL_H(192, 16, 16, 16),
-		BUTTON_REQUEST_N(208, 0, 16, 16), BUTTON_REQUEST_H(208, 16, 16, 16),
-		BUTTON_ERROR_N(224, 0, 16, 16), BUTTON_ERROR_H(224, 16, 16, 16),
-		BUTTON_COUNT_N(240, 0, 16, 16), BUTTON_COUNT_H(240, 16, 16, 16),
-		SCROLL_N(212,32,8,2), SCROLL_H(212,34,8,2),
+		SCROLL_N(0,136,8,2), SCROLL_H(0,138,8,2),
+		BUTTON_COUNT_N(188, 0, 16, 16), BUTTON_COUNT_H(204, 0, 16, 16),
+		BUTTON_CANCEL_N(188, 16, 16, 16), BUTTON_CANCEL_H(204, 16, 16, 16),
+		BUTTON_REQUEST_N(188, 32, 16, 16), BUTTON_REQUEST_H(204, 32, 16, 16),
+		BUTTON_ERROR_N(188, 48, 16, 16), BUTTON_ERROR_H(204, 48, 16, 16),
 
-		PATTERN_BORDER_NONE_N(220, 32, 18, 18), PATTERN_BORDER_NONE_H(238, 32, 18, 18),
-		PATTERN_BORDER_MISSING_N(220, 50, 18, 18), PATTERN_BORDER_MISSING_H(238, 50, 18, 18),
-		PATTERN_BORDER_ENOUGH_N(220, 68, 18, 18), PATTERN_BORDER_ENOUGH_H(238, 68, 18, 18),
-		PATTERN_BORDER_CRAFT_N(220, 86, 18, 18), PATTERN_BORDER_CRAFT_H(238, 86, 18, 18),
-		PATTERN_BORDER_LOOP_N(220, 86, 18, 18), PATTERN_BORDER_LOOP_H(238, 86, 18, 18),
+		PATTERN_BORDER_NONE_N   (220,  0, 18, 18), PATTERN_BORDER_NONE_H   (238,  0, 18, 18),
+		PATTERN_BORDER_MISSING_N(220, 18, 18, 18), PATTERN_BORDER_MISSING_H(238, 18, 18, 18),
+		PATTERN_BORDER_ENOUGH_N (220, 36, 18, 18), PATTERN_BORDER_ENOUGH_H (238, 36, 18, 18),
+		PATTERN_BORDER_CRAFT_N  (220, 54, 18, 18), PATTERN_BORDER_CRAFT_H  (238, 54, 18, 18),
+		PATTERN_BORDER_LOOP_N   (220, 72, 18, 18), PATTERN_BORDER_LOOP_H   (238, 72, 18, 18),
 		;
 
 		private final int u, v, w, h;

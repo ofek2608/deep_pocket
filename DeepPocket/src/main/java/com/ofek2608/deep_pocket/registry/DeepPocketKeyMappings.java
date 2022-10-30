@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.Mod;
 
 class DeepPocketKeyMappings {
 	public static final KeyMapping POCKET_KEY = new KeyMapping("deep_pocket.key.pocket", InputConstants.KEY_R, "key.categories.inventory");
+	public static final KeyMapping PROCESSES_KEY = new KeyMapping("deep_pocket.key.processes", InputConstants.KEY_T, "key.categories.inventory");
 
 	@Mod.EventBusSubscriber(modid = DeepPocketMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 	private static class ForgeEvents {
@@ -20,15 +21,19 @@ class DeepPocketKeyMappings {
 		public static void event(TickEvent.ClientTickEvent event) {
 			if (event.phase != TickEvent.Phase.START)
 				return;
-			if (!POCKET_KEY.consumeClick())
-				return;
+			boolean openPocket = POCKET_KEY.consumeClick();
+			boolean openProcesses = PROCESSES_KEY.consumeClick();
 			Minecraft minecraft = Minecraft.getInstance();
 			if (minecraft.screen != null)
 				return;
 			Player player = minecraft.player;
 			if (player == null)
 				return;
-			DeepPocketPacketHandler.sbOpenPocket();
+
+			if (openPocket)
+				DeepPocketPacketHandler.sbOpenPocket(0);
+			if (openProcesses)
+				DeepPocketPacketHandler.sbOpenPocket(1);
 		}
 	}
 
@@ -37,6 +42,7 @@ class DeepPocketKeyMappings {
 		@SubscribeEvent
 		public static void event(RegisterKeyMappingsEvent event) {
 			event.register(POCKET_KEY);
+			event.register(PROCESSES_KEY);
 		}
 	}
 }

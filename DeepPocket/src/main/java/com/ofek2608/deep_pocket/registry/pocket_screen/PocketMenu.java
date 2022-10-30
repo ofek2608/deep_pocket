@@ -31,7 +31,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket {
-	public static final MenuProvider MENU_PROVIDER = new SimpleMenuProvider(PocketMenu::new, Component.empty());
 	public final Inventory playerInventory;
 	private final CraftingContainer craftSlots = new CraftingContainer(this, 3, 3);
 	private final ResultContainer resultSlots = new ResultContainer();
@@ -52,8 +51,9 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		this(DeepPocketRegistry.POCKET_MENU.get(), containerId, playerInventory);
 	}
 
-	public PocketMenu(int containerId, Inventory playerInventory, Player player) {
+	public PocketMenu(int containerId, Inventory playerInventory, Pocket pocket) {
 		this(containerId, playerInventory);
+		setPocket(pocket);
 	}
 
 	private static final int CRAFTING_HEIGHT = 48 + 4;

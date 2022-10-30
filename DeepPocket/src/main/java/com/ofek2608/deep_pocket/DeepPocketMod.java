@@ -24,8 +24,6 @@ public final class DeepPocketMod {
 	}
 
 	/*
-	 * TODO before version 0.0.7
-	 *  - There should be a window to show the processes.
 	 * TODO before version 1.0.0
 	 *  - test multiplayer
 	 *  - Make more commands

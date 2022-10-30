@@ -10,14 +10,20 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 class SBOpenPocket {
-	SBOpenPocket() {}
+	private final int type;
+
+	SBOpenPocket(int type) {
+		this.type = type;
+	}
 
 	SBOpenPocket(FriendlyByteBuf buf) {
-		this();
+		this(buf.readVarInt());
 	}
 
 	@SuppressWarnings("EmptyMethod")
-	void encode(FriendlyByteBuf buf) {}
+	void encode(FriendlyByteBuf buf) {
+		buf.writeVarInt(type);
+	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
 		ctxSupplier.get().enqueueWork(()->{
@@ -30,7 +36,14 @@ class SBOpenPocket {
 			UUID pocketId = DeepPocketCurios.getPocket(player);
 			if (pocketId == null)
 				return;
-			api.openPocket(player, pocketId);
+			switch (type) {
+				case 0:
+					api.openPocket(player, pocketId);
+					break;
+				case 1:
+					api.openProcesses(player, pocketId);
+					break;
+			}
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessUnit;
@@ -12,14 +13,16 @@ import java.util.stream.Stream;
 
 final class PocketProcessUnitImpl implements PocketProcessUnit {
 	private final PocketProcessManager parent;
+	private final int id;
 	private final ProvidedResources resources;
 	private final Map<ItemType,Integer> typeIndexes;
 	private final long[] leftToProvide;
 	private final List<PocketProcessRecipe> recipes;
 
-	PocketProcessUnitImpl(DeepPocketHelper helper, PocketProcessManager parent, ItemType[] types) {
+	PocketProcessUnitImpl(DeepPocketHelper helper, PocketProcessManager parent, int id, ItemType[] types) {
 		types = types.clone();
 		this.parent = parent;
+		this.id = id;
 		int len = types.length;
 		this.resources = helper.createProvidedResources(types);
 		this.typeIndexes = new HashMap<>();
@@ -32,6 +35,11 @@ final class PocketProcessUnitImpl implements PocketProcessUnit {
 	@Override
 	public PocketProcessManager getParent() {
 		return parent;
+	}
+
+	@Override
+	public int getId() {
+		return id;
 	}
 
 	@Override
@@ -84,6 +92,22 @@ final class PocketProcessUnitImpl implements PocketProcessUnit {
 		PocketProcessRecipe recipe = new PocketProcessRecipeImpl(this, result, resources.subProvidedResources(indexes));
 		recipes.add(recipe);
 		return recipe;
+	}
+
+	@Override
+	public void stop() {
+		for (PocketProcessRecipe recipe : recipes)
+			recipe.setLeftToCraft(0L);
+	}
+
+	@Override
+	public void forceStop() {
+		for (PocketProcessRecipe recipe : recipes) {
+			for (PocketProcessCrafter crafter : recipe.getCrafters())
+				crafter.getResources().returnAllToParent();
+			recipe.getResources().returnAllToParent();
+		}
+		recipes.clear();
 	}
 
 	@Override
