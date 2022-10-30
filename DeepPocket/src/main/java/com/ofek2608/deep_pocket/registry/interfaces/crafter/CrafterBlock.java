@@ -73,6 +73,19 @@ public class CrafterBlock extends Block implements EntityBlock {
 	}
 
 	@SuppressWarnings("deprecation")
+	public void onRemove(BlockState oldState, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+		if (!oldState.is(newState.getBlock())) {
+			if (level.getBlockEntity(pos) instanceof Container container) {
+				Containers.dropContents(level, pos, container);
+				container.clearContent();
+				level.updateNeighbourForOutputSignal(pos, this);
+			}
+
+			super.onRemove(oldState, level, pos, newState, isMoving);
+		}
+	}
+
+	@SuppressWarnings("deprecation")
 	@Override
 	public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand pHand, BlockHitResult pHit) {
 		if (level.isClientSide || !(player instanceof ServerPlayer serverPlayer))
@@ -165,9 +178,8 @@ public class CrafterBlock extends Block implements EntityBlock {
 		@Override
 		public void load(CompoundTag pTag) {
 			super.load(pTag);
-			this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+			clearContent();
 			ContainerHelper.loadAllItems(pTag, this.items);
-			Arrays.fill(this.patterns, null);
 			ListTag savedPatterns = pTag.getList("patterns", 11);
 			for (int i = 0; i < 9 && i < savedPatterns.size(); i++) {
 				try {
@@ -244,7 +256,6 @@ public class CrafterBlock extends Block implements EntityBlock {
 				removeItemNoUpdate(i);
 		}
 
-
 		private final IItemHandler itemHandler = new IItemHandlerModifiable() {
 			@Override
 			public int getSlots() {
@@ -302,7 +313,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 
 			@Override
 			public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-				return stack.is(DeepPocketRegistry.CRAFTING_PATTERN_ITEM.get());
+				return stack.isEmpty() || stack.is(DeepPocketRegistry.CRAFTING_PATTERN_ITEM.get());
 			}
 
 			@Override
