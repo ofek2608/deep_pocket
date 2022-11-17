@@ -16,7 +16,7 @@ public final class DeepPocketPacketHandler {
 	private DeepPocketPacketHandler() {}
 	@SuppressWarnings("EmptyMethod") public static void loadClass() {}
 
-	private static final String PROTOCOL_VERSION = "0.0.7";
+	private static final String PROTOCOL_VERSION = "0.0.8";
 	private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(DeepPocketMod.loc("main"), ()->PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 
 	static {
@@ -79,7 +79,7 @@ public final class DeepPocketPacketHandler {
 	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, CraftingPattern[] addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
 	public static void cbUpdateDefaultPatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Optional<UUID>> addedDefaults, ItemType[] removedDefaults) { CHANNEL.send(target, new CBUpdateDefaultPatterns(pocketId, addedDefaults, removedDefaults)); }
 
-	public static void cbKnowledgeAdd(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeAdd(types)); }
+	public static void cbKnowledgeAdd(PacketDistributor.PacketTarget target, boolean clear, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeAdd(clear, types)); }
 	public static void cbKnowledgeRem(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeRem(types)); }
 
 	public static void cbSetViewedPocket(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBSetViewedPocket(pocketId)); }
@@ -101,7 +101,5 @@ public final class DeepPocketPacketHandler {
 
 	public static void sbPocketSignalSettings(BlockPos pos, SignalSettings settings) { CHANNEL.send(serverTarget(), new SBPocketSignalSettings(pos, settings)); }
 
-	private static PacketDistributor.PacketTarget serverTarget() {
-		return PacketDistributor.SERVER.noArg();
-	}
+	private static PacketDistributor.PacketTarget serverTarget() { return PacketDistributor.SERVER.noArg(); }
 }

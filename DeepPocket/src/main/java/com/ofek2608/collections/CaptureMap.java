@@ -65,8 +65,10 @@ public class CaptureMap<K,V> implements Map<K,V> {
 		if (Objects.equals(defaultValue(key), value))
 			return remove(key);
 		V oldValue = internal.put(key, value);
-		if (!Objects.equals(oldValue, value))
+		if (!Objects.equals(oldValue, value)) {
+			lastSnapshot.removed.remove(key);
 			lastSnapshot.added.add(key);
+		}
 		return oldValue;
 	}
 
@@ -74,12 +76,11 @@ public class CaptureMap<K,V> implements Map<K,V> {
 		if (internal.containsKey(key))
 			return false;
 		try {
-			value = validate(key, value);
+			put(key, value);
+			return true;
 		} catch (Exception exception) {
 			return false;
 		}
-		internal.put(key, value);
-		return true;
 	}
 
 	@Override

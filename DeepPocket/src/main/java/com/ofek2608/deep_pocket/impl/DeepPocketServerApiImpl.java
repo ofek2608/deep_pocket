@@ -584,9 +584,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 				ItemType[] removed = snapshot.getRemoved();
 				ItemType[] added = snapshot.getAdded();
 				if (removed.length > 0)
-					DeepPocketPacketHandler.cbKnowledgeAdd(playerTarget, removed);
+					DeepPocketPacketHandler.cbKnowledgeRem(playerTarget, removed);
 				if (added.length > 0)
-					DeepPocketPacketHandler.cbKnowledgeAdd(playerTarget, added);
+					DeepPocketPacketHandler.cbKnowledgeAdd(playerTarget, false, added);
 			}
 		}
 		//On Join
@@ -600,7 +600,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			DeepPocketPacketHandler.cbSetPlayersName(packetTarget, getPlayerNameCache());
 			//knowledge
 			for (ServerPlayer player : newPlayers)
-				DeepPocketPacketHandler.cbKnowledgeAdd(PacketDistributor.PLAYER.with(() -> player), getKnowledgeSnapshot(player.getUUID()).getKnowledge().asSet().toArray(new ItemType[0]));
+				DeepPocketPacketHandler.cbKnowledgeAdd(PacketDistributor.PLAYER.with(() -> player), true, getKnowledgeSnapshot(player.getUUID()).getKnowledge().asSet().toArray(new ItemType[0]));
 			//pockets
 			DeepPocketPacketHandler.cbClearPockets(packetTarget);
 			for (Pocket pocket : pockets)
