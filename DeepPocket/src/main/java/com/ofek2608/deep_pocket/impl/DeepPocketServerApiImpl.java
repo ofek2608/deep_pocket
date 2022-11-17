@@ -409,7 +409,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		InteractionHand hand = getHandForItem(player, DeepPocketRegistry.POCKET_FACTORY_ITEM.get());
 		if (hand == null)
 			return;
-		if (info.securityMode == PocketSecurityMode.PUBLIC && DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
+		if (info.securityMode == PocketSecurityMode.PUBLIC && !DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
 			info.securityMode = PocketSecurityMode.TEAM;
 		Pocket newPocket;
 		do {
@@ -420,7 +420,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 
 	@Override
 	public void changePocketSettingsFrom(ServerPlayer player, UUID pocketId, PocketInfo info) {
-		if (info.securityMode == PocketSecurityMode.PUBLIC && DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
+		if (info.securityMode == PocketSecurityMode.PUBLIC && !DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get())
 			info.securityMode = PocketSecurityMode.TEAM;
 		Pocket pocket = getPocket(pocketId);
 		if (pocket == null || !player.getUUID().equals(pocket.getOwner()))
