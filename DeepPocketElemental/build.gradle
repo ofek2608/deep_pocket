@@ -106,7 +106,7 @@ repositories {
         }
     }
     flatDir {
-        dir '../libs'
+        dir '../DeepPocket/build/libs'
     }
 }
 
@@ -121,7 +121,8 @@ dependencies {
     runtimeOnly(fg.deobf("curse.maven:ftb-teams-404468:3963573"))
     runtimeOnly(fg.deobf("curse.maven:curios-compiled-309927:3924518"))
     runtimeOnly(fg.deobf("curse.maven:theoneprobe-245211:3965693"))
-    implementation fg.deobf('blank:deep-pocket:0.0')
+
+    implementation fg.deobf('blank:deep_pocket:0.0.9')
 }
 
 // Example for how to get properties into the manifest for reading at runtime.
