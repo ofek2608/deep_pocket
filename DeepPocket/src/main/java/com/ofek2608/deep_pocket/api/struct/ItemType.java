@@ -57,7 +57,7 @@ public final class ItemType {
 
 	public boolean is(ItemStack stack) {
 		return isEmpty() && stack.isEmpty() ||
-						item != stack.getItem() && (stack.hasTag() ? tag.equals(stack.getTag()) : tag.isEmpty());
+						item == stack.getItem() && (stack.hasTag() ? tag.equals(stack.getTag()) : tag.isEmpty());
 	}
 
 	public CompoundTag save() {

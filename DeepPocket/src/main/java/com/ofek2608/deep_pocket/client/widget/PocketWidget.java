@@ -258,7 +258,7 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 		ItemStack carried = menu.getCarried();
 		if (holdCraft)
 			return true;
-		if (clickedType != null && (carried.isEmpty() || !clickedType.is(carried))) {
+		if (clickedType != null && (carried.isEmpty() || clickedType.is(carried))) {
 			byte count = switch (button) {
 				case InputConstants.MOUSE_BUTTON_LEFT -> (byte) 64;
 				default -> (byte) 1;

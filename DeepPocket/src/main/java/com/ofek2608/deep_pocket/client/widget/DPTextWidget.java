@@ -28,7 +28,8 @@ public class DPTextWidget extends EditBox {
 	
 	@Override
 	public boolean mouseClicked(double mx, double my, int button) {
-		if (button == InputConstants.MOUSE_BUTTON_RIGHT) {
+		boolean hover = x <= mx && mx < x + width && y <= my && my < y + height;
+		if (hover && button == InputConstants.MOUSE_BUTTON_RIGHT) {
 			setValue("");
 			return true;
 		}

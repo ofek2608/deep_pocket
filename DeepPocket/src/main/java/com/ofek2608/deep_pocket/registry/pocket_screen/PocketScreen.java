@@ -14,10 +14,7 @@ import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
-import com.ofek2608.deep_pocket.client.widget.DPTextWidget;
-import com.ofek2608.deep_pocket.client.widget.PocketTabWidget;
-import com.ofek2608.deep_pocket.client.widget.PocketWidget;
-import com.ofek2608.deep_pocket.client.widget.WidgetWithTooltip;
+import com.ofek2608.deep_pocket.client.widget.*;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
@@ -58,6 +55,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private final PocketWidget pocketWidget;
 	private final DPTextWidget searchWidget;
 	private final PocketTabWidget pocketTabWidget;
+	private final PatternWidget patternWidget;
 	
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
@@ -66,6 +64,9 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		addRenderableWidget(searchWidget = new DPTextWidget(0, 0, 88));
 		addRenderableWidget(pocketWidget = new PocketWidget(this, 0, 0, 144, menu::getPocket, this::createFilter));
 		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getPocket));
+		addRenderableWidget(patternWidget = new PatternWidget(this));
+		
+		patternWidget.setPos(100, 50);
 		
 		searchWidget.setResponder(newValue -> {
 			if (DeepPocketClientApi.get().getSearchMode().syncTo)
@@ -94,6 +95,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	public void setPattern(ItemType[] input, ItemStack output) {
+		patternWidget.setPattern(input, output);
 		clearPattern();
 		int inputLen = Math.min(input.length, 9);
 		for (int i = 0; i < inputLen; i++)
@@ -704,17 +706,19 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	public Rect2i getJEITargetArea(int targetIndex) {
-		int x = (targetIndex % 3) * 16 + (targetIndex < 9 ? 37 : 97) + leftPos;
-		int y = ((targetIndex / 3) % 3) * 16 + rowCount * 16 + 23 + topPos;
-		return new Rect2i(x, y, 16, 16);
+		return patternWidget.getJEITargetArea(targetIndex);
+//		int x = (targetIndex % 3) * 16 + (targetIndex < 9 ? 37 : 97) + leftPos;
+//		int y = ((targetIndex / 3) % 3) * 16 + rowCount * 16 + 23 + topPos;
+//		return new Rect2i(x, y, 16, 16);
 	}
 
 	public void acceptJEIGhostIngredient(int targetIndex, ItemStack ghostIngredient) {
-		if (0 <= targetIndex && targetIndex < 9) {
-			patternInput[targetIndex] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
-		} else if (9 <= targetIndex && targetIndex < 18) {
-			patternOutput[targetIndex - 9] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
-		}
+		patternWidget.acceptJEIGhostIngredient(targetIndex, ghostIngredient);
+//		if (0 <= targetIndex && targetIndex < 9) {
+//			patternInput[targetIndex] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
+//		} else if (9 <= targetIndex && targetIndex < 18) {
+//			patternOutput[targetIndex - 9] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
+//		}
 	}
 
 
