@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.client_screens;
+package com.ofek2608.deep_pocket.client.client_screens;
 
 import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
 import com.ofek2608.deep_pocket.api.struct.ItemType;

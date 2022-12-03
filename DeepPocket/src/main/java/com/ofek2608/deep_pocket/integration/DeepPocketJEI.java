@@ -120,7 +120,6 @@ public final class DeepPocketJEI {
 
 		@Override
 		public void registerGuiHandlers(IGuiHandlerRegistration registration) {
-			IModPlugin.super.registerGuiHandlers(registration);
 			registration.addGhostIngredientHandler(PocketScreen.class, new PocketScreenGhostIngredientHandler());
 		}
 

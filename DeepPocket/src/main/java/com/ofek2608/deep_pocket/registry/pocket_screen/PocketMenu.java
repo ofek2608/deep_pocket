@@ -6,7 +6,8 @@ import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
-import com.ofek2608.deep_pocket.api.struct.*;
+import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
@@ -28,20 +29,32 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 
 public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket {
+	private static final int INVISIBLE_SLOT_Y = -0xFFFFFF;
+	
 	public final Inventory playerInventory;
 	private final CraftingContainer craftSlots = new CraftingContainer(this, 3, 3);
 	private final ResultContainer resultSlots = new ResultContainer();
 	private @Nullable PocketResultSlot resultSlot;
 	private @Nullable Pocket pocket;//should not use except in get and set pocket
 	public @Nullable Object screen;
-
-	private int lastResetYOffset;
-	private PocketDisplayMode lastDisplayMode;
+	
+	private int lastHoverSlotIndex = -1;
 
 	protected PocketMenu(@Nullable MenuType<?> menuType, int containerId, Inventory playerInventory) {
 		super(menuType, containerId);
 		this.playerInventory = playerInventory;
-		resetSlots(0, PocketDisplayMode.NORMAL);
+		//inventory
+		for(int y = 0; y < 3; ++y)
+			for(int x = 0; x < 9; ++x)
+				this.addSlot(new Slot(playerInventory, x + y * 9 + 9, 19 + x * 16, INVISIBLE_SLOT_Y));
+		//hotbar
+		for(int x = 0; x < 9; ++x)
+			this.addSlot(new Slot(playerInventory, x, 19 + x * 16, INVISIBLE_SLOT_Y));
+		//crafting
+		for(int y = 0; y < 3; ++y)
+			for(int x = 0; x < 3; ++x)
+				addSlot(new Slot(craftSlots, x + y * 3, 37 + x * 16, INVISIBLE_SLOT_Y));
+		addSlot(resultSlot = new PocketResultSlot(playerInventory.player, craftSlots, resultSlots, 0, 125, INVISIBLE_SLOT_Y, this));
 	}
 
 	public PocketMenu(int containerId, Inventory playerInventory) {
@@ -52,35 +65,23 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		this(containerId, playerInventory);
 		setPocket(pocket);
 	}
-
-	private static final int CRAFTING_HEIGHT = 48 + 4;
-	public void resetSlots(int yOffset, PocketDisplayMode displayMode) {
-		if (lastResetYOffset == yOffset && lastDisplayMode == displayMode)
+	
+	public void setHoverSlotIndex(int index, int mouseY) {
+		if (index < 0 || slots.size() <= index)
+			index = -1;
+		if (index == lastHoverSlotIndex)
 			return;
-		lastResetYOffset = yOffset;
-		lastDisplayMode = displayMode;
-		slots.clear();
-		if (displayMode != PocketDisplayMode.NORMAL)
-			yOffset += CRAFTING_HEIGHT;
-		//inventory
-		for(int y = 0; y < 3; ++y) {
-			for(int x = 0; x < 9; ++x) {
-				this.addSlot(new Slot(playerInventory, x + y * 9 + 9, 19 + x * 16, yOffset + y * 16));
-			}
-		}
-		//hotbar
-		for(int x = 0; x < 9; ++x) {
-			this.addSlot(new Slot(playerInventory, x, 19 + x * 16, yOffset + 48 + 4));
-		}
-		if (displayMode != PocketDisplayMode.NORMAL)
-			yOffset -= CRAFTING_HEIGHT; //reset yOffset
-		//crafting
-		if (displayMode != PocketDisplayMode.CRAFTING)
-			yOffset -= 0xFFFFFF;//Outside the screen
-		for(int y = 0; y < 3; ++y)
-			for(int x = 0; x < 3; ++x)
-				addSlot(new Slot(craftSlots, x + y * 3, 37 + x * 16, yOffset + y * 16));
-		addSlot(resultSlot = new PocketResultSlot(playerInventory.player, craftSlots, resultSlots, 0, 125, yOffset + 16, this));
+		
+		if (index >= 0)
+			slots.get(index).y = mouseY - 8;
+		if (lastHoverSlotIndex >= 0)
+			slots.get(lastHoverSlotIndex).y = INVISIBLE_SLOT_Y;
+		
+		lastHoverSlotIndex = index;
+	}
+	
+	public void clearHoverSlotIndex() {
+		setHoverSlotIndex(-1, 0);
 	}
 
 

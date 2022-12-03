@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.ofek2608.deep_pocket.client_screens;
+package com.ofek2608.deep_pocket.client.widget;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 

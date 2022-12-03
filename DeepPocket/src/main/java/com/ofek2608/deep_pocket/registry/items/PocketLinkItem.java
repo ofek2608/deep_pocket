@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.registry.items;
 
-import com.ofek2608.deep_pocket.client_screens.ClientScreens;
+import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;

@@ -13,7 +13,8 @@ import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
-import com.ofek2608.deep_pocket.client_screens.ClientScreens;
+import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
+import com.ofek2608.deep_pocket.client.widget.PocketWidget;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
@@ -30,12 +31,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.ContainerScreenEvent;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.LongConsumer;
 import java.util.function.Predicate;
 
@@ -49,30 +47,38 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	//render hover fields
 	@Nullable private String lastJeiSearch = DeepPocketJEI.getSearch();
 	private String search = DeepPocketClientApi.get().getSearchMode().syncFrom && lastJeiSearch != null ? lastJeiSearch : "";
-	private boolean hoverScroll;
 	private boolean hoverSearch;
 	private int hoverSlotIndex;
 	private int hoverButton;
-	private int maxScroll;
-	private int scroll;
-	private List<ItemTypeAmount> visiblePocketSlots = Collections.emptyList();
-	private boolean holdCraft;
 	//focus fields
 	private boolean focusSearch;
-	private boolean focusScroll;
 	private final ItemTypeAmount[] patternInput = new ItemTypeAmount[9];
 	private final ItemTypeAmount[] patternOutput = new ItemTypeAmount[9];
-	//simulate fields
-	private int quickCraftingType;
-
+	
+	private final PocketWidget pocketWidget;
+	
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
 		clearPattern();
 		menu.screen = this;
+		addRenderableWidget(pocketWidget = new PocketWidget(this, leftPos + 8, topPos, 144, menu::getPocket, this::createFilter));
 	}
-
-
-
+	
+	@Override
+	protected void init() {
+		super.init();
+	}
+	
+	@Override
+	protected void rebuildWidgets() {
+		this.setFocused(null);
+	}
+	
+	private Predicate<ItemType> createFilter() {
+		Predicate<ItemStack> searchFilter = DeepPocketUtils.createFilter(search);
+		return type->searchFilter.test(type.create());
+	}
+	
 	private void clearPattern() {
 		Arrays.fill(patternInput, new ItemTypeAmount(ItemType.EMPTY, 0));
 		Arrays.fill(patternOutput, new ItemTypeAmount(ItemType.EMPTY, 0));
@@ -95,7 +101,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.imageHeight = rowCount * 16 + imageHeightExcludingRows;
 		this.leftPos = (this.width - 152) / 2 - 15;
 		this.topPos = (this.height - this.imageHeight) / 2;
-		menu.resetSlots(23 + rowCount * 16, pocketDisplayMode);
+		this.pocketWidget.offX = leftPos + 15;
+		this.pocketWidget.offY = topPos + 19;
+		this.pocketWidget.height = rowCount * 16;
+//		menu.resetSlots(23 + rowCount * 16, pocketDisplayMode);
 	}
 
 	private void reloadPosition(int mx, int my) {
@@ -109,26 +118,11 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			lastJeiSearch = jeiSearch;
 		}
 
-		this.hoverScroll = isHoverScroll(mx, my);
 		this.hoverSearch = isHoverSearch(mx, my);
 		this.hoverSlotIndex = getHoverSlotIndex(mx, my);
 		this.hoverButton = getHoverButton(mx, my);
-
-		Predicate<ItemStack> searchFilter = DeepPocketUtils.createFilter(search);
-		Pocket pocket = menu.getPocket();
-		List<ItemTypeAmount> sortedKnowledge = pocket == null ?
-						Collections.emptyList() :
-						api.getSortedKnowledge(pocket).filter(typeAmount->searchFilter.test(typeAmount.getItemType().create())).toList();
-		maxScroll = Math.max((sortedKnowledge.size() - 1) / 9 + 1 - rowCount, 0);
-		scroll = Math.max(Math.min(scroll, maxScroll), 0);
-		visiblePocketSlots = sortedKnowledge.stream().skip(scroll * 9L).limit(rowCount * 9L).toList();
-		holdCraft = Screen.hasControlDown();
-	}
-
-	private boolean isHoverScroll(int mx, int my) {
-		mx -= leftPos;
-		my -= topPos;
-		return 167 <= mx && mx <= 174 && 19 <= my && my <= 18 + 16 * rowCount;
+		
+		menu.setHoverSlotIndex(hoverSlotIndex, my - topPos);
 	}
 
 	private boolean isHoverSearch(int mx, int my) {
@@ -143,15 +137,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	private int getHoverSlotIndex(int mx, int my) {
-		if (focusScroll)
-			return -1;
 		mx -= leftPos + 19;
 		my -= topPos + 19;
-		//Check: Pocket
-		for (int y = 0; y < rowCount; y++)
-			for (int x = 0; x < 9; x++)
-				if (isInSlot(mx - x * 16, my - y * 16))
-					return 65 + x + y * 9;
 		my -= rowCount * 16 + 4;//pocket size + gap
 		//Check: Crafting
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
@@ -244,7 +231,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		int y = topPos + 1;
 		y = renderAndMove(stack, Sprites.TOP, x, y);
 		y = renderAndMove(stack, Sprites.GAP_SCROLL, x, y);
-		y = renderAndMove(stack, Sprites.ROW_SCROLL, x, y, 16 * rowCount);
+//		y = renderAndMove(stack, Sprites.ROW_SCROLL, x, y, 16 * rowCount);
+		y += 16 * rowCount;
 		y = renderAndMove(stack, Sprites.GAP_SCROLL, x, y);
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
 			y = renderAndMove(stack, Sprites.CRAFTING_FRAME, x, y);
@@ -299,7 +287,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void renderAllSlotBases(PoseStack stack) {
 		int x = leftPos + 19;
 		int y = topPos + 19;
-		y = renderSlotBaseContainer(stack, x, y, rowCount, 65);
+//		y = renderSlotBaseContainer(stack, x, y, rowCount, 65);
+		y += rowCount * 16 + 4;
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING)
 			y = renderCraftingSlotBases(stack, x, y);
 		if (pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN)
@@ -324,11 +313,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 				getClearPatternButton(hoverButton == 8).blit(stack, leftPos + 19, topPos + 39 + 16 * rowCount);
 			}
 		}
-		{ //Render: Scroll
-			int x = leftPos + 167;
-			int y = topPos + 19 + (maxScroll == 0 ? 0 : (16 * rowCount - 2) * scroll / maxScroll);
-			(hoverScroll || focusScroll ? Sprites.SCROLL_H : Sprites.SCROLL_N).blit(stack, x, y);
-		}
 		renderAllSlotBases(stack);
 	}
 
@@ -341,7 +325,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 						this.quickCraftSlots.size() != 1 && AbstractContainerMenu.canItemQuickReplace(slot, carried, true) && this.menu.canDragTo(slot)) {
 			int count = slotItem.isEmpty() ? 0 : slotItem.getCount();
 			slotItem = carried.copy();
-			AbstractContainerMenu.getQuickCraftSlotCount(this.quickCraftSlots, this.quickCraftingType, slotItem, count);
+			AbstractContainerMenu.getQuickCraftSlotCount(this.quickCraftSlots, super.quickCraftingType, slotItem, count);
 			int maxStackSize = Math.min(slotItem.getMaxStackSize(), slot.getMaxStackSize(slotItem));
 			if (slotItem.getCount() > maxStackSize)
 				slotItem.setCount(maxStackSize);
@@ -355,35 +339,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			renderSlotItemSingle(poseStack, x + 16 * i, y, slotIndex + i);
 	}
 
-	private boolean isCrafting(ItemTypeAmount typeAmount) {
-		Pocket pocket = menu.getPocket();
-		if (pocket == null)
-			return false;
-		return dpClientHelper.getCraftableItems(pocket).anyMatch(typeAmount.getItemType()::equals) && (holdCraft || typeAmount.getAmount() == 0);
-	}
-
 	private void renderSlotItems(PoseStack poseStack) {
 		int xOffset = leftPos + 19;
 		int yOffset = topPos + 19;
-		{ //Render: Pocket Slots
-			int x = 0;
-			int y = 0;
-			for (var pocketSlot : visiblePocketSlots) {
-				int displayX = xOffset + x * 16;
-				int displayY = yOffset + y * 16;
-				dpClientHelper.renderItem(poseStack, displayX, displayY, pocketSlot.getItemType().create(), itemRenderer, font);
-				if (isCrafting(pocketSlot))
-					dpClientHelper.renderAmount(poseStack, displayX, displayY, "craft", itemRenderer, font);
-				else
-					dpClientHelper.renderAmount(poseStack, displayX, displayY, pocketSlot.getAmount(), itemRenderer, font);
-
-				if (++x == 9) {
-					x = 0;
-					++y;
-				}
-			}
-			yOffset += 16 * rowCount + 4;
-		}
+		yOffset += 16 * rowCount + 4;
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) { //Render: Crafting Slots
 			int slotIndex = 36;
 			for (int gridY = 0; gridY < 3; gridY++)
@@ -427,96 +386,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		if (pocket != null) {
 			String pocketName = pocket.getName();
 			String displayPocketName = font.width(pocketName) < 54 ? pocketName : font.plainSubstrByWidth("..." + pocketName, 54).substring(3) + "...";
-			font.draw(stack, displayPocketName, leftPos + 20, topPos + 6, 0xFFFFFF);
+			font.draw(stack, displayPocketName, 20, 6, 0xFFFFFF);
 		}
 		String displaySearch = font.plainSubstrByWidth(search, focusSearch ? 80 : 86, true) + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : "");
-		font.draw(stack, displaySearch, leftPos + 76, topPos + 6, 0xDDDDDD);
-	}
-
-	private int getQuickCraftRemaining() {
-		ItemStack itemstack = this.menu.getCarried();
-		if (itemstack.isEmpty() || !this.isQuickCrafting)
-			return 0;
-		if (this.quickCraftingType == 2) {
-			return itemstack.getMaxStackSize();
-		}
-		int result = itemstack.getCount();
-
-		for(Slot slot : this.quickCraftSlots) {
-			ItemStack itemStack1 = itemstack.copy();
-			ItemStack itemStack2 = slot.getItem();
-			int i = itemStack2.isEmpty() ? 0 : itemStack2.getCount();
-			AbstractContainerMenu.getQuickCraftSlotCount(this.quickCraftSlots, this.quickCraftingType, itemStack1, i);
-			int j = Math.min(itemStack1.getMaxStackSize(), slot.getMaxStackSize(itemStack1));
-			if (itemStack1.getCount() > j) {
-				itemStack1.setCount(j);
-			}
-
-			result -= itemStack1.getCount() - i;
-		}
-		return result;
-	}
-
-	private void renderCarriedItem(PoseStack poseStack, int mx, int my) {
-		poseStack.pushPose();
-		poseStack.translate(0, 0, 32D);
-		this.setBlitOffset(200);
-		this.itemRenderer.blitOffset = 200.0F;
-
-		ItemStack itemstack = this.menu.getCarried();
-		if (this.isQuickCrafting && this.quickCraftSlots.size() > 1) {
-			itemstack = itemstack.copy();
-			itemstack.setCount(getQuickCraftRemaining());
-		}
-		dpClientHelper.renderItem(poseStack, mx - 8, my - 8, itemstack, itemRenderer, font);
-
-		poseStack.popPose();
-		this.setBlitOffset(0);
-		this.itemRenderer.blitOffset = 0.0F;
-	}
-
-	private @Nullable Slot getHoveredSlot() {
-		int menuSlotCount = menu.slots.size();
-		int hoverSlotIndex = this.hoverSlotIndex;
-		if (hoverSlotIndex < 0)
-			return null;
-		if (hoverSlotIndex < menuSlotCount)
-			return menu.getSlot(hoverSlotIndex);
-		hoverSlotIndex -= menuSlotCount;
-		if (hoverSlotIndex < 9)
-			return new FakeConstantSlot(patternInput[hoverSlotIndex].getItemType().create(), 0, 0);
-		hoverSlotIndex -= 9;
-		if (hoverSlotIndex < 9)
-			return new FakeConstantSlot(patternOutput[hoverSlotIndex].getItemType().create(), 0, 0);
-		hoverSlotIndex -= 9;
-		if (hoverSlotIndex == 0)
-			return null;
-		hoverSlotIndex--;
-		if (hoverSlotIndex < visiblePocketSlots.size())
-			return new FakeConstantSlot(visiblePocketSlots.get(hoverSlotIndex).getItemType().create(), 0, 0);
-		return null;
-	}
-
-	private void superRender(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-		this.renderBg(pPoseStack, pPartialTick, pMouseX, pMouseY);
-		//noinspection UnstableApiUsage
-		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, pPoseStack, pMouseX, pMouseY));
-		RenderSystem.disableDepthTest();
-		RenderSystem.applyModelViewMatrix();
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		this.hoveredSlot = getHoveredSlot();
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-
-		renderSlotItems(pPoseStack);
-
-		this.renderLabels(pPoseStack, pMouseX, pMouseY);
-		//noinspection UnstableApiUsage
-		net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, pPoseStack, pMouseX, pMouseY));
-		renderCarriedItem(pPoseStack, pMouseX, pMouseY);
-
-
-		RenderSystem.applyModelViewMatrix();
-		RenderSystem.enableDepthTest();
+		font.draw(stack, displaySearch, 76, 6, 0xDDDDDD);
 	}
 
 	@Override
@@ -525,12 +398,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			return;
 		if (hoverButton >= 0)
 			this.renderButtonTooltip(stack, x, y);
-		else if (hoverSlotIndex >= 65)
-			this.renderPocketTooltip(stack, x, y);
-		else if (hoverSlotIndex >= 46)
-			this.renderCreatePatternTooltip(stack, x, y);
-		else
+		else if (hoverSlotIndex <= 45)
 			super.renderTooltip(stack, x, y);
+		else if (hoverSlotIndex <= 64)
+			this.renderCreatePatternTooltip(stack, x, y);
 	}
 
 	private void renderButtonTooltip(PoseStack stack, int x, int y) {
@@ -548,14 +419,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		if (text == null)
 			return;
 		super.renderTooltip(stack, text, x, y);
-	}
-
-	private void renderPocketTooltip(PoseStack stack, int x, int y) {
-		int index = hoverSlotIndex - 65;
-		if (index < 0 || visiblePocketSlots.size() <= index)
-			return;
-		ItemType hoverType = visiblePocketSlots.get(index).getItemType();
-		super.renderTooltip(stack, hoverType.create(), x, y);
 	}
 
 	private boolean isEmptyPattern() {
@@ -595,9 +458,18 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	@Override
 	public void render(PoseStack stack, int mx, int my, float partialTick) {
 		reloadPosition(mx, my);
+		menu.clearHoverSlotIndex();
+		
 		renderBackground(stack);
-		superRender(stack, mx, my, partialTick);
+		super.render(stack, mx, my, partialTick);
+		renderSlotItems(stack);
 		renderTooltip(stack, mx, my);
+		
+		menu.setHoverSlotIndex(hoverSlotIndex, my - topPos);
+		
+		if (pocketWidget.getLastHoveredType() != null) {
+			hoveredSlot = new FakeConstantSlot(pocketWidget.getLastHoveredType().getItemType().create(), mx - 8, my - 8);
+		}
 	}
 
 	@Override
@@ -618,45 +490,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
 		renderFrame(stack);
 		renderHoverAbles(stack);
-	}
-
-	private void mouseClickedPocket(int button) {
-		int clickedSlot = hoverSlotIndex - 65;
-		ItemTypeAmount clickedTypeAmount = clickedSlot < 0 || visiblePocketSlots.size() <= clickedSlot ? null : visiblePocketSlots.get(clickedSlot);
-		ItemType clickedType = clickedTypeAmount == null ? null : clickedTypeAmount.getItemType();
-		if (clickedType != null && !clickedType.isEmpty() && isCrafting(clickedTypeAmount)) {
-			Pocket pocket = menu.getPocket();
-			if (pocket == null)
-				return;
-			ClientScreens.selectNumber(Component.literal("Request Crafting"), pocket.getColor(), 0L, selectedAmount->{
-				Minecraft.getInstance().setScreen(this);
-				if (selectedAmount != 0)
-					ClientScreens.processRequest(pocket, clickedType, selectedAmount);
-			});
-			return;
-		}
-
-		ItemStack carried = menu.getCarried();
-		boolean shift = Screen.hasShiftDown();
-		if (carried.isEmpty() || new ItemType(carried).equals(clickedType) || shift) {
-			if (clickedType != null) {
-				byte count = switch (button) {
-					case InputConstants.MOUSE_BUTTON_LEFT -> (byte)64;
-					default -> (byte)1;
-					case InputConstants.MOUSE_BUTTON_RIGHT -> (byte)32;
-				};
-				DeepPocketPacketHandler.sbPocketExtract(clickedType, !shift, count);
-			}
-			return;
-		}
-		byte count = switch (button) {
-			case InputConstants.MOUSE_BUTTON_LEFT -> (byte) 64;
-			case InputConstants.MOUSE_BUTTON_MIDDLE -> (byte) ((carried.getCount() + 1) / 2);
-			default -> (byte) 1;
-		};
-		DeepPocketPacketHandler.sbPocketInsert(count);
-		carried.shrink(count);
-		menu.setCarried(carried);
 	}
 
 	private void mouseClickedCreatePattern(int button) {
@@ -729,15 +562,16 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		reloadPosition((int)mx, (int)my);
 		focusSearch = false;
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
+		
+		
 		//Buttons
 		if (button == InputConstants.MOUSE_BUTTON_LEFT) {
 			if (handleButtonClick())
 				return true;
-			if (hoverScroll) { focusScroll = true; mouseMoved(mx, my); return true;}
 			if (hoverSearch) { focusSearch = true; Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true); return true;}
 		}
 		if (hoverSlotIndex >= 65) {
-			mouseClickedPocket(button);
+//			mouseClickedPocket(button);
 			return true;
 		}
 		if (hoverSlotIndex == 64) {
@@ -748,42 +582,23 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			mouseClickedPattern(button);
 			return true;
 		}
-		//Run vanilla mouseClicked
-		boolean isQuickCraftingBefore = isQuickCrafting;
-		if (!super.mouseClicked(mx, my, button))
-			return false;
-		//Update quickCraftingType based on how the vanilla does
-		if (!isQuickCraftingBefore && isQuickCrafting) {
-			if (button == 0) {
-				this.quickCraftingType = 0;
-			} else if (button == 1) {
-				this.quickCraftingType = 1;
-			} else if (Minecraft.getInstance().options.keyPickItem.isActiveAndMatches(InputConstants.Type.MOUSE.getOrCreate(button))) {
-				this.quickCraftingType = 2;
-			}
-		}
-		return true;
+		return super.mouseClicked(mx, my, button);
 	}
 
 	@Override
 	public void mouseMoved(double mx, double my) {
-		if (focusScroll)
-			scroll = Math.max(Math.min((((int)my - topPos - 19) * maxScroll / (rowCount * 8) + 1) / 2, maxScroll), 0);
+		pocketWidget.mouseMoved(mx, my);
 	}
 
 	@Override
 	public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
-		focusScroll = false;
+		pocketWidget.mouseReleased(pMouseX, pMouseY, pButton);
 		return super.mouseReleased(pMouseX, pMouseY, pButton);
 	}
 
 	@Override
-	public boolean mouseScrolled(double pMouseX, double pMouseY, double pDelta) {
-		if (pDelta > 0)
-			scroll--;
-		else if (pDelta < 0)
-			scroll++;
-		return true;
+	public boolean mouseScrolled(double mx, double my, double delta) {
+		return pocketWidget.mouseScrolled(mx, my, delta);
 	}
 
 	@Override

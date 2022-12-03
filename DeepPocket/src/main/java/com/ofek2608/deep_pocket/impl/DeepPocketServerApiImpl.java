@@ -349,8 +349,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	}
 
 	private void open(ServerPlayer player, UUID pocketId, Function<Pocket, MenuConstructor> menu) {
-		if (player.containerMenu != player.inventoryMenu)
-			return;
 		Pocket pocket = getPocket(pocketId);
 		if (pocket == null)
 			return;
