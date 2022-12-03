@@ -14,6 +14,7 @@ import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
+import com.ofek2608.deep_pocket.client.widget.DPTextWidget;
 import com.ofek2608.deep_pocket.client.widget.PocketWidget;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -46,22 +47,26 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private int rowCount;
 	//render hover fields
 	@Nullable private String lastJeiSearch = DeepPocketJEI.getSearch();
-	private String search = DeepPocketClientApi.get().getSearchMode().syncFrom && lastJeiSearch != null ? lastJeiSearch : "";
-	private boolean hoverSearch;
 	private int hoverSlotIndex;
 	private int hoverButton;
 	//focus fields
-	private boolean focusSearch;
 	private final ItemTypeAmount[] patternInput = new ItemTypeAmount[9];
 	private final ItemTypeAmount[] patternOutput = new ItemTypeAmount[9];
 	
 	private final PocketWidget pocketWidget;
+	private final DPTextWidget searchWidget;
 	
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
 		clearPattern();
 		menu.screen = this;
-		addRenderableWidget(pocketWidget = new PocketWidget(this, leftPos + 8, topPos, 144, menu::getPocket, this::createFilter));
+		addRenderableWidget(searchWidget = new DPTextWidget(0, 0, 88));
+		addRenderableWidget(pocketWidget = new PocketWidget(this, 0, 0, 144, menu::getPocket, this::createFilter));
+		
+		searchWidget.setResponder(newValue -> {
+			if (DeepPocketClientApi.get().getSearchMode().syncTo)
+				DeepPocketJEI.setSearch(newValue);
+		});
 	}
 	
 	@Override
@@ -75,7 +80,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 	
 	private Predicate<ItemType> createFilter() {
-		Predicate<ItemStack> searchFilter = DeepPocketUtils.createFilter(search);
+		Predicate<ItemStack> searchFilter = DeepPocketUtils.createFilter(searchWidget.getValue());
 		return type->searchFilter.test(type.create());
 	}
 	
@@ -101,10 +106,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.imageHeight = rowCount * 16 + imageHeightExcludingRows;
 		this.leftPos = (this.width - 152) / 2 - 15;
 		this.topPos = (this.height - this.imageHeight) / 2;
+		
 		this.pocketWidget.offX = leftPos + 15;
 		this.pocketWidget.offY = topPos + 19;
 		this.pocketWidget.height = rowCount * 16;
-//		menu.resetSlots(23 + rowCount * 16, pocketDisplayMode);
+		
+		this.searchWidget.x = leftPos + 75;
+		this.searchWidget.y = topPos + 5;
 	}
 
 	private void reloadPosition(int mx, int my) {
@@ -114,21 +122,15 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		{//Update jei search
 			String jeiSearch = DeepPocketJEI.getSearch();
 			if (api.getSearchMode().syncFrom && jeiSearch != null && !jeiSearch.equals(lastJeiSearch))
-				search = jeiSearch;
+				searchWidget.setValue(jeiSearch);
 			lastJeiSearch = jeiSearch;
 		}
 
-		this.hoverSearch = isHoverSearch(mx, my);
+//		this.hoverSearch = isHoverSearch(mx, my);
 		this.hoverSlotIndex = getHoverSlotIndex(mx, my);
 		this.hoverButton = getHoverButton(mx, my);
 		
 		menu.setHoverSlotIndex(hoverSlotIndex, my - topPos);
-	}
-
-	private boolean isHoverSearch(int mx, int my) {
-		mx -= leftPos;
-		my -= topPos;
-		return 75 <= mx && mx <= 162 && 5 <= my && my <= 14;
 	}
 
 
@@ -231,8 +233,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		int y = topPos + 1;
 		y = renderAndMove(stack, Sprites.TOP, x, y);
 		y = renderAndMove(stack, Sprites.GAP_SCROLL, x, y);
-//		y = renderAndMove(stack, Sprites.ROW_SCROLL, x, y, 16 * rowCount);
-		y += 16 * rowCount;
+		y += 16 * rowCount; // container
 		y = renderAndMove(stack, Sprites.GAP_SCROLL, x, y);
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
 			y = renderAndMove(stack, Sprites.CRAFTING_FRAME, x, y);
@@ -287,8 +288,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void renderAllSlotBases(PoseStack stack) {
 		int x = leftPos + 19;
 		int y = topPos + 19;
-//		y = renderSlotBaseContainer(stack, x, y, rowCount, 65);
-		y += rowCount * 16 + 4;
+		y += rowCount * 16 + 4; // Container
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING)
 			y = renderCraftingSlotBases(stack, x, y);
 		if (pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN)
@@ -388,8 +388,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			String displayPocketName = font.width(pocketName) < 54 ? pocketName : font.plainSubstrByWidth("..." + pocketName, 54).substring(3) + "...";
 			font.draw(stack, displayPocketName, 20, 6, 0xFFFFFF);
 		}
-		String displaySearch = font.plainSubstrByWidth(search, focusSearch ? 80 : 86, true) + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : "");
-		font.draw(stack, displaySearch, 76, 6, 0xDDDDDD);
 	}
 
 	@Override
@@ -560,19 +558,12 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	@Override
 	public boolean mouseClicked(double mx, double my, int button) {
 		reloadPosition((int)mx, (int)my);
-		focusSearch = false;
-		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
 		
 		
 		//Buttons
 		if (button == InputConstants.MOUSE_BUTTON_LEFT) {
 			if (handleButtonClick())
 				return true;
-			if (hoverSearch) { focusSearch = true; Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true); return true;}
-		}
-		if (hoverSlotIndex >= 65) {
-//			mouseClickedPocket(button);
-			return true;
 		}
 		if (hoverSlotIndex == 64) {
 			mouseClickedCreatePattern(button);
@@ -603,12 +594,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (focusSearch) {
-			if (keyCode == InputConstants.KEY_BACKSPACE && search.length() > 0) {
-				search = search.substring(0, search.length() - 1);
-				if (DeepPocketClientApi.get().getSearchMode().syncTo)
-					DeepPocketJEI.setSearch(search);
-			}
+		if (getFocused() == searchWidget) {
+			searchWidget.keyPressed(keyCode, scanCode, modifiers);
+			if (keyCode == InputConstants.KEY_ESCAPE)
+				this.onClose();
 			return true;
 		}
 		super.keyPressed(keyCode, scanCode, modifiers);
@@ -617,12 +606,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	@Override
 	public boolean charTyped(char codePoint, int modifiers) {
-		if (focusSearch) {
-			search += codePoint;
-			if (DeepPocketClientApi.get().getSearchMode().syncTo)
-				DeepPocketJEI.setSearch(search);
-		}
-		return true;
+		return super.charTyped(codePoint, modifiers);
 	}
 
 	private static Sprites getSearchModeButton(boolean hover) {

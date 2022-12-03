@@ -57,7 +57,11 @@ public final class DeepPocketUtils {
 	}
 
 	public static String getTimedTextEditSuffix() {
-		return System.currentTimeMillis() % 2000 < 1000 ? "_" : "";
+		return displayTimeSuffix() ? "_" : "";
+	}
+	
+	public static boolean displayTimeSuffix() {
+		return System.currentTimeMillis() % 2000 < 1000;
 	}
 
 	public static Predicate<ItemStack> createFilter(String filterText) {
