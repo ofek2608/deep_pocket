@@ -15,7 +15,9 @@ import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.client.widget.DPTextWidget;
+import com.ofek2608.deep_pocket.client.widget.PocketTabWidget;
 import com.ofek2608.deep_pocket.client.widget.PocketWidget;
+import com.ofek2608.deep_pocket.client.widget.WidgetWithTooltip;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
@@ -55,6 +57,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	
 	private final PocketWidget pocketWidget;
 	private final DPTextWidget searchWidget;
+	private final PocketTabWidget pocketTabWidget;
 	
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
@@ -62,6 +65,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		menu.screen = this;
 		addRenderableWidget(searchWidget = new DPTextWidget(0, 0, 88));
 		addRenderableWidget(pocketWidget = new PocketWidget(this, 0, 0, 144, menu::getPocket, this::createFilter));
+		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getPocket));
 		
 		searchWidget.setResponder(newValue -> {
 			if (DeepPocketClientApi.get().getSearchMode().syncTo)
@@ -400,6 +404,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			super.renderTooltip(stack, x, y);
 		else if (hoverSlotIndex <= 64)
 			this.renderCreatePatternTooltip(stack, x, y);
+		
+		for (var child : children())
+			if (child instanceof WidgetWithTooltip tooltip)
+				tooltip.renderTooltip(this, stack, x, y);
 	}
 
 	private void renderButtonTooltip(PoseStack stack, int x, int y) {
