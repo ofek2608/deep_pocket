@@ -15,19 +15,20 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 final class PocketImpl implements Pocket {
-	private final ItemConversions conversions;
-	private final ElementConversions conversions0;
-	private final UUID pocketId;
-	private final UUID owner;
-	private final CaptureReference<PocketInfo> pocketInfo;
-	private final PocketItems items;
-	private final PocketContent content;
-	private final PocketPatterns patterns;
-	private final PocketDefaultPatterns defaultPatterns;
-	private final PocketProcessManager processes;
+	@Nonnull private final ItemConversions conversions;
+	@Nonnull private ElementConversions conversions0;
+	@Nonnull private final UUID pocketId;
+	@Nonnull private final UUID owner;
+	@Nonnull private final CaptureReference<PocketInfo> pocketInfo;
+	@Nonnull private final PocketItems items;
+	@Nonnull private final PocketContent content;
+	@Nonnull private final PocketPatterns patterns;
+	@Nonnull private final PocketDefaultPatterns defaultPatterns;
+	@Nonnull private final PocketProcessManager processes;
 
 	PocketImpl(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
 		this.conversions = conversions;
@@ -63,10 +64,13 @@ final class PocketImpl implements Pocket {
 	@Override public ItemType getIcon() { return pocketInfo.get().icon; }
 	@Override public int getColor() { return pocketInfo.get().color; }
 	@Override public PocketSecurityMode getSecurityMode() { return pocketInfo.get().securityMode; }
-
-
-
-
+	
+	@Override
+	public void setConversions(ElementConversions conversions) {
+		this.conversions0 = conversions;
+		conversions.convertMap(content);
+	}
+	
 	@Override
 	public boolean canAccess(Player player) {
 		return pocketInfo.get().securityMode.canAccess(player, getOwner());

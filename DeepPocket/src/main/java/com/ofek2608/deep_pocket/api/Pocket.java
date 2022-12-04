@@ -22,6 +22,7 @@ public interface Pocket {
 	ItemType getIcon();
 	int getColor();
 	PocketSecurityMode getSecurityMode();
+	void setConversions(ElementConversions conversions);
 
 	boolean canAccess(Player player);
 	Map<ItemType,Long> getItemsMap();
