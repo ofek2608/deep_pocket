@@ -117,6 +117,12 @@ public final class DeepPocketUtils {
 			return -1;
 		}
 	}
+	
+	public static long advancedSub(long a, long b) {
+		if (a < 0) return -1;
+		if (b < 0 || a <= b) return 0;
+		return a - b;
+	}
 
 	public static long advancedMul(long a, long b) {
 		if (a == 0 || b == 0) return 0;

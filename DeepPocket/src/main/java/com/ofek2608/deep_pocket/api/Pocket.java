@@ -49,6 +49,7 @@ public interface Pocket {
 		ElementType getType();
 		long getMaxExtract();
 		void insert(long amount);
+		long extract(long amount);
 		boolean canBeCrafted();
 		boolean canBeConverted();
 	}

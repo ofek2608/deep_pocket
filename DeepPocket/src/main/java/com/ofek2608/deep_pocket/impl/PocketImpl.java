@@ -283,6 +283,8 @@ final class PocketImpl implements Pocket {
 		
 		@Override
 		public void insert(long amount) {
+			if (amount == 0)
+				return;
 			long[] valueCount = conversions0.getValue(type);
 			
 			if (valueCount == null) {
@@ -297,6 +299,28 @@ final class PocketImpl implements Pocket {
 						DeepPocketUtils.advancedSum(content.get(convertible), DeepPocketUtils.advancedMul(amount, valueCount[i]))
 				);
 			}
+		}
+		
+		@Override
+		public long extract(long amount) {
+			amount = DeepPocketUtils.advancedMin(amount, getMaxExtract());
+			if (amount == 0)
+				return 0;
+			
+			long[] valueCount = conversions0.getValue(type);
+			
+			if (valueCount == null) {
+				content.put(type, DeepPocketUtils.advancedSub(content.get(type), amount));
+				return amount;
+			}
+			for (int i = 0; i < valueCount.length; i++) {
+				ElementType.TConvertible convertible = conversions0.getBaseElement(i);
+				content.put(
+						convertible,
+						DeepPocketUtils.advancedSub(content.get(convertible), DeepPocketUtils.advancedMul(amount, valueCount[i]))
+				);
+			}
+			return amount;
 		}
 		
 		@Override
