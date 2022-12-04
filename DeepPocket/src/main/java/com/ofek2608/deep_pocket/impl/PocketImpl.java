@@ -5,9 +5,9 @@ import com.ofek2608.collections.CaptureReference;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -19,20 +19,24 @@ import java.util.*;
 
 final class PocketImpl implements Pocket {
 	private final ItemConversions conversions;
+	private final ElementConversions conversions0;
 	private final UUID pocketId;
 	private final UUID owner;
 	private final CaptureReference<PocketInfo> pocketInfo;
 	private final PocketItems items;
+	private final PocketContent content;
 	private final PocketPatterns patterns;
 	private final PocketDefaultPatterns defaultPatterns;
 	private final PocketProcessManager processes;
 
 	PocketImpl(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
 		this.conversions = conversions;
+		this.conversions0 = null;//TODO fix
 		this.pocketId = pocketId;
 		this.owner = owner;
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
 		this.items = new PocketItems();
+		this.content = new PocketContent();
 		this.patterns = new PocketPatterns();
 		this.defaultPatterns = new PocketDefaultPatterns();
 		this.processes = processes;
@@ -40,10 +44,12 @@ final class PocketImpl implements Pocket {
 
 	private PocketImpl(PocketImpl copy) {
 		this.conversions = copy.conversions;
+		this.conversions0 = copy.conversions0;
 		this.pocketId = copy.pocketId;
 		this.owner = copy.owner;
 		this.pocketInfo = new CaptureReference<>(copy.pocketInfo);
 		this.items = new PocketItems(copy.items);
+		this.content = new PocketContent(copy.content);
 		this.patterns = new PocketPatterns(copy.patterns);
 		this.defaultPatterns = new PocketDefaultPatterns(copy.defaultPatterns);
 		this.processes = copy.processes.recreate();
@@ -234,6 +240,47 @@ final class PocketImpl implements Pocket {
 		return new PocketImpl(this);
 	}
 
+	
+	
+	
+	
+	private final class PocketEntry implements Entry {
+		private final ElementType type;
+		
+		private PocketEntry(ElementType type) {
+			this.type = type;
+		}
+		
+		@Override
+		public Pocket getPocket() {
+			return PocketImpl.this;
+		}
+		
+		@Override
+		public ElementType getType() {
+			return type;
+		}
+		
+		@Override
+		public long getAmount() {
+			return content.get(type);//TODO
+		}
+		
+		@Override
+		public void setAmount(long newAmount) {
+			//TODO
+		}
+		
+		@Override
+		public boolean canBeCrafted() {
+			return false;//TODO
+		}
+		
+		@Override
+		public boolean canBeConverted() {
+			return conversions0.hasValue(type);
+		}
+	}
 
 	private final class SnapshotImpl implements Snapshot {
 		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
@@ -292,6 +339,25 @@ final class PocketImpl implements Pocket {
 			Objects.requireNonNull(key);
 			Objects.requireNonNull(val);
 			if (key.isEmpty() || conversions.hasValue(key))
+				throw new IllegalArgumentException();
+			return val < 0 ? -1 : val;
+		}
+
+		@Override
+		public Long defaultValue(Object key) {
+			return 0L;
+		}
+	}
+	
+	private final class PocketContent extends CaptureMap<ElementType,Long> {
+		public PocketContent() { }
+		public PocketContent(Map<? extends ElementType, ? extends Long> m) { super(m); }
+
+		@Override
+		public Long validate(ElementType key, Long val) {
+			Objects.requireNonNull(key);
+			Objects.requireNonNull(val);
+			if (key.isEmpty() || conversions0.hasValue(key))
 				throw new IllegalArgumentException();
 			return val < 0 ? -1 : val;
 		}

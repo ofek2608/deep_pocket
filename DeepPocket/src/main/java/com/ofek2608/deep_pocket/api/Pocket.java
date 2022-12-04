@@ -42,6 +42,15 @@ public interface Pocket {
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();
+	
+	interface Entry {
+		Pocket getPocket();
+		ElementType getType();
+		long getAmount();
+		void setAmount(long newAmount);
+		boolean canBeCrafted();
+		boolean canBeConverted();
+	}
 
 	interface Snapshot {
 		Pocket getPocket();

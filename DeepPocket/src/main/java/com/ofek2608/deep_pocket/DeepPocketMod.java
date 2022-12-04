@@ -29,7 +29,7 @@ public final class DeepPocketMod {
 	 *  - Make more commands
 	 *  - Add toast when the player expands his knowledge
 	 * TODO future content
-	 *  - Maybe a way to set filter to allow nbt variants (for exporters)
+	 *  - Maybe a way to set filter to allow tag variants (for exporters)
 	 *  - Improve the textures of the blocks
 	 *  - Maybe integrate with ftb chunks to prevent pockets from being used in forgotten places (or in houses of old team members)
 	 *  - Cleanup around pocket insertion and extractions
