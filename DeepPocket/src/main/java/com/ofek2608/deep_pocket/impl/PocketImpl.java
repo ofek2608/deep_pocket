@@ -29,9 +29,9 @@ final class PocketImpl implements Pocket {
 	private final PocketDefaultPatterns defaultPatterns;
 	private final PocketProcessManager processes;
 
-	PocketImpl(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
+	PocketImpl(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
 		this.conversions = conversions;
-		this.conversions0 = null;//TODO fix
+		this.conversions0 = conversions0;
 		this.pocketId = pocketId;
 		this.owner = owner;
 		this.pocketInfo = new CaptureReference<>(pocketInfo);

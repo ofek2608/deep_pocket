@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
+import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
@@ -13,7 +14,7 @@ public interface DeepPocketHelper {
 	static DeepPocketHelper get() { return DeepPocketManager.getHelper(); }
 
 	//Constructions
-	Pocket createPocket(ItemConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo);
+	Pocket createPocket(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo);
 	Knowledge createKnowledge(ItemConversions conversions);
 	ProvidedResources createProvidedResources(ItemType[] types);
 	PocketProcessManager createProcessManager();

@@ -16,6 +16,7 @@ public interface DeepPocketApi {
 	DeepPocketHelper getHelper();
 
 	ItemConversions getItemConversions();
+	ElementConversions getConversions();
 
 	Stream<Pocket> getPockets();
 	@Nullable
