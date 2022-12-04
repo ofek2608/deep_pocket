@@ -127,6 +127,24 @@ public final class DeepPocketUtils {
 			return -1;
 		}
 	}
+	
+	public static long advancedDiv(long a, long b) {
+		if (a == 0) return 0;
+		if (a < 0 || b == 0) return -1;
+		if (b < 0) return 0;
+		return a / b;
+	}
+	
+	public static long advancedMin(long a, long b) {
+		if (a < 0) return b < 0 ? -1 : 0;
+		if (b < 0) return a;
+		return Math.min(a, b);
+	}
+	
+	public static long advancedMax(long a, long b) {
+		if (a < 0 || b < 0) return -1;
+		return Math.max(a, b);
+	}
 
 	private static final String[] ADVANCED_NUMBER_SUFFIXES = {"K","M","B","T","Q"};
 	public static String advancedToString(long a) {

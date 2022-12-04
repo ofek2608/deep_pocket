@@ -244,10 +244,10 @@ final class PocketImpl implements Pocket {
 	
 	
 	
-	private final class PocketEntry implements Entry {
+	private final class EntryImpl implements Entry {
 		private final ElementType type;
 		
-		private PocketEntry(ElementType type) {
+		private EntryImpl(ElementType type) {
 			this.type = type;
 		}
 		
@@ -262,13 +262,37 @@ final class PocketImpl implements Pocket {
 		}
 		
 		@Override
-		public long getAmount() {
-			return content.get(type);//TODO
+		public long getMaxExtract() {
+			long[] valueCount = conversions0.getValue(type);
+			
+			if (valueCount == null)
+				return content.get(type);
+			
+			long maxExtract = -1;
+			for (int i = 0; i < valueCount.length; i++) {
+				long current = DeepPocketUtils.advancedDiv(content.get(conversions0.getBaseElement(i)), valueCount[i]);
+				maxExtract = DeepPocketUtils.advancedMin(maxExtract, current);
+			}
+			
+			return maxExtract;
 		}
 		
 		@Override
-		public void setAmount(long newAmount) {
-			//TODO
+		public void insert(long amount) {
+			long[] valueCount = conversions0.getValue(type);
+			
+			if (valueCount == null) {
+				content.put(type, DeepPocketUtils.advancedSum(content.get(type), amount));
+				return;
+			}
+			
+			for (int i = 0; i < valueCount.length; i++) {
+				ElementType.TConvertible convertible = conversions0.getBaseElement(i);
+				content.put(
+						convertible,
+						DeepPocketUtils.advancedSum(content.get(convertible), DeepPocketUtils.advancedMul(amount, valueCount[i]))
+				);
+			}
 		}
 		
 		@Override

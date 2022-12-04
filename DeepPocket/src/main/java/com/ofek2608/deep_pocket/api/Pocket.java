@@ -46,8 +46,8 @@ public interface Pocket {
 	interface Entry {
 		Pocket getPocket();
 		ElementType getType();
-		long getAmount();
-		void setAmount(long newAmount);
+		long getMaxExtract();
+		void insert(long amount);
 		boolean canBeCrafted();
 		boolean canBeConverted();
 	}
