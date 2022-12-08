@@ -35,7 +35,8 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	public int offX;
 	public int offY;
 	public int height;
-	public float scroll;
+	public float targetScroll;
+	public float displayedScroll;
 	public Supplier<Pocket> pocketSupplier;
 	
 	private int maxScroll;
@@ -72,14 +73,22 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 		my -= offY;
 		
 		maxScroll = Math.max(((types.size() - 1) / 9 + 1) * 16 - height, 0);
-		scroll = Math.max(Math.min(scroll, maxScroll), 0);
+		targetScroll = Math.max(Math.min(targetScroll, maxScroll), 0);
+		
+		if (Math.abs(displayedScroll - targetScroll) > 5)
+			displayedScroll = displayedScroll * 0.8f + targetScroll * 0.2f;
+		else if (Math.abs(displayedScroll - targetScroll) > 1f)
+			displayedScroll += displayedScroll > targetScroll ? -1 : 1;
+		else
+			displayedScroll = targetScroll;
+		
 		holdCraft = Screen.hasControlDown();
 		hoverScroll = 152 <= mx && mx < 160 && 0 <= my && my < height;
 		insideContainer = 4 <= mx && mx < 148 && 0 <= my && my < height;
 		int hoverSlotIndex = -1;
 		if (insideContainer) {
 			int hoverSlotX = (mx - 4) / 16;
-			int hoverSlotY = (int)(my + scroll) / 16;
+			int hoverSlotY = (int)(my + displayedScroll) / 16;
 			hoverSlotIndex = hoverSlotX + 9 * hoverSlotY;
 		}
 		hoveredEntry = 0 <= hoverSlotIndex && hoverSlotIndex < types.size() ? types.get(hoverSlotIndex) : null;
@@ -89,14 +98,14 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
 		
 		blitOutline(poseStack, offX, offY, height);
-		blitScroll(poseStack, offX, offY, scroll, maxScroll, height, hoverScroll);
+		blitScroll(poseStack, offX, offY, displayedScroll, maxScroll, height, hoverScroll);
 		
 		GuiComponent.enableScissor(offX + 4, offY, offX + 148, offY + height);
 		
 		int slotsOffX = offX + 4;
-		int slotsOffY = (int) (offY - scroll);
-		int firstRow = (int)scroll / 16;
-		int lastRow = (int)(scroll + height) / 16;
+		int slotsOffY = (int) (offY - displayedScroll);
+		int firstRow = (int) displayedScroll / 16;
+		int lastRow = (int)(displayedScroll + height) / 16;
 		
 		
 		blitSlotRange(poseStack, types, slotsOffX, slotsOffY, firstRow, lastRow, hoverSlotIndex);
@@ -207,12 +216,13 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	
 	
 	private void updateScroll(double my) {
-		scroll = (float) (maxScroll * (my - offY - 1) / (height - 2));
+		targetScroll = (float) (maxScroll * (my - offY - 1) / (height - 2));
+		displayedScroll = targetScroll;
 	}
 	
 	@Override
 	public boolean mouseScrolled(double mx, double my, double delta) {
-		scroll -= delta * 16;
+		targetScroll -= delta * 16;
 		return true;
 	}
 	
