@@ -8,12 +8,12 @@ import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
-import com.ofek2608.deep_pocket.api.enums.SearchMode;
-import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
-import com.ofek2608.deep_pocket.client.widget.*;
-import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
+import com.ofek2608.deep_pocket.client.widget.PatternWidget;
+import com.ofek2608.deep_pocket.client.widget.PocketSearchWidget;
+import com.ofek2608.deep_pocket.client.widget.PocketTabWidget;
+import com.ofek2608.deep_pocket.client.widget.WidgetWithTooltip;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
@@ -29,39 +29,28 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
-
 public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/pocket.png");
 	private final DeepPocketClientHelper dpClientHelper = DeepPocketClientHelper.get();
 
 	//render fields
 	private PocketDisplayMode pocketDisplayMode;
-	private int rowCount;
 	//render hover fields
-	@Nullable private String lastJeiSearch = DeepPocketJEI.getSearch();
 	private int hoverSlotIndex;
 	private int hoverButton;
 	//widgets
 	private final PocketSearchWidget pocketSearchWidget;
-	private final DPTextWidget searchWidget;
 	private final PocketTabWidget pocketTabWidget;
 	private final PatternWidget patternWidget;
 	
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
 		menu.screen = this;
-		addRenderableWidget(searchWidget = new DPTextWidget(88));
 		addRenderableWidget(pocketSearchWidget = new PocketSearchWidget(this, menu::getPocket));
 		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getPocket));
 		addRenderableWidget(patternWidget = new PatternWidget(this));
 		
 		patternWidget.setPos(100, 50);
-		
-		searchWidget.setResponder(newValue -> {
-			if (DeepPocketClientHelper.get().getSearchMode().syncTo)
-				DeepPocketJEI.setSearch(newValue);
-		});
 		
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
 	}
@@ -79,30 +68,20 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void reloadPosition() {
 		this.pocketDisplayMode = DeepPocketClientHelper.get().getPocketDisplayMode();
 		int imageHeightExcludingRows = pocketDisplayMode == PocketDisplayMode.NORMAL ? 96 : 148;
-		this.rowCount = Math.max(Math.min((height - imageHeightExcludingRows) / 16, 9), 3);
+		int rowsHeight = Math.min(height - imageHeightExcludingRows, 144);
 		this.imageWidth = 180;
-		this.imageHeight = rowCount * 16 + imageHeightExcludingRows;
+		this.imageHeight = imageHeightExcludingRows + rowsHeight;
 		this.leftPos = (this.width - 152) / 2 - 15;
 		this.topPos = (this.height - this.imageHeight) / 2;
 		
 		this.pocketSearchWidget.setPos(leftPos + 15, topPos + 19);
-		this.pocketSearchWidget.setHeight(rowCount * 16);
-		
-		this.searchWidget.x = leftPos + 75;
-		this.searchWidget.y = topPos + 5;
+		this.pocketSearchWidget.setHeight(rowsHeight);
 		
 		this.patternWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN ? pocketSearchWidget.getOffY() + pocketSearchWidget.getHeight() + 4 : -0xFFFFFF);
 	}
 
 	private void reloadPosition(int mx, int my) {
 		reloadPosition();
-
-		{//Update jei search
-			String jeiSearch = DeepPocketJEI.getSearch();
-			if (DeepPocketClientHelper.get().getSearchMode().syncFrom && jeiSearch != null && !jeiSearch.equals(lastJeiSearch))
-				searchWidget.setValue(jeiSearch);
-			lastJeiSearch = jeiSearch;
-		}
 
 		this.hoverSlotIndex = getHoverSlotIndex(mx, my);
 		this.hoverButton = getHoverButton(mx, my);
@@ -118,7 +97,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private int getHoverSlotIndex(int mx, int my) {
 		mx -= leftPos + 19;
 		my -= topPos + 19;
-		my -= rowCount * 16 + 4;//pocket size + gap
+		my -= pocketSearchWidget.getHeight() + 4;//pocket size + gap
 		//Check: Crafting
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
 			for (int gridY = 0; gridY < 3; gridY++)
@@ -153,7 +132,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			if (5 <= my && my <= 14) return 0;
 			if (49 <= my && my <= 58) return 4;
 		}
-		my -= 23 + rowCount * 16;
+		my -= 23 + pocketSearchWidget.getHeight();
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
 			if (19 <= mx && mx <= 34) {
 				if (0 <= my && my <= 15) return 5;
@@ -181,7 +160,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		y = renderAndMove(poseStack, Sprites.OUTLINE_2, leftPos, y, 1);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_3, leftPos, y, 48);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_4, leftPos, y, 1);
-		y = renderAndMove(poseStack, Sprites.OUTLINE_5, leftPos, y, 16 * rowCount - 41);
+		y = renderAndMove(poseStack, Sprites.OUTLINE_5, leftPos, y, pocketSearchWidget.getHeight() - 41);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_6, leftPos, y, 1);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_7, leftPos, y, pocketDisplayMode == PocketDisplayMode.NORMAL ? 71 : 123);
 		renderAndMove(poseStack, Sprites.OUTLINE_8, leftPos, y, 1);
@@ -194,7 +173,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		int y = topPos + 1;
 		y = renderAndMove(poseStack, Sprites.TOP, x, y);
 		y = renderAndMove(poseStack, Sprites.GAP_SCROLL, x, y);
-		y += 16 * rowCount; // container
+		y += pocketSearchWidget.getHeight(); // container
 		y = renderAndMove(poseStack, Sprites.GAP_SCROLL, x, y);
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
 			y = renderAndMove(poseStack, Sprites.CRAFTING_FRAME, x, y);
@@ -237,7 +216,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void renderAllSlotBases(PoseStack poseStack) {
 		int x = leftPos + 19;
 		int y = topPos + 19;
-		y += rowCount * 16 + 4; // Container
+		y += pocketSearchWidget.getHeight() + 4; // Container
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING)
 			y = renderCraftingSlotBases(poseStack, x, y);
 		if (pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN)
@@ -251,9 +230,9 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			getSettingsButton(hoverButton == 0).blit(poseStack, leftPos + 5, topPos + 5);
 			getDisplayAscendingButton(hoverButton == 4).blit(poseStack, leftPos + 5, topPos + 49);
 			if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
-				getClearUButton(hoverButton == 5).blit(poseStack, leftPos + 19, topPos + 23 + 16 * rowCount);
-				getClearDButton(hoverButton == 6).blit(poseStack, leftPos + 19, topPos + 55 + 16 * rowCount);
-				getBulkCraftButton(menu.getSlot(45).hasItem(), hoverButton == 7).blit(poseStack, leftPos + 147, topPos + 39 + 16 * rowCount);
+				getClearUButton(hoverButton == 5).blit(poseStack, leftPos + 19, topPos + 23 + pocketSearchWidget.getHeight());
+				getClearDButton(hoverButton == 6).blit(poseStack, leftPos + 19, topPos + 55 + pocketSearchWidget.getHeight());
+				getBulkCraftButton(menu.getSlot(45).hasItem(), hoverButton == 7).blit(poseStack, leftPos + 147, topPos + 39 + pocketSearchWidget.getHeight());
 			}
 		}
 		renderAllSlotBases(poseStack);
@@ -285,7 +264,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void renderSlotItems(PoseStack poseStack) {
 		int xOffset = leftPos + 19;
 		int yOffset = topPos + 19;
-		yOffset += 16 * rowCount + 4;
+		yOffset += pocketSearchWidget.getHeight() + 4;
 		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) { //Render: Crafting Slots
 			int slotIndex = 36;
 			for (int gridY = 0; gridY < 3; gridY++)
@@ -477,28 +456,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	private static Sprites getBulkCraftButton(boolean active, boolean hover) {
 		return active ? hover ? Sprites.BULK_CRAFTING_H : Sprites.BULK_CRAFTING_N : Sprites.BULK_CRAFTING_D;
-	}
-
-	private static void toggleSearchMode() {
-		DeepPocketClientHelper.get().setSearchMode(switch (DeepPocketClientHelper.get().getSearchMode()) {
-			case NORMAL -> SearchMode.SYNC_JEI;
-			case SYNC_JEI -> SearchMode.SYNC_FROM_JEI;
-			case SYNC_FROM_JEI -> SearchMode.SYNC_TO_JEI;
-			case SYNC_TO_JEI -> SearchMode.NORMAL;
-		});
-	}
-
-	private static void toggleSortingOrder() {
-		DeepPocketClientHelper.get().setSortingOrder(switch (DeepPocketClientHelper.get().getSortingOrder()) {
-			case COUNT -> SortingOrder.ID;
-			case ID -> SortingOrder.NAME;
-			case NAME -> SortingOrder.MOD;
-			case MOD -> SortingOrder.COUNT;
-		});
-	}
-
-	private static void toggleSortAscending() {
-		DeepPocketClientHelper.get().setSortAscending(!DeepPocketClientHelper.get().isSortAscending());
 	}
 
 	private static void toggleDisplayCrafting() {
