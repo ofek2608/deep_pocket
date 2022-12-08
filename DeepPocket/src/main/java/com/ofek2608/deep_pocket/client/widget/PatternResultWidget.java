@@ -3,16 +3,16 @@ package com.ofek2608.deep_pocket.client.widget;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -66,15 +66,18 @@ public class PatternResultWidget implements WidgetWithTooltip, GuiEventListener,
 	}
 	
 	private boolean isEmptyPattern() {
-		for (ItemTypeAmount output : output.items)
-			if (!output.isEmpty())
+		for (ElementTypeStack outputType : output.items)
+			if (!outputType.isEmpty())
 				return false;
 		return true;
 	}
 	
 	private boolean canCreatePattern() {
 		Pocket pocket = screen.getMenu().getPocket();
-		return pocket != null && pocket.getMaxExtract(DeepPocketClientApi.get().getKnowledge(), new ItemType(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get())) != 0;
+		return pocket != null && pocket.getMaxExtract(
+				DeepPocketClientApi.get().getKnowledge0(),
+				ElementType.item(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get())
+		) != 0;
 	}
 	
 	@Override

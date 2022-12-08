@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
@@ -17,6 +16,7 @@ import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.client.widget.*;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -60,7 +60,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		patternWidget.setPos(100, 50);
 		
 		searchWidget.setResponder(newValue -> {
-			if (DeepPocketClientApi.get().getSearchMode().syncTo)
+			if (DeepPocketClientHelper.get().getSearchMode().syncTo)
 				DeepPocketJEI.setSearch(newValue);
 		});
 	}
@@ -85,13 +85,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		};
 	}
 
-	public void setPattern(ItemType[] input, ItemStack output) {
+	public void setPattern(ElementType[] input, ItemStack output) {
 		patternWidget.setPattern(input, output);
 	}
 
 
 	private void reloadPosition() {
-		this.pocketDisplayMode = DeepPocketClientApi.get().getPocketDisplayMode();
+		this.pocketDisplayMode = DeepPocketClientHelper.get().getPocketDisplayMode();
 		int imageHeightExcludingRows = pocketDisplayMode == PocketDisplayMode.NORMAL ? 96 : 148;
 		this.rowCount = Math.max(Math.min((height - imageHeightExcludingRows) / 16, 9), 3);
 		this.imageWidth = 180;
@@ -111,11 +111,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	private void reloadPosition(int mx, int my) {
 		reloadPosition();
-		DeepPocketClientApi api = DeepPocketClientApi.get();
 
 		{//Update jei search
 			String jeiSearch = DeepPocketJEI.getSearch();
-			if (api.getSearchMode().syncFrom && jeiSearch != null && !jeiSearch.equals(lastJeiSearch))
+			if (DeepPocketClientHelper.get().getSearchMode().syncFrom && jeiSearch != null && !jeiSearch.equals(lastJeiSearch))
 				searchWidget.setValue(jeiSearch);
 			lastJeiSearch = jeiSearch;
 		}
@@ -356,10 +355,10 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void renderButtonTooltip(PoseStack poseStack, int x, int y) {
 		Component text = switch (hoverButton) {
 			case 0 -> Component.literal("Settings");
-			case 1 -> Component.literal("Search Mode: ").append(Component.literal(DeepPocketClientApi.get().getSearchMode().displayName).withStyle(ChatFormatting.AQUA));
-			case 2 -> Component.literal("Sort: ").append(Component.literal(DeepPocketClientApi.get().getSortingOrder().displayName).withStyle(ChatFormatting.AQUA));
-			case 3 -> Component.literal("Sort Direction: ").append(Component.literal(DeepPocketClientApi.get().isSortAscending() ? "Ascending" : "Descending").withStyle(ChatFormatting.AQUA));
-			case 4 -> Component.literal("Display Mode: ").append(Component.literal(DeepPocketClientApi.get().getPocketDisplayMode().displayName).withStyle(ChatFormatting.AQUA));
+			case 1 -> Component.literal("Search Mode: ").append(Component.literal(DeepPocketClientHelper.get().getSearchMode().displayName).withStyle(ChatFormatting.AQUA));
+			case 2 -> Component.literal("Sort: ").append(Component.literal(DeepPocketClientHelper.get().getSortingOrder().displayName).withStyle(ChatFormatting.AQUA));
+			case 3 -> Component.literal("Sort Direction: ").append(Component.literal(DeepPocketClientHelper.get().isSortAscending() ? "Ascending" : "Descending").withStyle(ChatFormatting.AQUA));
+			case 4 -> Component.literal("Display Mode: ").append(Component.literal(DeepPocketClientHelper.get().getPocketDisplayMode().displayName).withStyle(ChatFormatting.AQUA));
 			case 5 -> Component.literal("Clear To Pocket");
 			case 6 -> Component.literal("Clear To Inventory");
 			case 7 -> Component.literal("Bulk Crafting");
@@ -479,7 +478,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	private static Sprites getSearchModeButton(boolean hover) {
-		return switch (DeepPocketClientApi.get().getSearchMode()) {
+		return switch (DeepPocketClientHelper.get().getSearchMode()) {
 			case NORMAL -> hover ? Sprites.SEARCH_MODE_0H : Sprites.SEARCH_MODE_0N;
 			case SYNC_JEI -> hover ? Sprites.SEARCH_MODE_1H : Sprites.SEARCH_MODE_1N;
 			case SYNC_FROM_JEI -> hover ? Sprites.SEARCH_MODE_2H : Sprites.SEARCH_MODE_2N;
@@ -488,7 +487,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	private static Sprites getSortingOrderButton(boolean hover) {
-		return switch (DeepPocketClientApi.get().getSortingOrder()) {
+		return switch (DeepPocketClientHelper.get().getSortingOrder()) {
 			case COUNT -> hover ? Sprites.SORTING_ORDER_0H : Sprites.SORTING_ORDER_0N;
 			case ID -> hover ? Sprites.SORTING_ORDER_1H : Sprites.SORTING_ORDER_1N;
 			case NAME -> hover ? Sprites.SORTING_ORDER_2H : Sprites.SORTING_ORDER_2N;
@@ -497,13 +496,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	private static Sprites getSortAscendingButton(boolean hover) {
-		return DeepPocketClientApi.get().isSortAscending() ?
+		return DeepPocketClientHelper.get().isSortAscending() ?
 						hover ? Sprites.SORT_ASCENDING_1H : Sprites.SORT_ASCENDING_1N :
 						hover ? Sprites.SORT_ASCENDING_0H : Sprites.SORT_ASCENDING_0N;
 	}
 
 	private static Sprites getDisplayAscendingButton(boolean hover) {
-		return switch (DeepPocketClientApi.get().getPocketDisplayMode()) {
+		return switch (DeepPocketClientHelper.get().getPocketDisplayMode()) {
 			case NORMAL -> hover ? Sprites.DISPLAY_CRAFTING_0H : Sprites.DISPLAY_CRAFTING_0N;
 			case CRAFTING -> hover ? Sprites.DISPLAY_CRAFTING_1H : Sprites.DISPLAY_CRAFTING_1N;
 			case CREATE_PATTERN -> hover ? Sprites.DISPLAY_CRAFTING_2H : Sprites.DISPLAY_CRAFTING_2N;
@@ -527,7 +526,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	private static void toggleSearchMode() {
-		DeepPocketClientApi.get().setSearchMode(switch (DeepPocketClientApi.get().getSearchMode()) {
+		DeepPocketClientHelper.get().setSearchMode(switch (DeepPocketClientHelper.get().getSearchMode()) {
 			case NORMAL -> SearchMode.SYNC_JEI;
 			case SYNC_JEI -> SearchMode.SYNC_FROM_JEI;
 			case SYNC_FROM_JEI -> SearchMode.SYNC_TO_JEI;
@@ -536,7 +535,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	private static void toggleSortingOrder() {
-		DeepPocketClientApi.get().setSortingOrder(switch (DeepPocketClientApi.get().getSortingOrder()) {
+		DeepPocketClientHelper.get().setSortingOrder(switch (DeepPocketClientHelper.get().getSortingOrder()) {
 			case COUNT -> SortingOrder.ID;
 			case ID -> SortingOrder.NAME;
 			case NAME -> SortingOrder.MOD;
@@ -545,11 +544,11 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	}
 
 	private static void toggleSortAscending() {
-		DeepPocketClientApi.get().setSortAscending(!DeepPocketClientApi.get().isSortAscending());
+		DeepPocketClientHelper.get().setSortAscending(!DeepPocketClientHelper.get().isSortAscending());
 	}
 
 	private static void toggleDisplayCrafting() {
-		DeepPocketClientApi.get().setPocketDisplayMode(switch (DeepPocketClientApi.get().getPocketDisplayMode()) {
+		DeepPocketClientHelper.get().setPocketDisplayMode(switch (DeepPocketClientHelper.get().getPocketDisplayMode()) {
 			case NORMAL -> PocketDisplayMode.CRAFTING;
 			case CRAFTING -> PocketDisplayMode.CREATE_PATTERN;
 			case CREATE_PATTERN -> PocketDisplayMode.NORMAL;

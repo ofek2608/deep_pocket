@@ -1,15 +1,20 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ofek2608.deep_pocket.utils.AdvancedLongMath;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.enums.PocketDisplayFilter;
+import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
+import com.ofek2608.deep_pocket.api.enums.SearchMode;
+import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.utils.AdvancedLongMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 
@@ -70,15 +75,52 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 		renderItemAmount(poseStack, x, y, itemAmount.getItemType().create(), itemAmount.getAmount(), itemRenderer, font);
 	}
 	
-	public void renderPocketEntry(PoseStack poseStack, int x, int y, Pocket.Entry entry, @Nullable String amount, ItemRenderer itemRenderer, Font font) {
-		if (entry.getType() instanceof ElementType.TItem item) {
+	@Override
+	public void renderElementType(PoseStack poseStack, int x, int y, ElementType type, ItemRenderer itemRenderer, Font font) {
+		if (type instanceof ElementType.TItem item) {
 			renderItem(poseStack, x, y, item.create(), itemRenderer, font);
 		}
 		//TODO more types
-		
+	}
+	
+	public void renderPocketEntry(PoseStack poseStack, int x, int y, Pocket.Entry entry, @Nullable String amount, ItemRenderer itemRenderer, Font font) {
+		renderElementType(poseStack, x, y, entry.getType(), itemRenderer, font);
 		if (amount == null)
 			renderAmount(poseStack, x, y, entry.getMaxExtract(), itemRenderer, font);
 		else
 			renderAmount(poseStack, x, y, amount, itemRenderer, font);
 	}
+	
+	@Override
+	public void renderElementTypeStack(PoseStack poseStack, int x, int y, ElementTypeStack stack, ItemRenderer itemRenderer, Font font) {
+		renderElementType(poseStack, x, y, stack.getType(), itemRenderer, font);
+		renderAmount(poseStack, x, y, stack.getCount(), itemRenderer, font);
+	}
+	
+	@Override
+	public void renderElementTypeTooltip(PoseStack poseStack, int x, int y, ElementTypeStack stack, Screen screen) {
+		if (stack.isEmpty())
+			return;
+		ElementType type = stack.getType();
+		if (type instanceof ElementType.TItem item)
+			screen.renderTooltip(poseStack, item.create(), x, y);
+		else
+			screen.renderTooltip(poseStack, type.getDisplayName(), x, y);
+	}
+	
+	@Override
+	public void renderElementTypeTooltip(PoseStack poseStack, int x, int y, Pocket.Entry entry, Screen screen) {
+		renderElementTypeTooltip(poseStack, x, y, ElementTypeStack.of(entry.getType(), entry.getMaxExtract()), screen);
+	}
+	
+	@Override public SearchMode getSearchMode() { return DeepPocketConfig.Client.SEARCH_MODE.get(); }
+	@Override public void setSearchMode(SearchMode searchMode) { DeepPocketConfig.Client.SEARCH_MODE.set(searchMode); }
+	@Override public SortingOrder getSortingOrder() { return DeepPocketConfig.Client.SORTING_ORDER.get(); }
+	@Override public void setSortingOrder(SortingOrder order) { DeepPocketConfig.Client.SORTING_ORDER.set(order); }
+	@Override public boolean isSortAscending() { return DeepPocketConfig.Client.SORT_ASCENDING.get(); }
+	@Override public void setSortAscending(boolean sortAscending) { DeepPocketConfig.Client.SORT_ASCENDING.set(sortAscending); }
+	@Override public PocketDisplayFilter getPocketDisplayFilter() { return DeepPocketConfig.Client.POCKET_DISPLAY_FILTER.get(); }
+	@Override public void setPocketDisplayFilter(PocketDisplayFilter pocketDisplayFilter) { DeepPocketConfig.Client.POCKET_DISPLAY_FILTER.set(pocketDisplayFilter); }
+	@Override public PocketDisplayMode getPocketDisplayMode() { return DeepPocketConfig.Client.POCKET_DISPLAY_MODE.get(); }
+	@Override public void setPocketDisplayMode(PocketDisplayMode pocketDisplayMode) { DeepPocketConfig.Client.POCKET_DISPLAY_MODE.set(pocketDisplayMode); }
 }

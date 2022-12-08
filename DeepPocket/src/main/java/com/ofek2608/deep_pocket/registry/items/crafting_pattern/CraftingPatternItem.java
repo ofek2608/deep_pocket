@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.registry.items.crafting_pattern;
 
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.registry.DeepPocketBEWLR;
@@ -59,11 +60,21 @@ public class CraftingPatternItem extends Item {
 		return ItemStack.EMPTY;
 	}
 
-	public static ItemStack createItem(ItemTypeAmount[] input, ItemTypeAmount[] output) {
+	public static ItemStack createItem(ElementTypeStack[] input, ElementTypeStack[] output) {
 		ItemStack newPattern = new ItemStack(DeepPocketRegistry.CRAFTING_PATTERN_ITEM.get());
 		CompoundTag tag = new CompoundTag();
 		tag.put("patternInput", saveParam(input));
 		tag.put("patternOutput", saveParam(output));
+		newPattern.setTag(tag);
+		return newPattern;
+	}
+	
+	@Deprecated(forRemoval = true)
+	public static ItemStack createItem(ItemTypeAmount[] input, ItemTypeAmount[] output) {
+		ItemStack newPattern = new ItemStack(DeepPocketRegistry.CRAFTING_PATTERN_ITEM.get());
+		CompoundTag tag = new CompoundTag();
+//		tag.put("patternInput", saveParam(input));
+//		tag.put("patternOutput", saveParam(output));
 		newPattern.setTag(tag);
 		return newPattern;
 	}
@@ -84,9 +95,9 @@ public class CraftingPatternItem extends Item {
 		return retrieveParam(itemTag, "patternOutput");
 	}
 
-	private static Tag saveParam(ItemTypeAmount[] value) {
+	private static Tag saveParam(ElementTypeStack[] value) {
 		ListTag saved = new ListTag();
-		Stream.of(value).map(ItemTypeAmount::save).forEach(saved::add);
+		Stream.of(value).map(ElementTypeStack::save).forEach(saved::add);
 		return saved;
 	}
 

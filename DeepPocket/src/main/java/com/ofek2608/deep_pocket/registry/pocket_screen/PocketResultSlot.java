@@ -1,9 +1,8 @@
 package com.ofek2608.deep_pocket.registry.pocket_screen;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.struct.ElementType;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -44,24 +43,31 @@ public class PocketResultSlot extends ResultSlot {
 		for(int i = 0; i < remainingItems.size(); ++i) {
 			ItemStack oldItem = this.craftSlots.getItem(i);
 			ItemStack newItem = remainingItems.get(i);
+			ElementType oldType = ElementType.item(oldItem);
 
-			if (oldItem.isEmpty()) {
+			if (!(oldType instanceof ElementType.TItem oldItemType)) {
+				// if the old item is empty, put the result slot
+				craftSlots.setItem(i, newItem);
+				continue;
+			}
+
+			if (oldItem.getCount() > 1) {
+				// if there are more than 1 items in the original slot, consume
+				this.craftSlots.removeItem(i, 1);
+				// the slot is full so there is no place for the new item
 				pocket.insertElement(ElementType.item(newItem), newItem.getCount());
 				continue;
 			}
-
-			if (oldItem.getCount() > 1 || pocket.extractItem(api.getKnowledge(player.getUUID()), new ItemType(oldItem), 1) != 1)
-				this.craftSlots.removeItem(i, 1);
-			oldItem = this.craftSlots.getItem(i);
-
-			if (newItem.isEmpty())
-				continue;
-
-			if (oldItem.isEmpty()) {
-				this.craftSlots.setItem(i, newItem);
+			if (pocket.extractItem(api.getKnowledge0(player.getUUID()), oldItemType, 1) == 1) {
+				// if there is 1 item in the original slot, and we could extract from the pocket.
+				// we need to give the player the remaining item, and the slot is already caught
+				// also we can put the remaining item there
+				pocket.insertElement(ElementType.item(newItem), newItem.getCount());
 				continue;
 			}
-			pocket.insertElement(ElementType.item(newItem), newItem.getCount());
+			// if there is 1 item in the original slot, and couldn't extract from the pocket, this item will be consumed
+			// also we can put the remaining item there
+			this.craftSlots.setItem(i, newItem);
 		}
 		menu.reloadCrafting();
 	}

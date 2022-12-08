@@ -3,56 +3,45 @@ package com.ofek2608.deep_pocket.client.widget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.Widget;
-import net.minecraft.client.gui.components.events.ContainerEventHandler;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
-public class PatternWidget implements WidgetWithTooltip, ContainerEventHandler, NonNarratableEntry {
+public class PatternWidget extends SimpleContainerWidget {
 	public static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/widget/pattern.png");
-	private int offX, offY;
-	private boolean dragging;
-	private GuiEventListener focused;
 	private final PatternPartWidget inputWidget, outputWidget;
 	private final PatternResultWidget resultWidget;
 	private final ImageButton clearWidget;
-	private final List<GuiEventListener> children;
 	
 	public PatternWidget(AbstractContainerScreen<? extends MenuWithPocket> screen) {
-		inputWidget = new PatternPartWidget(screen);
-		outputWidget = new PatternPartWidget(screen);
-		resultWidget = new PatternResultWidget(screen, inputWidget, outputWidget);
-		clearWidget = new ImageButton(
+		children.add(inputWidget = new PatternPartWidget(screen));
+		children.add(outputWidget = new PatternPartWidget(screen));
+		children.add(resultWidget = new PatternResultWidget(screen, inputWidget, outputWidget));
+		children.add(clearWidget = new ImageButton(
 				0, 0, 16, 16, 224, 0,
 				TEXTURE, button -> clearPattern()
-		);
-		this.children = List.of(inputWidget, outputWidget, resultWidget, clearWidget);
+		));
 	}
 	
-	public void setPos(int x, int y) {
-		offX = x;
-		offY = y;
-		inputWidget.offX = x + 22;
-		inputWidget.offY = y;
-		outputWidget.offX = x + 82;
-		outputWidget.offY = y;
-		resultWidget.offX = x + 132;
-		resultWidget.offY = y + 16;
-		clearWidget.x = x + 4;
-		clearWidget.y = y + 16;
+	@Override
+	protected void updatePositions() {
+		inputWidget.offX = offX + 22;
+		inputWidget.offY = offY;
+		outputWidget.offX = offX + 82;
+		outputWidget.offY = offY;
+		resultWidget.offX = offX + 132;
+		resultWidget.offY = offY + 16;
+		clearWidget.x = offX + 4;
+		clearWidget.y = offY + 16;
 	}
 	
 	@Override
@@ -67,42 +56,16 @@ public class PatternWidget implements WidgetWithTooltip, ContainerEventHandler, 
 				152, 48,
 				256, 256
 		);
-		for (GuiEventListener child : children)
-			if (child instanceof Widget widget)
-				widget.render(poseStack, mx, my, partialTick);
+		super.render(poseStack, mx, my, partialTick);
 	}
 	
 	@Override
 	public void renderTooltip(Screen screen, PoseStack poseStack, int mx, int my) {
-		for (GuiEventListener child : children)
-			if (child instanceof WidgetWithTooltip tooltip)
-				tooltip.renderTooltip(screen, poseStack, mx, my);
-	}
-	
-	@Override
-	public List<? extends GuiEventListener> children() {
-		return children;
-	}
-	
-	@Override
-	public boolean isDragging() {
-		return dragging;
-	}
-	
-	@Override
-	public void setDragging(boolean dragging) {
-		this.dragging = dragging;
-	}
-	
-	@Nullable
-	@Override
-	public GuiEventListener getFocused() {
-		return focused;
-	}
-	
-	@Override
-	public void setFocused(@Nullable GuiEventListener focused) {
-		this.focused = focused;
+		inputWidget.renderTooltip(screen, poseStack, mx, my);
+		outputWidget.renderTooltip(screen, poseStack, mx, my);
+		resultWidget.renderTooltip(screen, poseStack, mx, my);
+		if (clearWidget.isMouseOver(mx, my))
+			screen.renderTooltip(poseStack, Component.literal("Clear"), mx, my);
 	}
 	
 	public void clearPattern() {
@@ -110,12 +73,12 @@ public class PatternWidget implements WidgetWithTooltip, ContainerEventHandler, 
 		outputWidget.clear();
 	}
 	
-	public void setPattern(ItemType[] inputItems, ItemStack outputItems) {
+	public void setPattern(ElementType[] inputItems, ItemStack outputItems) {
 		clearPattern();
 		int inputLen = Math.min(inputItems.length, 9);
 		for (int i = 0; i < inputLen; i++)
-			inputWidget.items[i] = new ItemTypeAmount(inputItems[i], 1);
-		outputWidget.items[0] = new ItemTypeAmount(new ItemType(outputItems), outputItems.getCount());
+			inputWidget.items[i] = ElementTypeStack.of(inputItems[i]);
+		outputWidget.items[0] = ElementTypeStack.of(ElementType.item(outputItems), outputItems.getCount());
 	}
 	
 	public Rect2i getJEITargetArea(int targetIndex) {
@@ -126,9 +89,9 @@ public class PatternWidget implements WidgetWithTooltip, ContainerEventHandler, 
 	
 	public void acceptJEIGhostIngredient(int targetIndex, ItemStack ghostIngredient) {
 		if (0 <= targetIndex && targetIndex < 9) {
-			inputWidget.items[targetIndex] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
+			inputWidget.items[targetIndex] = ElementTypeStack.of(ElementType.item(ghostIngredient), ghostIngredient.getCount());
 		} else if (9 <= targetIndex && targetIndex < 18) {
-			outputWidget.items[targetIndex - 9] = new ItemTypeAmount(new ItemType(ghostIngredient), ghostIngredient.getCount());
+			outputWidget.items[targetIndex - 9] = ElementTypeStack.of(ElementType.item(ghostIngredient), ghostIngredient.getCount());
 		}
 	}
 }

@@ -95,8 +95,8 @@ public enum SortingOrder implements Comparator<Pocket.Entry> {
 		}
 	};
 	public final String displayName;
-	private final Comparator<ItemTypeAmount> baseComparator;
-	public final Comparator<ItemTypeAmount> comparator;
+	@Deprecated(forRemoval = true) private final Comparator<ItemTypeAmount> baseComparator;
+	@Deprecated(forRemoval = true) public final Comparator<ItemTypeAmount> comparator;
 
 	SortingOrder(String displayName, Comparator<ItemTypeAmount> baseComparator) {
 		this.displayName = displayName;

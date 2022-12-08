@@ -28,15 +28,18 @@ public interface Pocket {
 	boolean canAccess(Player player);
 	Map<ElementType,Long> getContent();
 	void insertElement(ElementType type, long count);
-	Map<ItemType,Long> getItemsMap();
-	long getItemCount(ItemType type);
-	void insertItem(ItemType type, long count);
+	long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType,Long> counts);
+	long getMaxExtract(@Nullable Knowledge0 knowledge, ElementType ... items);
+	long extractItem(@Nullable Knowledge0 knowledge, ElementType type, long count);
+	
+	@Deprecated(forRemoval = true) Map<ItemType,Long> getItemsMap();
+	@Deprecated(forRemoval = true) long getItemCount(ItemType type);
+	@Deprecated(forRemoval = true) void insertItem(ItemType type, long count);
 	void insertAll(ProvidedResources resources);
-	long getMaxExtract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts);
-	long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount);
-	long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
-	long extractItem(@Nullable Knowledge0 knowledge, ElementType.TItem type, long count);
-	long getMaxExtract(@Nullable Knowledge knowledge, ItemType ... items);
+	@Deprecated(forRemoval = true) long getMaxExtractOld(@Nullable Knowledge knowledge, Map<ItemType,Long> counts);
+	@Deprecated(forRemoval = true) long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount);
+	@Deprecated(forRemoval = true) long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
+	@Deprecated(forRemoval = true) long getMaxExtractOld(@Nullable Knowledge knowledge, ItemType ... items);
 	Map<UUID,CraftingPattern> getPatternsMap();
 	@Nullable CraftingPattern getPattern(UUID patternId);
 	UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);

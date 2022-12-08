@@ -16,19 +16,20 @@ public interface DeepPocketClientApi extends DeepPocketApi {
 
 	void setItemConversions(ItemConversions conversions);
 	//client config
-	SearchMode getSearchMode();
-	void setSearchMode(SearchMode searchMode);
-	SortingOrder getSortingOrder();
-	void setSortingOrder(SortingOrder order);
-	boolean isSortAscending();
-	void setSortAscending(boolean sortAscending);
-	PocketDisplayMode getPocketDisplayMode();
-	void setPocketDisplayMode(PocketDisplayMode pocketDisplayMode);
+	@Deprecated(forRemoval = true) SearchMode getSearchMode();
+	@Deprecated(forRemoval = true) void setSearchMode(SearchMode searchMode);
+	@Deprecated(forRemoval = true) SortingOrder getSortingOrder();
+	@Deprecated(forRemoval = true) void setSortingOrder(SortingOrder order);
+	@Deprecated(forRemoval = true) boolean isSortAscending();
+	@Deprecated(forRemoval = true) void setSortAscending(boolean sortAscending);
+	@Deprecated(forRemoval = true) PocketDisplayMode getPocketDisplayMode();
+	@Deprecated(forRemoval = true) void setPocketDisplayMode(PocketDisplayMode pocketDisplayMode);
 	//server config
 	boolean isPermitPublicPocket();
 	void setPermitPublicPocket(boolean value);
 
+	Knowledge0 getKnowledge0();
 	Knowledge getKnowledge();
-	Stream<ItemTypeAmount> getSortedKnowledge(Pocket pocket);
+	@Deprecated(forRemoval = true) Stream<ItemTypeAmount> getSortedKnowledge(Pocket pocket);
 	Stream<Pocket.Entry> getSortedKnowledge0(Pocket pocket);
 }

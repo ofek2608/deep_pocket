@@ -3,8 +3,7 @@ package com.ofek2608.deep_pocket.registry.pocket_screen;
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
@@ -23,11 +22,14 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedMul;
 
 public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket {
+	private static final DeepPocketClientHelper HELPER = DeepPocketClientHelper.get();
 	private static final int INVISIBLE_SLOT_Y = -0xFFFFFF;
 	
 	public final Inventory playerInventory;
@@ -208,11 +210,12 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		resultSlot.set(ItemStack.EMPTY);
 	}
 
-	private static ItemType requestIngredientClientBound(ItemStack[] inventoryItems, @Nullable Pocket pocket, Ingredient ingredient, boolean consume) {
+	private static ElementType requestIngredientClientBound(ItemStack[] inventoryItems, @Nullable Pocket pocket, Ingredient ingredient, boolean consume) {
+		//TODO support for recipes which aren't items
 		for (ItemStack stack : inventoryItems) {
 			if (stack.isEmpty() || !ingredient.test(stack))
 				continue;
-			ItemType type = new ItemType(stack);
+			ElementType type = ElementType.item(stack);
 			if (consume)
 				stack.shrink(1);
 			return type;
@@ -220,29 +223,28 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 
 		DeepPocketClientApi api = DeepPocketClientApi.get();
 		if (pocket != null)
-			for (ItemType type : api.getSortedKnowledge(pocket).map(ItemTypeAmount::getItemType).toList())
-				if (ingredient.test(type.create()) && (!consume || pocket.extractItem(api.getKnowledge(), type, 1) == 1))
+			for (ElementType type : api.getSortedKnowledge0(pocket).map(Pocket.Entry::getType).toList())
+				if (type instanceof ElementType.TItem item && ingredient.test(item.create()) && (!consume || pocket.extractItem(api.getKnowledge0(), type, 1) == 1))
 					return type;
 		if (consume)
-			return ItemType.EMPTY;
+			return ElementType.empty();
 		ItemStack[] ingredientItems = ingredient.getItems();
-		return ingredientItems.length > 0 ? new ItemType(ingredientItems[0]) : ItemType.EMPTY;
+		return ingredientItems.length > 0 ? ElementType.item(ingredientItems[0]) : ElementType.empty();
 	}
 
 	public void requestRecipeClientBound(Recipe<?> recipe) {
-		DeepPocketClientApi api = DeepPocketClientApi.get();
 		boolean consume;
-		if (api.getPocketDisplayMode() == PocketDisplayMode.CREATE_PATTERN) {
+		if (HELPER.getPocketDisplayMode() == PocketDisplayMode.CREATE_PATTERN) {
 			consume = false;
 		} else {
-			api.setPocketDisplayMode(PocketDisplayMode.CRAFTING);
+			HELPER.setPocketDisplayMode(PocketDisplayMode.CRAFTING);
 			consume = true;
 		}
 		ItemStack[] inventoryItems = slots.stream().map(Slot::getItem).map(ItemStack::copy).toArray(ItemStack[]::new);
 		Pocket pocket = getPocket();
 		if (pocket != null)
 			pocket = pocket.copy();
-		ItemType[] requesting = new ItemType[9];
+		ElementType[] requesting = new ElementType[9];
 
 		NonNullList<Ingredient> ingredients = recipe.getIngredients();
 
@@ -262,7 +264,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		}
 		for (int i = 0; i < 9; i++)
 			if (requesting[i] == null)
-				requesting[i] = ItemType.EMPTY;
+				requesting[i] = ElementType.empty();
 		if (consume) {
 			DeepPocketPacketHandler.sbRequestRecipe(requesting);
 			return;
@@ -271,12 +273,10 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			pocketScreen.setPattern(requesting, recipe.getResultItem());
 	}
 
-	private boolean requestIngredientServerBound(ItemType type) {
-		if (type.isEmpty())
-			return false;
+	private boolean requestIngredientServerBound(ElementType.TItem type) {
 		for (int slotIndex = 0; slotIndex < 36; slotIndex++) {
 			ItemStack stack = playerInventory.getItem(slotIndex);
-			if (stack.isEmpty() || !new ItemType(stack).equals(type))
+			if (stack.isEmpty() || !type.is(stack))
 				continue;
 			stack.shrink(1);
 			playerInventory.setItem(slotIndex, stack);
@@ -286,7 +286,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		Pocket pocket = getPocket();
 		if (api == null || pocket == null)
 			return false;
-		return pocket.extractItem(api.getKnowledge(playerInventory.player.getUUID()), type, 1) == 1;
+		return pocket.extractItem(api.getKnowledge0(playerInventory.player.getUUID()), type, 1) == 1;
 	}
 	
 	public void extractType(ServerPlayer player, ElementType.TItem type, boolean toCarry, byte count) {
@@ -321,13 +321,16 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	}
 	
 	
-	public void requestRecipeServerBound(ServerPlayer player, ItemType[] types) {
+	public void requestRecipeServerBound(ServerPlayer player, ElementType[] types) {
 		clearCraftingTable(player);
 
 		int len = Math.min(types.length, 9);
-		for (int i = 0; i < len; i++)
-			if (requestIngredientServerBound(types[i]))
-				craftSlots.setItem(i, types[i].create());
+		for (int i = 0; i < len; i++) {
+			ElementType type = types[i];
+			if (type instanceof ElementType.TItem item)
+				if (requestIngredientServerBound(item))
+					craftSlots.setItem(i, item.create());
+		}
 	}
 
 	public void insertCarry(ServerPlayer player, byte count) {
@@ -350,11 +353,11 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		setCarried(carried);
 	}
 
-	public void createPattern(ServerPlayer player, ItemTypeAmount[] input, ItemTypeAmount[] output, boolean toCarry) {
+	public void createPattern(ServerPlayer player, ElementTypeStack[] input, ElementTypeStack[] output, boolean toCarry) {
 		if (input.length != 9 || output.length != 9)
 			return;
 		boolean empty = true;
-		for (ItemTypeAmount outputItem : output)
+		for (ElementTypeStack outputItem : output)
 			empty = empty && outputItem.isEmpty();
 		if (empty)
 			return;
@@ -365,7 +368,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return;
 		if (toCarry && !getCarried().isEmpty())
 			return;
-		if (pocket.extractItem(api.getKnowledge(player.getUUID()), new ItemType(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get()), 1L) != 1)
+		if (pocket.extractItem(api.getKnowledge0(player.getUUID()), ElementType.item(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get()), 1L) != 1)
 			return;
 		ItemStack newPattern = CraftingPatternItem.createItem(input, output);
 		if (toCarry)
@@ -375,11 +378,13 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 
 	}
 
-	public ItemType[] getCrafting() {
-		ItemType[] result = new ItemType[9];
-		for (int i = 0; i < 9; i++)
-			result[i] = new ItemType(craftSlots.getItem(i));
-		return result;
+	public ElementType.TItem[] getCrafting() {
+		return IntStream.range(0, 9)
+				.mapToObj(craftSlots::getItem)
+				.map(ElementType::item)
+				.map(type -> type instanceof ElementType.TItem item ? item : null)
+				.filter(Objects::nonNull)
+				.toArray(ElementType.TItem[]::new);
 	}
 
 	public void bulkCrafting(ServerPlayer player, long count) {
@@ -397,13 +402,14 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		NonNullList<ItemStack> remainingItems = player.level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, player.level);
 		ForgeHooks.setCraftingPlayer(null);
 
-		Knowledge knowledge = api.getKnowledge(player.getUUID());
-		long max = pocket.getMaxExtract(knowledge, getCrafting());
+		Knowledge0 knowledge = api.getKnowledge0(player.getUUID());
+		ElementType.TItem[] crafting = getCrafting();
+		long max = pocket.getMaxExtract(knowledge, crafting);
 		if (0 <= max && max < count)
 			count = max;
 		if (count == 0)
 			return;
-		for (ItemType type : getCrafting())
+		for (ElementType.TItem type : crafting)
 			pocket.extractItem(knowledge, type, count);
 		pocket.insertElement(ElementType.item(result), advancedMul(result.getCount(), count));
 		for (ItemStack remainingItem : remainingItems)

@@ -105,8 +105,30 @@ final class PocketImpl implements Pocket {
 	}
 	
 	
+	public long getMaxExtract0(@Nullable Knowledge0 knowledge, Map<ElementType, Long> counts) {
+		conversions0.convertMap(counts);
+		long maxExtract = -1;
+		for (var entry : counts.entrySet()) {
+			if (knowledge != null && !knowledge.contains(entry.getKey()))
+				return 0L;
+			long current = advancedDiv(content.get(entry.getKey()), entry.getValue());
+			maxExtract = advancedMin(maxExtract, current);
+		}
+		return maxExtract;
+	}
 	
+	@Override
+	public long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType, Long> counts) {
+		return getMaxExtract0(knowledge, new HashMap<>(counts));
+	}
 	
+	@Override
+	public long getMaxExtract(@Nullable Knowledge0 knowledge, ElementType ... types) {
+		Map<ElementType,Long> typesMap = new HashMap<>();
+		for (ElementType type : types)
+			typesMap.put(type, typesMap.getOrDefault(type, 0L) + 1);
+		return getMaxExtract0(knowledge, typesMap);
+	}
 	
 	@Override
 	public Map<ItemType,Long> getItemsMap() {
@@ -177,7 +199,7 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
-	public long getMaxExtract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts) {
+	public long getMaxExtractOld(@Nullable Knowledge knowledge, Map<ItemType,Long> counts) {
 		counts = new HashMap<>(counts);
 		conversions.convertMap(counts);
 		if (isInvalidKnowledge(knowledge, counts))
@@ -214,18 +236,18 @@ final class PocketImpl implements Pocket {
 	}
 	
 	@Override
-	public long extractItem(@Nullable Knowledge0 knowledge, ElementType.TItem type, long count) {
+	public long extractItem(@Nullable Knowledge0 knowledge, ElementType type, long count) {
 		if (knowledge != null && !knowledge.contains(type))
 			return 0;
 		return new EntryImpl(type).extract(count);
 	}
 	
 	@Override
-	public long getMaxExtract(@Nullable Knowledge knowledge, ItemType ... items) {
+	public long getMaxExtractOld(@Nullable Knowledge knowledge, ItemType ... items) {
 		Map<ItemType,Long> itemsMap = new HashMap<>();
 		for (ItemType item : items)
 			itemsMap.put(item, itemsMap.getOrDefault(item, 0L) + 1);
-		return getMaxExtract(knowledge, itemsMap);
+		return getMaxExtractOld(knowledge, itemsMap);
 	}
 
 	@Override

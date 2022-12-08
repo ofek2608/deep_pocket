@@ -64,7 +64,7 @@ public final class ClientScreens {
 			minecraft.setScreen(new SignalSettingsScreen(minecraft.screen, player, color, pos, settings));
 	}
 
-	public static void bulkCrafting(Pocket pocket, ItemType[] recipe) {
+	public static void bulkCrafting(Pocket pocket, ElementType.TItem[] recipe) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)

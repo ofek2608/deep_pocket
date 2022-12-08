@@ -93,8 +93,8 @@ public final class DeepPocketPacketHandler {
 
 	public static void sbPocketInsert(byte count) { CHANNEL.send(serverTarget(), new SBPocketInsert(count)); }
 	public static void sbPocketExtract(ElementType.TItem type, boolean toCarry, byte count) { CHANNEL.send(serverTarget(), new SBPocketExtract(type, toCarry, count)); }
-	public static void sbPatternCreate(ItemTypeAmount[] input, ItemTypeAmount[] output, boolean toCarry) { CHANNEL.send(serverTarget(), new SBPatternCreate(input, output, toCarry)); }
-	public static void sbRequestRecipe(ItemType[] items) { CHANNEL.send(serverTarget(), new SBRequestRecipe(items)); }
+	public static void sbPatternCreate(ElementTypeStack[] input, ElementTypeStack[] output, boolean toCarry) { CHANNEL.send(serverTarget(), new SBPatternCreate(input, output, toCarry)); }
+	public static void sbRequestRecipe(ElementType[] elements) { CHANNEL.send(serverTarget(), new SBRequestRecipe(elements)); }
 	public static void sbClearCraftingGrid(boolean up) { CHANNEL.send(serverTarget(), new SBClearCraftingGrid(up)); }
 	public static void sbBulkCrafting(long count) { CHANNEL.send(serverTarget(), new SBBulkCrafting(count)); }
 	public static void sbRequestProcess(RecipeRequest[] requests, Map<ItemType, Optional<UUID>> setDefaultPatterns) { CHANNEL.send(serverTarget(), new SBRequestProcess(requests, setDefaultPatterns)); }

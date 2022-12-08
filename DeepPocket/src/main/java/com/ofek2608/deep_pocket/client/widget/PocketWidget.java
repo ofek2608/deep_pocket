@@ -4,17 +4,16 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -31,9 +30,9 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntry {
+public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNarratableEntry {
+	private static final DeepPocketClientHelper HELPER = DeepPocketClientHelper.get();
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/widget/pocket.png");
-	private static final DeepPocketClientHelper dpClientHelper = DeepPocketClientHelper.get();
 	private final AbstractContainerScreen<?> screen;
 	public int offX;
 	public int offY;
@@ -113,13 +112,12 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 		renderTypeRange(poseStack, types, slotsOffX, slotsOffY, firstRow - 1, lastRow + 1);
 		
 		GuiComponent.disableScissor();
-		
-		if (hoveredEntry != null) {
-			if (hoveredEntry.getType() instanceof ElementType.TItem item)
-				screen.renderTooltip(poseStack, item.create(), offX + mx, offY + my);
-			else
-				screen.renderTooltip(poseStack, hoveredEntry.getType().getDisplayName(), offX + mx, offY + my);
-		}
+	}
+	
+	@Override
+	public void renderTooltip(Screen screen, PoseStack poseStack, int mx, int my) {
+		if (hoveredEntry != null)
+			HELPER.renderElementTypeTooltip(poseStack, offX + mx, offY + my, hoveredEntry, screen);
 	}
 	
 	private void blitSlotRange(PoseStack poseStack, List<Pocket.Entry> entries, int offX, int offY, int firstRow, int lastRow, int hoverIndex) {
@@ -201,7 +199,7 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 		ItemRenderer itemRenderer = minecraft.getItemRenderer();
 		Font font = minecraft.font;
 		
-		dpClientHelper.renderPocketEntry(
+		HELPER.renderPocketEntry(
 				poseStack,
 				offX, offY,
 				entry,
