@@ -4,7 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
@@ -25,6 +25,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedToString;
 
 public class ProcessScreen extends AbstractContainerScreen<ProcessMenu> {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/process.png");
@@ -328,7 +330,8 @@ public class ProcessScreen extends AbstractContainerScreen<ProcessMenu> {
 		}
 
 		private MutableComponent createNumberComponent(boolean holdShift, long num) {
-			return Component.literal(holdShift ? num < 0 ? "Inf" : "" + num : DeepPocketUtils.advancedToString(num));
+//			return Component.literal(holdShift ? num < 0 ? "Inf" : "" + num : DeepPocketUtils.advancedToString(num));
+			return Component.literal(advancedToString(num, holdShift ? 19 : 6));
 		}
 	}
 

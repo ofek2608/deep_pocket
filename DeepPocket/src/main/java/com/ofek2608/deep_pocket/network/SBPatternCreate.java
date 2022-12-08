@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.network;
 
-import com.ofek2608.deep_pocket.DeepPocketUtils;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import net.minecraft.network.FriendlyByteBuf;

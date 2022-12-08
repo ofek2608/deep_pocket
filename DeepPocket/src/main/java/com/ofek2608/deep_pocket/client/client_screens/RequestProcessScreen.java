@@ -4,12 +4,13 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
+import com.ofek2608.deep_pocket.utils.AdvancedLongMath;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,6 +24,8 @@ import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.*;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 class RequestProcessScreen extends Screen {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/request_process.png");
@@ -167,7 +170,7 @@ class RequestProcessScreen extends Screen {
 				long thisRequiredAmount = requiredAmount[patternIndex];
 				long thisCraftAmount = craftAmount[patternIndex];
 				long thisExistingAmount = patternIndex == 0 ? 0 : pocket.getItemCount(display.type);
-				long total = DeepPocketUtils.advancedSum(thisCraftAmount, thisExistingAmount);
+				long total = advancedSum(thisCraftAmount, thisExistingAmount);
 				long thisNeededAmount = total < 0 ? 0 : thisRequiredAmount < 0 ? -1 : thisRequiredAmount <= total ? 0 : thisRequiredAmount - total;
 				display.requiredAmount = thisRequiredAmount;
 				display.existingAmount = thisExistingAmount;
@@ -186,7 +189,7 @@ class RequestProcessScreen extends Screen {
 			for (int i = 0; i < patternCount; i++) {
 				DisplayedPattern display = allPatterns.get(i);
 				long thisRequiredAmount = requiredAmount[i];
-				long thisExistingAmount = DeepPocketUtils.advancedSum(craftAmount[i], display.existingAmount);
+				long thisExistingAmount = advancedSum(craftAmount[i], display.existingAmount);
 				boolean enough = thisExistingAmount < 0 || thisRequiredAmount == thisExistingAmount || 0 <= thisRequiredAmount && thisRequiredAmount <= thisExistingAmount;
 				if (enough && display.pattern == null)
 					display.border = PatternBorder.ENOUGH;
@@ -199,7 +202,7 @@ class RequestProcessScreen extends Screen {
 			int index = indexMap.getOrDefault(item.getItemType(), -1);
 			if (index < 0)
 				return;
-			counts[index] = DeepPocketUtils.advancedSum(counts[index], DeepPocketUtils.advancedMul(multiply, item.getAmount()));
+			counts[index] = advancedSum(counts[index], advancedMul(multiply, item.getAmount()));
 		}
 	}
 
@@ -331,7 +334,8 @@ class RequestProcessScreen extends Screen {
 	}
 
 	private MutableComponent createNumberComponent(long num) {
-		return Component.literal(holdShift ? num < 0 ? "Inf" : "" + num : DeepPocketUtils.advancedToString(num));
+//		return Component.literal(holdShift ? num < 0 ? "Inf" : "" + num : DeepPocketUtils.advancedToString(num));
+		return Component.literal(advancedToString(num, holdShift ? 19 : 6));
 	}
 
 	private static Optional<TooltipComponent> getPatternTooltip(@Nullable CraftingPattern pattern) {

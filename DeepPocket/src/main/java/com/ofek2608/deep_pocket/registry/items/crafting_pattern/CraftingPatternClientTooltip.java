@@ -3,7 +3,7 @@ package com.ofek2608.deep_pocket.registry.items.crafting_pattern;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;

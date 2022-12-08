@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.logging.LogUtils;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
@@ -39,6 +38,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> implements DeepPocketServerApi {
 	private static final Logger LOGGER = LogUtils.getLogger();
@@ -460,8 +461,8 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 				return;
 			var inputCountMap = pattern.getInputCountMap();
 			for (var entry : inputCountMap.entrySet()) {
-				long add = DeepPocketUtils.advancedMul(entry.getValue(), request.getAmount());
-				unitRequirements.compute(entry.getKey(), (t, oldAmount) -> oldAmount == null ? add : DeepPocketUtils.advancedSum(oldAmount, add));
+				long add = advancedMul(entry.getValue(), request.getAmount());
+				unitRequirements.compute(entry.getKey(), (t, oldAmount) -> oldAmount == null ? add : advancedSum(oldAmount, add));
 			}
 			recipeRequirements.add(inputCountMap.keySet().toArray(ItemType[]::new));
 		}

@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.api.struct;
 
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -10,8 +9,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.*;
 
-import static com.ofek2608.deep_pocket.DeepPocketUtils.advancedMul;
-import static com.ofek2608.deep_pocket.DeepPocketUtils.advancedSum;
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 @Immutable
 public final class ItemConversions {
@@ -108,7 +106,7 @@ public final class ItemConversions {
 				if (v == 0)
 					continue;
 				ItemType baseItem = baseItems[i];
-				counts.put(baseItem, DeepPocketUtils.advancedSum(v, counts.getOrDefault(baseItem, 0L)));
+				counts.put(baseItem, advancedSum(v, counts.getOrDefault(baseItem, 0L)));
 			}
 		}
 	}

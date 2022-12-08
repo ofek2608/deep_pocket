@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket;
+package com.ofek2608.deep_pocket.utils;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
@@ -8,12 +8,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Objects;
 import java.util.Random;
@@ -93,87 +90,6 @@ public final class DeepPocketUtils {
 
 	private static Predicate<ElementType> getModFilter(String modName) {
 		return (type)->type.getKey().getNamespace().toLowerCase().contains(modName);
-	}
-
-
-
-
-
-
-
-
-
-
-
-	public static long advancedSum(long a, long b) {
-		if (a < 0 || b < 0) return -1;
-		try {
-			return Math.addExact(a, b);
-		} catch (Exception e) {
-			return -1;
-		}
-	}
-	
-	public static long advancedSub(long a, long b) {
-		if (a < 0) return -1;
-		if (b < 0 || a <= b) return 0;
-		return a - b;
-	}
-
-	public static long advancedMul(long a, long b) {
-		if (a == 0 || b == 0) return 0;
-		if (a < 0 || b < 0) return -1;
-		try {
-			return Math.multiplyExact(a, b);
-		} catch (Exception e) {
-			return -1;
-		}
-	}
-	
-	public static long advancedDiv(long a, long b) {
-		if (a == 0) return 0;
-		if (a < 0 || b == 0) return -1;
-		if (b < 0) return 0;
-		return a / b;
-	}
-	
-	public static long advancedMin(long a, long b) {
-		if (a < 0) return b < 0 ? -1 : 0;
-		if (b < 0) return a;
-		return Math.min(a, b);
-	}
-	
-	public static long advancedMax(long a, long b) {
-		if (a < 0 || b < 0) return -1;
-		return Math.max(a, b);
-	}
-
-	private static final String[] ADVANCED_NUMBER_SUFFIXES = {"K","M","B","T","Q"};
-	public static String advancedToString(long a) {
-		if (a < 0)
-			return "Inf";
-		if (a < 10000)
-			return a + "";
-		//a >= 10000;
-		a /= 10;
-		//a >= 1000;
-		for (String suffix : ADVANCED_NUMBER_SUFFIXES) {
-			if (a < 1000000) {
-				String str = a + "";
-				return switch (str.length()) {
-					case 3 -> addDot(str, 1);
-					case 4 -> addDot(str.substring(0, 4), 2);
-					case 5 -> addDot(str.substring(0, 4), 3);
-					default -> str.substring(0, 4);
-				} + suffix;
-			}
-			a /= 1000;
-		}
-		return "Inf";
-	}
-
-	private static String addDot(String text, int index) {
-		return text.substring(0,index) + "." + text.substring(index);
 	}
 
 

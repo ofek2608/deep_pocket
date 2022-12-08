@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket.api.struct;
 
 import com.mojang.logging.LogUtils;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -16,8 +15,7 @@ import javax.annotation.concurrent.Immutable;
 import java.util.*;
 import java.util.stream.Stream;
 
-import static com.ofek2608.deep_pocket.DeepPocketUtils.advancedMul;
-import static com.ofek2608.deep_pocket.DeepPocketUtils.advancedSum;
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 import static com.ofek2608.deep_pocket.api.struct.ElementType.TConvertible;
 
 @Immutable
@@ -118,7 +116,7 @@ public final class ElementConversions {
 				if (v == 0)
 					continue;
 				ElementType baseElement = baseElements[i];
-				counts.put(baseElement, DeepPocketUtils.advancedSum(v, counts.getOrDefault(baseElement, 0L)));
+				counts.put(baseElement, advancedSum(v, counts.getOrDefault(baseElement, 0L)));
 			}
 		}
 	}

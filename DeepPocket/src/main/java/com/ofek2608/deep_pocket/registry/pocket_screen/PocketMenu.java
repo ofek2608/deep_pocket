@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.registry.pocket_screen;
 
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
@@ -25,6 +24,8 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedMul;
 
 public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket {
 	private static final int INVISIBLE_SLOT_Y = -0xFFFFFF;
@@ -404,9 +405,9 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return;
 		for (ItemType type : getCrafting())
 			pocket.extractItem(knowledge, type, count);
-		pocket.insertElement(ElementType.item(result), DeepPocketUtils.advancedMul(result.getCount(), count));
+		pocket.insertElement(ElementType.item(result), advancedMul(result.getCount(), count));
 		for (ItemStack remainingItem : remainingItems)
-			pocket.insertElement(ElementType.item(remainingItem), DeepPocketUtils.advancedMul(remainingItem.getCount(), count));
+			pocket.insertElement(ElementType.item(remainingItem), advancedMul(remainingItem.getCount(), count));
 
 		resultSlot.checkTakeAchievements(result);
 	}

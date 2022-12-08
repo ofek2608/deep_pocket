@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.events.DeepPocketItemConversionsUpdatedEvent;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
@@ -12,6 +11,7 @@ import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketScreen;
+import com.ofek2608.deep_pocket.utils.AdvancedLongMath;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
@@ -239,7 +239,7 @@ public final class DeepPocketJEI {
 				Font font = Minecraft.getInstance().font;
 
 				poseStack.pushPose();
-				String displayText = DeepPocketUtils.advancedToString(count);
+				String displayText = AdvancedLongMath.advancedToString(count, 6);
 				poseStack.translate(0.0D, 0.0D, Minecraft.getInstance().getItemRenderer().blitOffset + 200.0F);
 				poseStack.scale(0.5f, 0.5f, 1f);
 				MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());

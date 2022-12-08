@@ -1,7 +1,8 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
+import com.ofek2608.deep_pocket.utils.AdvancedLongMath;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
@@ -48,7 +49,7 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 	@Override
 	public void renderAmount(PoseStack poseStack, int x, int y, long amount, ItemRenderer itemRenderer, Font font) {
 		if (amount != 1)
-			renderAmount(poseStack, x, y, DeepPocketUtils.advancedToString(amount), itemRenderer, font);
+			renderAmount(poseStack, x, y, AdvancedLongMath.advancedToString(amount, 6), itemRenderer, font);
 	}
 
 	@Override

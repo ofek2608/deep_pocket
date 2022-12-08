@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
@@ -51,6 +50,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 public class CrafterBlock extends Block implements EntityBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
@@ -390,7 +391,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 		}
 
 		private void insertPocket(Pocket pocket, long times, ItemStack stack) {
-			pocket.insertElement(ElementType.item(stack), DeepPocketUtils.advancedMul(times, stack.getCount()));
+			pocket.insertElement(ElementType.item(stack), advancedMul(times, stack.getCount()));
 		}
 
 		private boolean executeAdvanced(ProvidedResources resources, long[] requirements, IItemHandler handler, PocketProcessRecipe pocketProcessRecipe) {
@@ -427,7 +428,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 				int startingCount = provided < 0 ? slotLimit : (int)Math.min(provided - taken, slotLimit);
 				ItemStack stack = type.create(startingCount);
 				ItemStack remaining = handler.insertItem(slotIndex, stack, false);
-				taken = DeepPocketUtils.advancedSum(taken, remaining.isEmpty() ? startingCount : startingCount - remaining.getCount());
+				taken = advancedSum(taken, remaining.isEmpty() ? startingCount : startingCount - remaining.getCount());
 			}
 			return taken;
 		}

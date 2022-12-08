@@ -2,7 +2,6 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.collections.CaptureMap;
 import com.ofek2608.collections.CaptureReference;
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.Knowledge0;
 import com.ofek2608.deep_pocket.api.Pocket;
@@ -19,6 +18,8 @@ import org.jetbrains.annotations.UnmodifiableView;
 import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Stream;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 final class PocketImpl implements Pocket {
 	@Nonnull private final ItemConversions conversions;
@@ -90,7 +91,7 @@ final class PocketImpl implements Pocket {
 		long[] valueCount = conversions0.getValue(type);
 		
 		if (valueCount == null) {
-			content.put(type, DeepPocketUtils.advancedSum(content.get(type), count));
+			content.put(type, advancedSum(content.get(type), count));
 			return;
 		}
 		
@@ -98,7 +99,7 @@ final class PocketImpl implements Pocket {
 			ElementType.TConvertible convertible = conversions0.getBaseElement(i);
 			content.put(
 					convertible,
-					DeepPocketUtils.advancedSum(content.get(convertible), DeepPocketUtils.advancedMul(count, valueCount[i]))
+					advancedSum(content.get(convertible), advancedMul(count, valueCount[i]))
 			);
 		}
 	}
@@ -201,7 +202,7 @@ final class PocketImpl implements Pocket {
 			long existing = getItemCount(entry.getKey());
 			if (existing < 0)
 				continue;
-			long needed = DeepPocketUtils.advancedMul(entry.getValue(), overallCount);
+			long needed = advancedMul(entry.getValue(), overallCount);
 			items.put(entry.getKey(), existing - needed);
 		}
 		return overallCount;
@@ -318,8 +319,8 @@ final class PocketImpl implements Pocket {
 			
 			long maxExtract = -1;
 			for (int i = 0; i < valueCount.length; i++) {
-				long current = DeepPocketUtils.advancedDiv(content.get(conversions0.getBaseElement(i)), valueCount[i]);
-				maxExtract = DeepPocketUtils.advancedMin(maxExtract, current);
+				long current = advancedDiv(content.get(conversions0.getBaseElement(i)), valueCount[i]);
+				maxExtract = advancedMin(maxExtract, current);
 			}
 			
 			return maxExtract;
@@ -332,21 +333,21 @@ final class PocketImpl implements Pocket {
 		
 		@Override
 		public long extract(long amount) {
-			amount = DeepPocketUtils.advancedMin(amount, getMaxExtract());
+			amount = advancedMin(amount, getMaxExtract());
 			if (amount == 0)
 				return 0;
 			
 			long[] valueCount = conversions0.getValue(type);
 			
 			if (valueCount == null) {
-				content.put(type, DeepPocketUtils.advancedSub(content.get(type), amount));
+				content.put(type, advancedSub(content.get(type), amount));
 				return amount;
 			}
 			for (int i = 0; i < valueCount.length; i++) {
 				ElementType.TConvertible convertible = conversions0.getBaseElement(i);
 				content.put(
 						convertible,
-						DeepPocketUtils.advancedSub(content.get(convertible), DeepPocketUtils.advancedMul(amount, valueCount[i]))
+						advancedSub(content.get(convertible), advancedMul(amount, valueCount[i]))
 				);
 			}
 			return amount;

@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.impl;
 
-import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
@@ -8,6 +7,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedSum;
 
 final class ProvidedResourcesImpl implements ProvidedResources {
 	private final @Nullable ProvidedResourcesImpl parent;
@@ -53,7 +54,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	public void provide(int index, long amount) {
 		if (index < 0 || types.length <= index)
 			return;
-		provided[index] = DeepPocketUtils.advancedSum(provided[index], amount);
+		provided[index] = advancedSum(provided[index], amount);
 	}
 
 	@Override
@@ -79,7 +80,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 		ProvidedResourcesImpl parent = this.parent;
 		while (parent != null) {
 			index = this.indexes[index];
-			amount = DeepPocketUtils.advancedSum(amount, parent.getProvided(index));
+			amount = advancedSum(amount, parent.getProvided(index));
 			parent = parent.parent;
 		}
 		return amount;
@@ -94,7 +95,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 		while (parent != null) {
 			index = this.indexes[index];
 			long taken = parent.take(index, amount);
-			totalTaken = DeepPocketUtils.advancedSum(totalTaken, taken);
+			totalTaken = advancedSum(totalTaken, taken);
 			amount = taken < 0 ? 0 : amount < 0 ? -1 : amount - taken;
 			parent = parent.parent;
 		}
@@ -130,7 +131,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 				continue;
 			long amount = amounts[i] < 0 || maxMultiplier < 0 ? -1 : amounts[i] * maxMultiplier;
 			requestFromParent(i, amount);
-			provided[i] = DeepPocketUtils.advancedSum(provided[i], amount);
+			provided[i] = advancedSum(provided[i], amount);
 		}
 		return maxMultiplier;
 	}
