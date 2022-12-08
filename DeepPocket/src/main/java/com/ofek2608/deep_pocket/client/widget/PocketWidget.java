@@ -26,7 +26,6 @@ import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNarratableEntry {
@@ -38,7 +37,6 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	public int height;
 	public float scroll;
 	public Supplier<Pocket> pocketSupplier;
-	public Supplier<Predicate<Pocket.Entry>> filterSupplier;
 	
 	private int maxScroll;
 	private boolean holdCraft;
@@ -48,14 +46,9 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	private @Nullable Pocket.Entry hoveredEntry;
 	
 	
-	public PocketWidget(AbstractContainerScreen<?> screen, int offX, int offY, int height,
-	                    Supplier<Pocket> pocketSupplier, Supplier<Predicate<Pocket.Entry>> filterSupplier) {
+	public PocketWidget(AbstractContainerScreen<?> screen, Supplier<Pocket> pocketSupplier) {
 		this.screen = screen;
-		this.offX = offX;
-		this.offY = offY;
-		this.height = height;
 		this.pocketSupplier = pocketSupplier;
-		this.filterSupplier = filterSupplier;
 	}
 	
 	@Override
@@ -115,7 +108,7 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	@Override
 	public void renderTooltip(Screen screen, PoseStack poseStack, int mx, int my) {
 		if (hoveredEntry != null)
-			HELPER.renderElementTypeTooltip(poseStack, offX + mx, offY + my, hoveredEntry, screen);
+			HELPER.renderElementTypeTooltip(poseStack, mx, my, hoveredEntry, screen);
 	}
 	
 	private void blitSlotRange(PoseStack poseStack, List<Pocket.Entry> entries, int offX, int offY, int firstRow, int lastRow, int hoverIndex) {

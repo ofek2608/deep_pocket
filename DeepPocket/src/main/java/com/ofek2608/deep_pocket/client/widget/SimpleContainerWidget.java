@@ -55,4 +55,12 @@ public abstract class SimpleContainerWidget implements WidgetWithTooltip, Contai
 	public void setFocused(@Nullable GuiEventListener focused) {
 		this.focused = focused;
 	}
+	
+	public int getOffX() {
+		return offX;
+	}
+	
+	public int getOffY() {
+		return offY;
+	}
 }

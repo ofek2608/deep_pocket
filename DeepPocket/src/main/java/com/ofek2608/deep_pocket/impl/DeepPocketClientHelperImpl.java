@@ -22,10 +22,12 @@ import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements DeepPocketClientHelper {
 	private final Minecraft minecraft;
+	private String lastJeiSearch = null;
 
 	DeepPocketClientHelperImpl() {
 		this.minecraft = Minecraft.getInstance();
@@ -120,16 +122,20 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 	@Override
 	public String getSearch() {
 		String jeiSearch = DeepPocketJEI.getSearch();
-		String search;
-		if (getSearchMode().syncFrom && jeiSearch != null)
-			DeepPocketConfig.Client.SEARCH.set(search = jeiSearch);
-		else
-			search = DeepPocketConfig.Client.SEARCH.get();
-		return search;
+		if (!Objects.equals(jeiSearch, lastJeiSearch)) {
+			lastJeiSearch = jeiSearch;
+			if (jeiSearch != null && getSearchMode().syncFrom) {
+				DeepPocketConfig.Client.SEARCH.set(jeiSearch);
+				return jeiSearch;
+			}
+		}
+		return DeepPocketConfig.Client.SEARCH.get();
 	}
 	
 	@Override
 	public void setSearch(String search) {
+		if (search.equals(DeepPocketConfig.Client.SEARCH.get()))
+			return;
 		DeepPocketConfig.Client.SEARCH.set(search);
 		if (getSearchMode().syncTo)
 			DeepPocketJEI.setSearch(search);

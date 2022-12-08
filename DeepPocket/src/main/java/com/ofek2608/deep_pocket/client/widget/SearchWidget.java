@@ -15,7 +15,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
-public final class SearchWidget extends SimpleContainerWidget {
+public class SearchWidget extends SimpleContainerWidget {
 	private static final DeepPocketClientHelper HELPER = DeepPocketClientHelper.get();
 	public static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/widget/search.png");
 	private final DPTextWidget searchWidget;
@@ -25,7 +25,7 @@ public final class SearchWidget extends SimpleContainerWidget {
 	private final ImageButton btnDisplayFilter;
 	
 	public SearchWidget() {
-		children.add(searchWidget = new DPTextWidget(0, 0, 100));
+		children.add(searchWidget = new DPTextWidget(100));
 		children.add(btnSearchMode = new ImageButton(0, 0, 10, 10, 0, 0, TEXTURE, btn->{
 			HELPER.setSearchMode(switch (HELPER.getSearchMode()) {
 				case NORMAL -> SearchMode.SYNC_JEI;

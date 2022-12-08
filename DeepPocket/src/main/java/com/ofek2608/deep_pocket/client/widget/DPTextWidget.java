@@ -20,8 +20,8 @@ import net.minecraft.util.FormattedCharSequence;
 public class DPTextWidget extends EditBox {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/widget/text.png");
 	
-	public DPTextWidget(int pX, int pY, int pWidth) {
-		super(Minecraft.getInstance().font, pX, pY, pWidth, 10, Component.empty());
+	public DPTextWidget(int pWidth) {
+		super(Minecraft.getInstance().font, 0, 0, pWidth, 10, Component.empty());
 		setBordered(false);
 	}
 	

@@ -17,6 +17,7 @@ import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -43,7 +44,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private int hoverSlotIndex;
 	private int hoverButton;
 	//widgets
-	private final PocketWidget pocketWidget;
+	private final PocketSearchWidget pocketSearchWidget;
 	private final DPTextWidget searchWidget;
 	private final PocketTabWidget pocketTabWidget;
 	private final PatternWidget patternWidget;
@@ -51,8 +52,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
 		menu.screen = this;
-		addRenderableWidget(searchWidget = new DPTextWidget(0, 0, 88));
-		addRenderableWidget(pocketWidget = new PocketWidget(this, 0, 0, 144, menu::getPocket, this::createFilter));
+		addRenderableWidget(searchWidget = new DPTextWidget(88));
+		addRenderableWidget(pocketSearchWidget = new PocketSearchWidget(this, menu::getPocket));
 		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getPocket));
 		addRenderableWidget(patternWidget = new PatternWidget(this));
 		
@@ -62,6 +63,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			if (DeepPocketClientHelper.get().getSearchMode().syncTo)
 				DeepPocketJEI.setSearch(newValue);
 		});
+		
+		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
 	}
 	
 	@Override
@@ -74,16 +77,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.setFocused(null);
 	}
 	
-	private Predicate<Pocket.Entry> createFilter() {
-		Predicate<ElementType> searchFilter = DeepPocketUtils.createFilter(searchWidget.getValue());
-		return entry -> {
-			ElementType type = entry.getType();
-			return (type instanceof ElementType.TItem ||
-					type instanceof ElementType.TFluid
-			) && searchFilter.test(type);
-		};
-	}
-
 	public void setPattern(ElementType[] input, ItemStack output) {
 		patternWidget.setPattern(input, output);
 	}
@@ -98,14 +91,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.leftPos = (this.width - 152) / 2 - 15;
 		this.topPos = (this.height - this.imageHeight) / 2;
 		
-		this.pocketWidget.offX = leftPos + 15;
-		this.pocketWidget.offY = topPos + 19;
-		this.pocketWidget.height = rowCount * 16;
+		this.pocketSearchWidget.setPos(leftPos + 15, topPos + 19);
+		this.pocketSearchWidget.setHeight(rowCount * 16);
 		
 		this.searchWidget.x = leftPos + 75;
 		this.searchWidget.y = topPos + 5;
 		
-		this.patternWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN ? pocketWidget.offY + pocketWidget.height + 4 : -0xFFFFFF);
+		this.patternWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN ? pocketSearchWidget.getOffY() + pocketSearchWidget.getHeight() + 4 : -0xFFFFFF);
 	}
 
 	private void reloadPosition(int mx, int my) {
@@ -118,7 +110,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			lastJeiSearch = jeiSearch;
 		}
 
-//		this.hoverSearch = isHoverSearch(mx, my);
 		this.hoverSlotIndex = getHoverSlotIndex(mx, my);
 		this.hoverButton = getHoverButton(mx, my);
 		
@@ -380,7 +371,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		
 		menu.setHoverSlotIndex(hoverSlotIndex, my - topPos);
 		
-		ItemStack hoveredItem = pocketWidget.getHoveredItem();
+		ItemStack hoveredItem = pocketSearchWidget.pocketWidget.getHoveredItem();
 		if (!hoveredItem.isEmpty()) {
 			hoveredSlot = new FakeConstantSlot(hoveredItem, mx - 8, my - 8);
 		}
@@ -445,24 +436,24 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	@Override
 	public void mouseMoved(double mx, double my) {
-		pocketWidget.mouseMoved(mx, my);
+		pocketSearchWidget.mouseMoved(mx, my);
 	}
 
 	@Override
 	public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
-		pocketWidget.mouseReleased(pMouseX, pMouseY, pButton);
+		pocketSearchWidget.mouseReleased(pMouseX, pMouseY, pButton);
 		return super.mouseReleased(pMouseX, pMouseY, pButton);
 	}
 
 	@Override
 	public boolean mouseScrolled(double mx, double my, double delta) {
-		return pocketWidget.mouseScrolled(mx, my, delta);
+		return pocketSearchWidget.mouseScrolled(mx, my, delta);
 	}
 
 	@Override
 	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-		if (getFocused() == searchWidget) {
-			searchWidget.keyPressed(keyCode, scanCode, modifiers);
+		if (getFocused() == pocketSearchWidget) {
+			pocketSearchWidget.keyPressed(keyCode, scanCode, modifiers);
 			if (keyCode == InputConstants.KEY_ESCAPE)
 				this.onClose();
 			return true;
@@ -470,7 +461,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		super.keyPressed(keyCode, scanCode, modifiers);
 		return true;
 	}
-
+	
+	@Override
+	public void onClose() {
+		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(false);
+		super.onClose();
+	}
+	
 	@Override
 	public boolean charTyped(char codePoint, int modifiers) {
 		return super.charTyped(codePoint, modifiers);
