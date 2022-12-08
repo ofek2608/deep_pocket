@@ -9,6 +9,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 public interface DeepPocketClientHelper extends DeepPocketHelper {
 	static DeepPocketClientHelper get() { return DeepPocketManager.getClientHelper(); }
 
@@ -20,4 +22,5 @@ public interface DeepPocketClientHelper extends DeepPocketHelper {
 	void renderItemAmount(PoseStack poseStack, int x, int y, ItemStack itemStack, long amount, ItemRenderer itemRenderer, Font font);
 	void renderItemAmount(PoseStack poseStack, int x, int y, ItemAmount itemAmount, ItemRenderer itemRenderer, Font font);
 	void renderItemAmount(PoseStack poseStack, int x, int y, ItemTypeAmount itemAmount, ItemRenderer itemRenderer, Font font);
+	void renderPocketEntry(PoseStack poseStack, int x, int y, Pocket.Entry entry, @Nullable String amount, ItemRenderer itemRenderer, Font font);
 }

@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
@@ -58,7 +59,7 @@ public class PassiveImporter extends Block implements EntityBlock {
 				if (api == null || pocket == null)
 					return stack;
 				if (!simulate)
-					pocket.insertItem(new ItemType(stack), stack.getCount());
+					pocket.insertElement(ElementType.item(stack), stack.getCount());
 				return ItemStack.EMPTY;
 			}
 

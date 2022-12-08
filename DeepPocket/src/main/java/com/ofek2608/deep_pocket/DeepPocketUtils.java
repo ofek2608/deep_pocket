@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Registry;
@@ -64,11 +65,11 @@ public final class DeepPocketUtils {
 		return System.currentTimeMillis() % 2000 < 1000;
 	}
 
-	public static Predicate<ItemStack> createFilter(String filterText) {
+	public static Predicate<ElementType> createFilter(String filterText) {
 		filterText = filterText.toLowerCase();
-		Predicate<ItemStack> resultPredicate = stack->false;
+		Predicate<ElementType> resultPredicate = stack->false;
 		for (String filterTextPossibility : filterText.split("\\|")) {
-			Predicate<ItemStack> possibilityPredicate = stack->true;
+			Predicate<ElementType> possibilityPredicate = stack->true;
 			for (String filterTextUnit : filterTextPossibility.split(" ")) {
 				boolean negate = filterTextUnit.startsWith("-");
 				if (negate) filterTextUnit = filterTextUnit.substring(1);
@@ -77,7 +78,7 @@ public final class DeepPocketUtils {
 
 				if (filterTextUnit.isEmpty()) continue;
 
-				Predicate<ItemStack> unitPredicate = mod ? getModFilter(filterTextUnit) : getNameFilter(filterTextUnit);
+				Predicate<ElementType> unitPredicate = mod ? getModFilter(filterTextUnit) : getNameFilter(filterTextUnit);
 				if (negate) unitPredicate = unitPredicate.negate();
 				possibilityPredicate = possibilityPredicate.and(unitPredicate);
 			}
@@ -86,17 +87,12 @@ public final class DeepPocketUtils {
 		return resultPredicate;
 	}
 
-	private static Predicate<ItemStack> getNameFilter(String itemName) {
-		return (stack)->stack.getDisplayName().getString().toLowerCase().contains(itemName);
+	private static Predicate<ElementType> getNameFilter(String itemName) {
+		return (type)->type.getDisplayName().getString().toLowerCase().contains(itemName);
 	}
 
-	private static Predicate<ItemStack> getModFilter(String modName) {
-		return (stack)->getItemMod(stack).toLowerCase().contains(modName);
-	}
-
-	private static String getItemMod(ItemStack stack) {
-		ResourceLocation key = ForgeRegistries.ITEMS.getKey(stack.getItem());
-		return key == null ? ResourceLocation.DEFAULT_NAMESPACE : key.getNamespace();
+	private static Predicate<ElementType> getModFilter(String modName) {
+		return (type)->type.getKey().getNamespace().toLowerCase().contains(modName);
 	}
 
 

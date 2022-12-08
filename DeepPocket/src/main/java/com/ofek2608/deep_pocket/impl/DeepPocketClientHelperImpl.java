@@ -3,12 +3,16 @@ package com.ofek2608.deep_pocket.impl;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
+import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
+
+import javax.annotation.Nullable;
 
 final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements DeepPocketClientHelper {
 	private final Minecraft minecraft;
@@ -63,5 +67,17 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 	@Override
 	public void renderItemAmount(PoseStack poseStack, int x, int y, ItemTypeAmount itemAmount, ItemRenderer itemRenderer, Font font) {
 		renderItemAmount(poseStack, x, y, itemAmount.getItemType().create(), itemAmount.getAmount(), itemRenderer, font);
+	}
+	
+	public void renderPocketEntry(PoseStack poseStack, int x, int y, Pocket.Entry entry, @Nullable String amount, ItemRenderer itemRenderer, Font font) {
+		if (entry.getType() instanceof ElementType.TItem item) {
+			renderItem(poseStack, x, y, item.create(), itemRenderer, font);
+		}
+		//TODO more types
+		
+		if (amount == null)
+			renderAmount(poseStack, x, y, entry.getMaxExtract(), itemRenderer, font);
+		else
+			renderAmount(poseStack, x, y, amount, itemRenderer, font);
 	}
 }

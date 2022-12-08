@@ -12,6 +12,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface Pocket {
 	UUID getPocketId();
@@ -25,6 +26,8 @@ public interface Pocket {
 	void setConversions(ElementConversions conversions);
 
 	boolean canAccess(Player player);
+	Map<ElementType,Long> getContent();
+	void insertElement(ElementType type, long count);
 	Map<ItemType,Long> getItemsMap();
 	long getItemCount(ItemType type);
 	void insertItem(ItemType type, long count);
@@ -32,6 +35,7 @@ public interface Pocket {
 	long getMaxExtract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts);
 	long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount);
 	long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
+	long extractItem(@Nullable Knowledge0 knowledge, ElementType.TItem type, long count);
 	long getMaxExtract(@Nullable Knowledge knowledge, ItemType ... items);
 	Map<UUID,CraftingPattern> getPatternsMap();
 	@Nullable CraftingPattern getPattern(UUID patternId);
@@ -43,6 +47,8 @@ public interface Pocket {
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();
+	
+	Stream<Entry> entries();
 	
 	interface Entry {
 		Pocket getPocket();
@@ -58,6 +64,7 @@ public interface Pocket {
 		Pocket getPocket();
 		boolean didChangedInfo();
 		@UnmodifiableView Map<ItemType,Long> getChangedItems();
+		@UnmodifiableView Map<ElementType,Long> getChangedElements();
 		CraftingPattern[] getAddedPatterns();
 		@UnmodifiableView Map<ItemType,Optional<UUID>> getAddedDefaultPatterns();
 		ItemType[] getRemovedDefaultPatterns();

@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
@@ -76,14 +77,13 @@ public class ActiveImporter extends Block implements EntityBlock {
 			if (targetEntity == null) return;
 			IItemHandler itemHandler = targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite()).resolve().orElse(null);
 			if (itemHandler == null) return;
-			DeepPocketServerApi api = DeepPocketServerApi.get();
 			Pocket pocket = getServerPocket();
-			if (api == null || pocket == null) return;
+			if (pocket == null) return;
 
 			int slots = itemHandler.getSlots();
 			for (int slot = 0; slot < slots; slot++) {
 				ItemStack stack = itemHandler.extractItem(slot, itemHandler.getSlotLimit(slot), false);
-				pocket.insertItem(new ItemType(stack), stack.getCount());
+				pocket.insertElement(ElementType.item(stack), stack.getCount());
 			}
 		}
 	}

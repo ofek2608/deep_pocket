@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.integration.DeepPocketCurios;
@@ -127,7 +128,7 @@ class DeepPocketCommands {
 			Pocket pocket = DeepPocketServerApi.get().getPocket(DeepPocketCurios.getPocket(player));
 			Random random = new Random();
 			for (var entry : ForgeRegistries.ITEMS.getEntries()) {
-				pocket.insertItem(new ItemType(entry.getValue()), random.nextInt(0xFFFFFF));
+				pocket.insertElement(ElementType.item(entry.getValue()), random.nextInt(0xFFFFFF));
 			}
 			return;
 		}

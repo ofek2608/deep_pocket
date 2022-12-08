@@ -1,11 +1,9 @@
 package com.ofek2608.deep_pocket.registry.pocket_screen;
 
 import com.ofek2608.deep_pocket.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.Knowledge;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -34,7 +32,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	public final Inventory playerInventory;
 	private final CraftingContainer craftSlots = new CraftingContainer(this, 3, 3);
 	private final ResultContainer resultSlots = new ResultContainer();
-	private @Nullable PocketResultSlot resultSlot;
+	private final PocketResultSlot resultSlot;
 	private @Nullable Pocket pocket;//should not use except in get and set pocket
 	public @Nullable Object screen;
 	
@@ -97,10 +95,10 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		this.pocket = pocket;
 	}
 
-	private void putStackInInventory(DeepPocketServerApi api, Pocket pocket, ItemStack stack) {
+	private void putStackInInventory(Pocket pocket, ItemStack stack) {
 		if (!stack.isEmpty()) moveItemStackTo(stack, 27, 36, false);//hotbar
 		if (!stack.isEmpty()) moveItemStackTo(stack, 0, 27, false);//inventory
-		if (!stack.isEmpty()) pocket.insertItem(new ItemType(stack), stack.getCount());
+		if (!stack.isEmpty()) pocket.insertElement(ElementType.item(stack), stack.getCount());
 	}
 
 	@Override
@@ -121,23 +119,15 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return ItemStack.EMPTY;
 		}
 
-		DeepPocketServerApi api = DeepPocketServerApi.get();
-		if (api == null) {
-			slot.setChanged();
-			return stack;
-		}
-
 		if (index < slots.size() - 1) {
 			//not the result slot
-			pocket.insertItem(new ItemType(stack), stack.getCount());
+			pocket.insertElement(ElementType.item(stack), stack.getCount());
 			slot.set(ItemStack.EMPTY);
 			slot.setChanged();
 			return ItemStack.EMPTY;
 		}
 
 		//result slot
-		if (resultSlot == null)
-			return stack;
 		ItemStack pickUp = resultSlot.safeTake(64, 64, player);
 		if (pickUp.isEmpty())
 			return ItemStack.EMPTY;
@@ -152,7 +142,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 				break;
 			pickUp.grow(taken.getCount());
 		}
-		putStackInInventory(api, pocket, pickUp);
+		putStackInInventory(pocket, pickUp);
 		return ItemStack.EMPTY;
 
 
@@ -204,19 +194,17 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	}
 
 	public void clearCraftingTable(ServerPlayer player) {
-		DeepPocketServerApi api = DeepPocketServerApi.get();
 		Pocket pocket = getPocket();
-		if (api == null || pocket == null) {
+		if (pocket == null) {
 			clearCraftingTableToInventory(player);
 			return;
 		}
 		for (int i = 0; i < craftSlots.getContainerSize(); i++) {
 			ItemStack stack = craftSlots.getItem(i);
-			pocket.insertItem(new ItemType(stack), stack.getCount());
+			pocket.insertElement(ElementType.item(stack), stack.getCount());
 			craftSlots.setItem(i, ItemStack.EMPTY);
 		}
-		if (resultSlot != null)
-			resultSlot.set(ItemStack.EMPTY);
+		resultSlot.set(ItemStack.EMPTY);
 	}
 
 	private static ItemType requestIngredientClientBound(ItemStack[] inventoryItems, @Nullable Pocket pocket, Ingredient ingredient, boolean consume) {
@@ -266,7 +254,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		for (Ingredient ingredient : ingredients) {
 			while (index % 3 >= w)
 				index++;
-			if (index >= 9)
+			if (index == 9)
 				return;
 			requesting[index] = requestIngredientClientBound(inventoryItems, pocket, ingredient, consume);
 			index++;
@@ -299,8 +287,39 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return false;
 		return pocket.extractItem(api.getKnowledge(playerInventory.player.getUUID()), type, 1) == 1;
 	}
-
-
+	
+	public void extractType(ServerPlayer player, ElementType.TItem type, boolean toCarry, byte count) {
+		DeepPocketServerApi api = DeepPocketServerApi.get();
+		Pocket pocket = getPocket();
+		if (count <= 0 || api == null || pocket == null)
+			return;
+		Knowledge0 knowledge = api.getKnowledge0(player.getUUID());
+		if (!knowledge.contains(type))
+			return;
+		int maxStack = type.create().getMaxStackSize();
+		count = (byte)Math.min(count, maxStack);
+		
+		if (!toCarry) {
+			putStackInInventory(pocket, type.create((int)pocket.extractItem(knowledge, type, count)));
+			return;
+		}
+		
+		ItemStack carriedStack = getCarried();
+		if (!carriedStack.isEmpty() && !type.is(carriedStack))
+			return;
+		
+		int currentCount = carriedStack.isEmpty() ? 0 : carriedStack.getCount();
+		int extractRequestCount = Math.min(maxStack - currentCount, count);
+		if (extractRequestCount <= 0)
+			return;
+		
+		ItemStack extracted = type.create((int)pocket.extractItem(api.getKnowledge0(player.getUUID()), type, extractRequestCount));
+		if (extracted.isEmpty())
+			return;
+		setCarried(type.create(currentCount + extracted.getCount()));
+	}
+	
+	
 	public void requestRecipeServerBound(ServerPlayer player, ItemType[] types) {
 		clearCraftingTable(player);
 
@@ -320,42 +339,14 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return;
 		if (count <= 0 || carried.getCount() <= count) {
 			//insert all
-			pocket.insertItem(new ItemType(carried), carried.getCount());
+			pocket.insertElement(ElementType.item(carried), carried.getCount());
 			setCarried(ItemStack.EMPTY);
 			return;
 		}
 
-		pocket.insertItem(new ItemType(carried), count);
+		pocket.insertElement(ElementType.item(carried), count);
 		carried.shrink(count);
 		setCarried(carried);
-	}
-
-	public void extractType(ServerPlayer player, ItemType type, boolean toCarry, byte count) {
-		DeepPocketServerApi api = DeepPocketServerApi.get();
-		Pocket pocket = getPocket();
-		if (count <= 0 || api == null || pocket == null || !api.getKnowledge(player.getUUID()).contains(type))
-			return;
-		int maxStack = type.create().getMaxStackSize();
-		count = (byte)Math.min(count, maxStack);
-
-		if (!toCarry) {
-			putStackInInventory(api, pocket, type.create((int)pocket.extractItem(api.getKnowledge(player.getUUID()), type, count)));
-			return;
-		}
-
-		ItemStack carriedStack = getCarried();
-		if (!carriedStack.isEmpty() && !new ItemType(carriedStack).equals(type))
-			return;
-
-		int currentCount = carriedStack.isEmpty() ? 0 : carriedStack.getCount();
-		int extractRequestCount = Math.min(maxStack - currentCount, count);
-		if (extractRequestCount <= 0)
-			return;
-
-		ItemStack extracted = type.create((int)pocket.extractItem(api.getKnowledge(player.getUUID()), type, extractRequestCount));
-		if (extracted.isEmpty())
-			return;
-		setCarried(type.create(currentCount + extracted.getCount()));
 	}
 
 	public void createPattern(ServerPlayer player, ItemTypeAmount[] input, ItemTypeAmount[] output, boolean toCarry) {
@@ -379,7 +370,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		if (toCarry)
 			setCarried(newPattern);
 		else
-			putStackInInventory(api, pocket, newPattern);
+			putStackInInventory(pocket, newPattern);
 
 	}
 
@@ -413,11 +404,10 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return;
 		for (ItemType type : getCrafting())
 			pocket.extractItem(knowledge, type, count);
-		pocket.insertItem(new ItemType(result), DeepPocketUtils.advancedMul(result.getCount(), count));
+		pocket.insertElement(ElementType.item(result), DeepPocketUtils.advancedMul(result.getCount(), count));
 		for (ItemStack remainingItem : remainingItems)
-			pocket.insertItem(new ItemType(remainingItem), DeepPocketUtils.advancedMul(remainingItem.getCount(), count));
+			pocket.insertElement(ElementType.item(remainingItem), DeepPocketUtils.advancedMul(remainingItem.getCount(), count));
 
-		if (resultSlot != null)
-			resultSlot.checkTakeAchievements(result);
+		resultSlot.checkTakeAchievements(result);
 	}
 }

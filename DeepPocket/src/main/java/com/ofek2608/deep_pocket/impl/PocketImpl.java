@@ -4,6 +4,7 @@ import com.ofek2608.collections.CaptureMap;
 import com.ofek2608.collections.CaptureReference;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.Knowledge;
+import com.ofek2608.deep_pocket.api.Knowledge0;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.UnmodifiableView;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.stream.Stream;
 
 final class PocketImpl implements Pocket {
 	@Nonnull private final ItemConversions conversions;
@@ -76,6 +78,35 @@ final class PocketImpl implements Pocket {
 		return pocketInfo.get().securityMode.canAccess(player, getOwner());
 	}
 
+	@Override
+	public PocketContent getContent() {
+		return content;
+	}
+	
+	@Override
+	public void insertElement(ElementType type, long count) {
+		if (type.isEmpty() || count == 0)
+			return;
+		long[] valueCount = conversions0.getValue(type);
+		
+		if (valueCount == null) {
+			content.put(type, DeepPocketUtils.advancedSum(content.get(type), count));
+			return;
+		}
+		
+		for (int i = 0; i < valueCount.length; i++) {
+			ElementType.TConvertible convertible = conversions0.getBaseElement(i);
+			content.put(
+					convertible,
+					DeepPocketUtils.advancedSum(content.get(convertible), DeepPocketUtils.advancedMul(count, valueCount[i]))
+			);
+		}
+	}
+	
+	
+	
+	
+	
 	@Override
 	public Map<ItemType,Long> getItemsMap() {
 		return items;
@@ -180,7 +211,14 @@ final class PocketImpl implements Pocket {
 	public long extractItem(@Nullable Knowledge knowledge, ItemType type, long count) {
 		return extract(knowledge, Map.of(type, 1L), count);
 	}
-
+	
+	@Override
+	public long extractItem(@Nullable Knowledge0 knowledge, ElementType.TItem type, long count) {
+		if (knowledge != null && !knowledge.contains(type))
+			return 0;
+		return new EntryImpl(type).extract(count);
+	}
+	
 	@Override
 	public long getMaxExtract(@Nullable Knowledge knowledge, ItemType ... items) {
 		Map<ItemType,Long> itemsMap = new HashMap<>();
@@ -243,9 +281,15 @@ final class PocketImpl implements Pocket {
 	public PocketImpl copy() {
 		return new PocketImpl(this);
 	}
-
 	
-	
+	@Override
+	public Stream<Entry> entries() {
+		return Stream.concat(
+				content.keySet().stream().filter(type->!conversions0.hasValue(type)),
+				conversions0.getKeys().stream()
+		).map(EntryImpl::new);
+		//TODO add craft-able
+	}
 	
 	
 	private final class EntryImpl implements Entry {
@@ -283,22 +327,7 @@ final class PocketImpl implements Pocket {
 		
 		@Override
 		public void insert(long amount) {
-			if (amount == 0)
-				return;
-			long[] valueCount = conversions0.getValue(type);
-			
-			if (valueCount == null) {
-				content.put(type, DeepPocketUtils.advancedSum(content.get(type), amount));
-				return;
-			}
-			
-			for (int i = 0; i < valueCount.length; i++) {
-				ElementType.TConvertible convertible = conversions0.getBaseElement(i);
-				content.put(
-						convertible,
-						DeepPocketUtils.advancedSum(content.get(convertible), DeepPocketUtils.advancedMul(amount, valueCount[i]))
-				);
-			}
+			insertElement(type, amount);
 		}
 		
 		@Override
@@ -337,6 +366,7 @@ final class PocketImpl implements Pocket {
 	private final class SnapshotImpl implements Snapshot {
 		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
 		private final CaptureMap<ItemType,Long>.Snapshot itemsSnapshot = items.createSnapshot();
+		private final CaptureMap<ElementType,Long>.Snapshot contentSnapshot = content.createSnapshot();
 		private final CaptureMap<UUID,CraftingPattern>.Snapshot patternsSnapshot = patterns.createSnapshot();
 		private final CaptureMap<ItemType,Optional<UUID>>.Snapshot defaultPatternsSnapshot = defaultPatterns.createSnapshot();
 
@@ -354,7 +384,12 @@ final class PocketImpl implements Pocket {
 		public @UnmodifiableView Map<ItemType,Long> getChangedItems() {
 			return itemsSnapshot.getChangedAsMap();
 		}
-
+		
+		@Override
+		public @UnmodifiableView Map<ElementType, Long> getChangedElements() {
+			return contentSnapshot.getChangedAsMap();
+		}
+		
 		@Override
 		public CraftingPattern[] getAddedPatterns() {
 			return patternsSnapshot.getAddedValues().toArray(CraftingPattern[]::new);

@@ -45,6 +45,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	private final MinecraftServer server;
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
 	private final Map<UUID, Knowledge.Snapshot> knowledge = new HashMap<>();
+	private final Map<UUID, Knowledge0.Snapshot> knowledge0 = new HashMap<>();
 
 	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions) {
 		super(helper);
@@ -348,6 +349,11 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		return knowledge.computeIfAbsent(playerId, id->helper.createKnowledge(conversions).createSnapshot()).getKnowledge();
 	}
 
+	@Override
+	public Knowledge0 getKnowledge0(UUID playerId) {
+		return knowledge0.computeIfAbsent(playerId, id->helper.createKnowledge(conversions0).createSnapshot()).getKnowledge();
+	}
+
 	private void open(ServerPlayer player, UUID pocketId, Function<Pocket, MenuConstructor> menu) {
 		Pocket pocket = getPocket(pocketId);
 		if (pocket == null)
@@ -610,9 +616,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			UUID pocketId = snapshot.getPocket().getPocketId();
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
 			//Changed items
-			Map<ItemType,Long> changedItems = snapshot.getChangedItems();
+			Map<ElementType,Long> changedItems = snapshot.getChangedElements();
 			if (!changedItems.isEmpty())
-				DeepPocketPacketHandler.cbPocketSetItemCount(packetTarget, pocketId, changedItems);
+				DeepPocketPacketHandler.cbPocketSetElementCount(packetTarget, pocketId, changedItems);
 			//Update patterns
 			CraftingPattern[] addedPatterns = snapshot.getAddedPatterns();
 			UUID[] removedPatterns = snapshot.getRemovedPatterns();
@@ -631,7 +637,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			Pocket.Snapshot pocketSnapshot = entry.getKey();
 			Pocket pocket = pocketSnapshot.getPocket();
 			UUID pocketId = pocket.getPocketId();
-			DeepPocketPacketHandler.cbPocketClearItems(packetTarget, pocketId);
+			DeepPocketPacketHandler.cbPocketClearElements(packetTarget, pocketId);
 			UUID[] patternsToRemove = Stream.concat(
 							pocket.getPatternsMap().keySet().stream(),
 							Stream.of(pocketSnapshot.getRemovedPatterns())
@@ -650,7 +656,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
 			Pocket pocket = entry.getKey();
 			UUID pocketId = pocket.getPocketId();
-			DeepPocketPacketHandler.cbPocketSetItemCount(packetTarget, pocketId, pocket.getItemsMap());
+			DeepPocketPacketHandler.cbPocketSetElementCount(packetTarget, pocketId, pocket.getContent());
 			CraftingPattern[] patterns = pocket.getPatternsMap().values().toArray(CraftingPattern[]::new);
 			if (patterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns, new UUID[0]);

@@ -30,4 +30,5 @@ public interface DeepPocketClientApi extends DeepPocketApi {
 
 	Knowledge getKnowledge();
 	Stream<ItemTypeAmount> getSortedKnowledge(Pocket pocket);
+	Stream<Pocket.Entry> getSortedKnowledge0(Pocket pocket);
 }

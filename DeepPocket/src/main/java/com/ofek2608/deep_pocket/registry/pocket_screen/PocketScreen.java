@@ -11,6 +11,7 @@ import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.client.widget.*;
@@ -74,13 +75,14 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.setFocused(null);
 	}
 	
-	private Predicate<ItemType> createFilter() {
-		Predicate<ItemStack> searchFilter = DeepPocketUtils.createFilter(searchWidget.getValue());
-		return type->searchFilter.test(type.create());
-	}
-	
-	private void clearPattern() {
-		patternWidget.clearPattern();
+	private Predicate<Pocket.Entry> createFilter() {
+		Predicate<ElementType> searchFilter = DeepPocketUtils.createFilter(searchWidget.getValue());
+		return entry -> {
+			ElementType type = entry.getType();
+			return (type instanceof ElementType.TItem ||
+					type instanceof ElementType.TFluid
+			) && searchFilter.test(type);
+		};
 	}
 
 	public void setPattern(ItemType[] input, ItemStack output) {
@@ -380,8 +382,9 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		
 		menu.setHoverSlotIndex(hoverSlotIndex, my - topPos);
 		
-		if (pocketWidget.getLastHoveredType() != null) {
-			hoveredSlot = new FakeConstantSlot(pocketWidget.getLastHoveredType().getItemType().create(), mx - 8, my - 8);
+		ItemStack hoveredItem = pocketWidget.getHoveredItem();
+		if (!hoveredItem.isEmpty()) {
+			hoveredSlot = new FakeConstantSlot(hoveredItem, mx - 8, my - 8);
 		}
 	}
 

@@ -8,8 +8,7 @@ import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import net.minecraft.client.Minecraft;
@@ -25,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fluids.FluidStack;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -40,18 +40,18 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 	public int height;
 	public float scroll;
 	public Supplier<Pocket> pocketSupplier;
-	public Supplier<Predicate<ItemType>> filterSupplier;
+	public Supplier<Predicate<Pocket.Entry>> filterSupplier;
 	
 	private int maxScroll;
 	private boolean holdCraft;
 	private boolean holdScroll;
 	private boolean hoverScroll;
 	private boolean insideContainer;
-	private @Nullable ItemTypeAmount lastHoveredType;
+	private @Nullable Pocket.Entry hoveredEntry;
 	
 	
 	public PocketWidget(AbstractContainerScreen<?> screen, int offX, int offY, int height,
-	                    Supplier<Pocket> pocketSupplier, Supplier<Predicate<ItemType>> filterSupplier) {
+	                    Supplier<Pocket> pocketSupplier, Supplier<Predicate<Pocket.Entry>> filterSupplier) {
 		this.screen = screen;
 		this.offX = offX;
 		this.offY = offY;
@@ -64,18 +64,18 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
 		poseStack.pushPose();
 		
-		lastHoveredType = null;
+		hoveredEntry = null;
 		hoverScroll = false;
 		if (height <= 0)
 			return;
 		Pocket pocket = pocketSupplier.get();
-		Predicate<ItemType> filter = filterSupplier.get();
+		Predicate<Pocket.Entry> filter = filterSupplier.get();
 		if (pocket == null || filter == null)
 			return;
 		
-		List<ItemTypeAmount> types = DeepPocketClientApi.get()
-				.getSortedKnowledge(pocket)
-				.filter(itemTypeAmount -> filter.test(itemTypeAmount.getItemType()))
+		List<Pocket.Entry> types = DeepPocketClientApi.get()
+				.getSortedKnowledge0(pocket)
+				.filter(filter)
 				.toList();
 		
 		mx -= offX;
@@ -92,7 +92,7 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 			int hoverSlotY = (int)(my + scroll) / 16;
 			hoverSlotIndex = hoverSlotX + 9 * hoverSlotY;
 		}
-		lastHoveredType = 0 <= hoverSlotIndex && hoverSlotIndex < types.size() ? types.get(hoverSlotIndex) : null;
+		hoveredEntry = 0 <= hoverSlotIndex && hoverSlotIndex < types.size() ? types.get(hoverSlotIndex) : null;
 		
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);
@@ -114,41 +114,41 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 		
 		GuiComponent.disableScissor();
 		
-		if (lastHoveredType != null && !lastHoveredType.isEmpty())
-			screen.renderTooltip(poseStack, lastHoveredType.getItemType().create(), offX + mx, offY + my);
+		if (hoveredEntry != null) {
+			if (hoveredEntry.getType() instanceof ElementType.TItem item)
+				screen.renderTooltip(poseStack, item.create(), offX + mx, offY + my);
+			else
+				screen.renderTooltip(poseStack, hoveredEntry.getType().getDisplayName(), offX + mx, offY + my);
+		}
 	}
 	
-	private void blitSlotRange(PoseStack poseStack, List<ItemTypeAmount> types, int offX, int offY, int firstRow, int lastRow, int hoverIndex) {
+	private void blitSlotRange(PoseStack poseStack, List<Pocket.Entry> entries, int offX, int offY, int firstRow, int lastRow, int hoverIndex) {
 		int slotIndex = firstRow * 9;
 		for (int slotY = firstRow; slotY <= lastRow; slotY++) {
 			for (int slotX = 0; slotX < 9; slotX++) {
-				blitSlot(poseStack, slotX * 16 + offX, slotY * 16 + offY, getSlotType(types, slotIndex), slotIndex == hoverIndex);
+				blitSlot(poseStack, slotX * 16 + offX, slotY * 16 + offY, getSlotType(entries, slotIndex), slotIndex == hoverIndex);
 				slotIndex++;
 			}
 		}
 	}
 	
-	private SlotType getSlotType(List<ItemTypeAmount> types, int index) {
-		if (index < 0 || types.size() <= index)
+	private SlotType getSlotType(List<Pocket.Entry> entries, int index) {
+		if (index < 0 || entries.size() <= index)
 			return SlotType.OUTSIDE;
-		Pocket pocket = pocketSupplier.get();
-		ItemTypeAmount type = types.get(index);
-		if (DeepPocketClientApi.get().getItemConversions().hasValue(type.getItemType()))
+		Pocket.Entry entry = entries.get(index);
+		if (entry.canBeConverted())
 			return SlotType.CONVERT;
-		if (pocket != null && isCrafting(pocket, type, holdCraft))
+		if (entry.canBeCrafted())
 			return SlotType.CRAFT;
 		return SlotType.NORMAL;
 	}
 	
-	private void renderTypeRange(PoseStack poseStack, List<ItemTypeAmount> types, int offX, int offY, int firstRow, int lastRow) {
-		Pocket pocket = pocketSupplier.get();
-		if (pocket == null)
-			return;
+	private void renderTypeRange(PoseStack poseStack, List<Pocket.Entry> entries, int offX, int offY, int firstRow, int lastRow) {
 		int slotIndex = firstRow * 9;
 		for (int slotY = firstRow; slotY <= lastRow; slotY++) {
 			for (int slotX = 0; slotX < 9; slotX++) {
-				if (0 <= slotIndex && slotIndex < types.size())
-					renderType(pocket, poseStack, slotX * 16 + offX, slotY * 16 + offY, types.get(slotIndex), holdCraft);
+				if (0 <= slotIndex && slotIndex < entries.size())
+					renderType(poseStack, slotX * 16 + offX, slotY * 16 + offY, entries.get(slotIndex), holdCraft);
 				slotIndex++;
 			}
 		}
@@ -193,23 +193,25 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 	}
 	
 	private static void renderType(
-			Pocket pocket, PoseStack poseStack,
+			PoseStack poseStack,
 			int offX, int offY,
-			ItemTypeAmount type, boolean holdCraft
+			Pocket.Entry entry, boolean holdCraft
 	) {
 		Minecraft minecraft = Minecraft.getInstance();
 		ItemRenderer itemRenderer = minecraft.getItemRenderer();
 		Font font = minecraft.font;
 		
-		dpClientHelper.renderItem(poseStack, offX, offY, type.getItemType().create(), itemRenderer, font);
-		if (isCrafting(pocket, type, holdCraft))
-			dpClientHelper.renderAmount(poseStack, offX, offY, "craft", itemRenderer, font);
-		else
-			dpClientHelper.renderAmount(poseStack, offX, offY, type.getAmount(), itemRenderer, font);
+		dpClientHelper.renderPocketEntry(
+				poseStack,
+				offX, offY,
+				entry,
+				isCrafting(entry, holdCraft) ? "craft" : null,
+				itemRenderer, font
+		);
 	}
 	
-	private static boolean isCrafting(Pocket pocket, ItemTypeAmount typeAmount, boolean holdCraft) {
-		return dpClientHelper.getCraftableItems(pocket).anyMatch(typeAmount.getItemType()::equals) && (holdCraft || typeAmount.getAmount() == 0);
+	private static boolean isCrafting(Pocket.Entry entry, boolean holdCraft) {
+		return entry.canBeCrafted() && (holdCraft || entry.getMaxExtract() == 0);
 	}
 	
 	
@@ -243,8 +245,8 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 		if (pocket == null)
 			return false;
 		
-		ItemType clickedType = lastHoveredType == null ? null : lastHoveredType.getItemType();
-		if (clickedType != null && !clickedType.isEmpty() && isCrafting(pocket, lastHoveredType, holdCraft)) {
+		ElementType clickedType = hoveredEntry == null ? null : hoveredEntry.getType();
+		if (hoveredEntry != null && isCrafting(hoveredEntry, holdCraft)) {
 			ClientScreens.selectNumber(Component.literal("Request Crafting"), pocket.getColor(), 0L, selectedAmount->{
 				Minecraft.getInstance().setScreen(screen);
 				if (selectedAmount != 0)
@@ -258,13 +260,13 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 		ItemStack carried = menu.getCarried();
 		if (holdCraft)
 			return true;
-		if (clickedType != null && (carried.isEmpty() || clickedType.is(carried))) {
+		if (clickedType instanceof ElementType.TItem clickedItem && (carried.isEmpty() || clickedItem.is(carried))) {
 			byte count = switch (button) {
 				case InputConstants.MOUSE_BUTTON_LEFT -> (byte) 64;
 				default -> (byte) 1;
 				case InputConstants.MOUSE_BUTTON_RIGHT -> (byte) 32;
 			};
-			DeepPocketPacketHandler.sbPocketExtract(clickedType, !Screen.hasShiftDown(), count);
+			DeepPocketPacketHandler.sbPocketExtract(clickedItem, !Screen.hasShiftDown(), count);
 			return true;
 		}
 		byte count = switch (button) {
@@ -291,8 +293,12 @@ public class PocketWidget implements Widget, GuiEventListener, NonNarratableEntr
 		return true;
 	}
 	
-	public @Nullable ItemTypeAmount getLastHoveredType() {
-		return lastHoveredType;
+	public ItemStack getHoveredItem() {
+		return hoveredEntry != null && hoveredEntry.getType() instanceof ElementType.TItem item ? item.create() : ItemStack.EMPTY;
+	}
+	
+	public FluidStack getHoveredFluid() {
+		return hoveredEntry != null && hoveredEntry.getType() instanceof ElementType.TFluid fluid ? fluid.create(1000) : FluidStack.EMPTY;
 	}
 	
 	private enum SlotType {

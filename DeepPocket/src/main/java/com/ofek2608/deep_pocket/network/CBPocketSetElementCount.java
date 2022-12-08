@@ -1,26 +1,31 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.Pocket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-class CBPocketClearItems {
+class CBPocketSetElementCount {
 	private final UUID pocketId;
+	private final Map<ElementType, Long> counts;
 
-	CBPocketClearItems(UUID pocketId) {
+	CBPocketSetElementCount(UUID pocketId, Map<ElementType, Long> counts) {
 		this.pocketId = pocketId;
+		this.counts = counts;
 	}
 
-	CBPocketClearItems(FriendlyByteBuf buf) {
-		this(buf.readUUID());
+	CBPocketSetElementCount(FriendlyByteBuf buf) {
+		this(buf.readUUID(), DPPacketUtils.decodeElementTypeMap(buf, FriendlyByteBuf::readLong));
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
+		DPPacketUtils.encodeElementTypeMap(buf, counts, FriendlyByteBuf::writeLong);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
@@ -28,7 +33,7 @@ class CBPocketClearItems {
 			DeepPocketClientApi api = DeepPocketClientApi.get();
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket != null)
-				pocket.getItemsMap().clear();
+				counts.forEach(pocket.getContent()::put);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

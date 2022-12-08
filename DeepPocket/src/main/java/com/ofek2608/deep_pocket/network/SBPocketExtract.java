@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.network;
 
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import net.minecraft.network.FriendlyByteBuf;
@@ -9,22 +10,22 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 class SBPocketExtract {
-	private final ItemType type;
+	private final ElementType.TItem type;
 	private final boolean toCarry;
 	private final byte count;
 
-	SBPocketExtract(ItemType type, boolean toCarry, byte count) {
+	SBPocketExtract(ElementType.TItem type, boolean toCarry, byte count) {
 		this.type = type;
 		this.toCarry = toCarry;
 		this.count = count;
 	}
 
 	SBPocketExtract(FriendlyByteBuf buf) {
-		this(ItemType.decode(buf), buf.readBoolean(), buf.readByte());
+		this((ElementType.TItem)ElementType.decode(buf), buf.readBoolean(), buf.readByte());
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		ItemType.encode(buf, type);
+		ElementType.encode(buf, type);
 		buf.writeBoolean(toCarry);
 		buf.writeByte(count);
 	}

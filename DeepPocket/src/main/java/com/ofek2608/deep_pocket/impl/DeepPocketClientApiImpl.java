@@ -13,6 +13,7 @@ import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import net.minecraftforge.common.MinecraftForge;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -70,4 +71,13 @@ final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHe
 						.map(entry->new ItemTypeAmount(entry.getKey(), entry.getValue()))
 						.sorted(comparator);
 	}
+	
+	@Override
+	public Stream<Pocket.Entry> getSortedKnowledge0(Pocket pocket) {
+		Comparator<Pocket.Entry> comparator = getSortingOrder();
+		if (!isSortAscending())
+			comparator = comparator.reversed();
+		return pocket.entries().sorted(comparator);
+	}
+	
 }

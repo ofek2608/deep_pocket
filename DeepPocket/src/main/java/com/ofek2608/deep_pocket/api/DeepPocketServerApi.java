@@ -15,6 +15,7 @@ public interface DeepPocketServerApi extends DeepPocketApi {
 
 	@UnmodifiableView Set<UUID> getViewedPockets(ServerPlayer player);
 	Knowledge getKnowledge(UUID playerId);
+	Knowledge0 getKnowledge0(UUID playerId);
 
 	void openPocket(ServerPlayer player, UUID pocketId);
 	void openProcesses(ServerPlayer player, UUID pocketId);

@@ -5,6 +5,7 @@ import net.minecraft.ResourceLocationException;
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -260,6 +261,11 @@ public sealed abstract class ElementType {
 	 */
 	public abstract ResourceLocation getKey();
 	
+	/**
+	 * @return the display name of this ElementType
+	 */
+	public abstract Component getDisplayName();
+	
 	
 	/**
 	 * An abstract representation of an element type with tag.
@@ -268,7 +274,7 @@ public sealed abstract class ElementType {
 	 * @see ElementType.TUnknown
 	 */
 	public static sealed abstract class TaggedType extends ElementType {
-		private final @Nullable CompoundTag tag;
+		protected final @Nullable CompoundTag tag;
 		
 		protected TaggedType(@Nullable CompoundTag tag) {
 			this.tag = tag;
@@ -340,6 +346,11 @@ public sealed abstract class ElementType {
 		public ResourceLocation getKey() {
 			return KEY;
 		}
+		
+		@Override
+		public Component getDisplayName() {
+			return Component.empty();
+		}
 	}
 	
 	/**
@@ -377,6 +388,11 @@ public sealed abstract class ElementType {
 		@Override
 		public ResourceLocation getKey() {
 			return KEY;
+		}
+		
+		@Override
+		public Component getDisplayName() {
+			return Component.empty();
 		}
 	}
 	
@@ -421,6 +437,11 @@ public sealed abstract class ElementType {
 		@Override
 		public ResourceLocation getKey() {
 			return key;
+		}
+		
+		@Override
+		public Component getDisplayName() {
+			return Component.translatable("deep_pocket_convertible." + key.getNamespace() + "." + key.getPath());
 		}
 	}
 	
@@ -470,6 +491,11 @@ public sealed abstract class ElementType {
 		@Override
 		public ResourceLocation getKey() {
 			return key;
+		}
+		
+		@Override
+		public Component getDisplayName() {
+			return Component.literal(type + ";" + key);
 		}
 	}
 	
@@ -527,6 +553,41 @@ public sealed abstract class ElementType {
 		public ResourceLocation getKey() {
 			return Objects.requireNonNull(ForgeRegistries.ITEMS.getKey(item));
 		}
+		
+		/**
+		 * Creates a new ItemStack which correspond to this ElementType
+		 * @param count the count of the items in the stack
+		 * @return the new ItemStack
+		 */
+		public ItemStack create(int count) {
+			ItemStack result = new ItemStack(item, count);
+			result.setTag(getTag());
+			return result;
+		}
+		
+		/**
+		 * Creates a new ItemStack which correspond to this ElementType
+		 * @return the new ItemStack
+		 */
+		public ItemStack create() {
+			return create(1);
+		}
+		
+		/**
+		 * @param stack an item stack
+		 * @return true if the stack is the same as this.
+		 */
+		public boolean is(ItemStack stack) {
+			return stack.is(item) && Objects.equals(stack.getTag(), tag);
+		}
+		
+		/**
+		 * @see ElementType#getDisplayName()
+		 */
+		@Override
+		public Component getDisplayName() {
+			return create().getDisplayName();
+		}
 	}
 	
 	/**
@@ -580,6 +641,41 @@ public sealed abstract class ElementType {
 		@Override
 		public ResourceLocation getKey() {
 			return Objects.requireNonNull(ForgeRegistries.FLUIDS.getKey(fluid));
+		}
+		
+		/**
+		 * Creates a new FluidStack which correspond to this ElementType
+		 * @param amount the amount of fluid in the stack
+		 * @return the new FluidStack
+		 */
+		public FluidStack create(int amount) {
+			FluidStack result = new FluidStack(fluid, amount);
+			result.setTag(getTag());
+			return result;
+		}
+		
+		/**
+		 * Creates a new FluidStack which correspond to this ElementType
+		 * @return the new FluidStack
+		 */
+		public FluidStack create() {
+			return create(1);
+		}
+		
+		/**
+		 * @param stack an item stack
+		 * @return true if the stack is the same as this.
+		 */
+		public boolean is(FluidStack stack) {
+			return stack.getRawFluid() == fluid && Objects.equals(stack.getTag(), tag);
+		}
+		
+		/**
+		 * @see ElementType#getDisplayName()
+		 */
+		@Override
+		public Component getDisplayName() {
+			return create().getDisplayName();
 		}
 	}
 }

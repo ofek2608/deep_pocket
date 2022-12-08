@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.registry.pocket_screen;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.Pocket;
 import net.minecraft.core.NonNullList;
@@ -45,7 +46,7 @@ public class PocketResultSlot extends ResultSlot {
 			ItemStack newItem = remainingItems.get(i);
 
 			if (oldItem.isEmpty()) {
-				pocket.insertItem(new ItemType(newItem), newItem.getCount());
+				pocket.insertElement(ElementType.item(newItem), newItem.getCount());
 				continue;
 			}
 
@@ -60,7 +61,7 @@ public class PocketResultSlot extends ResultSlot {
 				this.craftSlots.setItem(i, newItem);
 				continue;
 			}
-			pocket.insertItem(new ItemType(newItem), newItem.getCount());
+			pocket.insertElement(ElementType.item(newItem), newItem.getCount());
 		}
 		menu.reloadCrafting();
 	}

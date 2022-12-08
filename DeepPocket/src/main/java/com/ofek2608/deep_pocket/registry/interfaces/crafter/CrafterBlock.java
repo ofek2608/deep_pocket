@@ -5,10 +5,7 @@ import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
-import com.ofek2608.deep_pocket.api.struct.CrafterContext;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
-import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
+import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.ProtoMenu;
@@ -393,9 +390,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 		}
 
 		private void insertPocket(Pocket pocket, long times, ItemStack stack) {
-			if (stack.isEmpty())
-				return;
-			pocket.insertItem(new ItemType(stack), DeepPocketUtils.advancedMul(times, stack.getCount()));
+			pocket.insertElement(ElementType.item(stack), DeepPocketUtils.advancedMul(times, stack.getCount()));
 		}
 
 		private boolean executeAdvanced(ProvidedResources resources, long[] requirements, IItemHandler handler, PocketProcessRecipe pocketProcessRecipe) {

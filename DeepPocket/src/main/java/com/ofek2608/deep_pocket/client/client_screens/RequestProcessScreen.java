@@ -7,10 +7,7 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
-import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
+import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
 import net.minecraft.ChatFormatting;
@@ -59,11 +56,11 @@ class RequestProcessScreen extends Screen {
 	private final Map<ItemType, Optional<CraftingPattern>> selectedPatterns = new HashMap<>();
 
 
-	RequestProcessScreen(@Nullable Screen backScreen, Pocket pocket, ItemType requestedType, long requestedAmount) {
+	RequestProcessScreen(@Nullable Screen backScreen, Pocket pocket, ElementType requestedType, long requestedAmount) {
 		super(Component.empty());
 		this.backScreen = backScreen;
 		this.pocket = pocket;
-		this.requestedType = requestedType;
+		this.requestedType = requestedType instanceof ElementType.TItem item ? new ItemType(item.create()) : ItemType.EMPTY;
 		this.requestedAmount = requestedAmount;
 	}
 
