@@ -3,7 +3,6 @@ package com.ofek2608.deep_pocket.client.widget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.gui.screens.Screen;
@@ -61,5 +60,16 @@ public class PocketSearchWidget extends SearchWidget {
 	@Override
 	public boolean mouseScrolled(double mx, double my, double delta) {
 		return pocketWidget.mouseScrolled(mx, my, delta);
+	}
+	
+	@Override
+	public void mouseMoved(double mx, double my) {
+		pocketWidget.mouseMoved(mx, my);
+	}
+	
+	
+	@Override
+	public boolean mouseReleased(double mx, double my, int button) {
+		return pocketWidget.mouseReleased(mx, my, button);
 	}
 }

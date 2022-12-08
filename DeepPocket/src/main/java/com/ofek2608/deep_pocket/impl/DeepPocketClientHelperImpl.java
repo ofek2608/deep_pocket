@@ -99,6 +99,8 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 	
 	@Override
 	public void renderElementTypeStack(PoseStack poseStack, int x, int y, ElementTypeStack stack, ItemRenderer itemRenderer, Font font) {
+		if (stack.isEmpty())
+			return;
 		renderElementType(poseStack, x, y, stack.getType(), itemRenderer, font);
 		renderAmount(poseStack, x, y, stack.getCount(), itemRenderer, font);
 	}

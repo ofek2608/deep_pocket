@@ -30,7 +30,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
-import java.util.function.Predicate;
 
 public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/pocket.png");
@@ -65,11 +64,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		});
 		
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
-	}
-	
-	@Override
-	protected void init() {
-		super.init();
 	}
 	
 	@Override
@@ -157,9 +151,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		my -= topPos;
 		if (5 <= mx && mx <= 14) {
 			if (5 <= my && my <= 14) return 0;
-			if (19 <= my && my <= 28) return 1;
-			if (29 <= my && my <= 38) return 2;
-			if (39 <= my && my <= 48) return 3;
 			if (49 <= my && my <= 58) return 4;
 		}
 		my -= 23 + rowCount * 16;
@@ -258,9 +249,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void renderHoverAbles(PoseStack poseStack) {
 		{ //Render: Buttons
 			getSettingsButton(hoverButton == 0).blit(poseStack, leftPos + 5, topPos + 5);
-			getSearchModeButton(hoverButton == 1).blit(poseStack, leftPos + 5, topPos + 19);
-			getSortingOrderButton(hoverButton == 2).blit(poseStack, leftPos + 5, topPos + 29);
-			getSortAscendingButton(hoverButton == 3).blit(poseStack, leftPos + 5, topPos + 39);
 			getDisplayAscendingButton(hoverButton == 4).blit(poseStack, leftPos + 5, topPos + 49);
 			if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
 				getClearUButton(hoverButton == 5).blit(poseStack, leftPos + 19, topPos + 23 + 16 * rowCount);
@@ -345,9 +333,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private void renderButtonTooltip(PoseStack poseStack, int x, int y) {
 		Component text = switch (hoverButton) {
 			case 0 -> Component.literal("Settings");
-			case 1 -> Component.literal("Search Mode: ").append(Component.literal(DeepPocketClientHelper.get().getSearchMode().displayName).withStyle(ChatFormatting.AQUA));
-			case 2 -> Component.literal("Sort: ").append(Component.literal(DeepPocketClientHelper.get().getSortingOrder().displayName).withStyle(ChatFormatting.AQUA));
-			case 3 -> Component.literal("Sort Direction: ").append(Component.literal(DeepPocketClientHelper.get().isSortAscending() ? "Ascending" : "Descending").withStyle(ChatFormatting.AQUA));
 			case 4 -> Component.literal("Display Mode: ").append(Component.literal(DeepPocketClientHelper.get().getPocketDisplayMode().displayName).withStyle(ChatFormatting.AQUA));
 			case 5 -> Component.literal("Clear To Pocket");
 			case 6 -> Component.literal("Clear To Inventory");
@@ -404,9 +389,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 				if (pocket != null && pocket.getOwner().equals(menu.playerInventory.player.getUUID()))
 					ClientScreens.settingsEdit(pocket);
 			}
-			case 1 -> toggleSearchMode();
-			case 2 -> toggleSortingOrder();
-			case 3 -> toggleSortAscending();
 			case 4 -> toggleDisplayCrafting();
 			case 5 -> DeepPocketPacketHandler.sbClearCraftingGrid(true);
 			case 6 -> DeepPocketPacketHandler.sbClearCraftingGrid(false);
@@ -471,30 +453,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	@Override
 	public boolean charTyped(char codePoint, int modifiers) {
 		return super.charTyped(codePoint, modifiers);
-	}
-
-	private static Sprites getSearchModeButton(boolean hover) {
-		return switch (DeepPocketClientHelper.get().getSearchMode()) {
-			case NORMAL -> hover ? Sprites.SEARCH_MODE_0H : Sprites.SEARCH_MODE_0N;
-			case SYNC_JEI -> hover ? Sprites.SEARCH_MODE_1H : Sprites.SEARCH_MODE_1N;
-			case SYNC_FROM_JEI -> hover ? Sprites.SEARCH_MODE_2H : Sprites.SEARCH_MODE_2N;
-			case SYNC_TO_JEI -> hover ? Sprites.SEARCH_MODE_3H : Sprites.SEARCH_MODE_3N;
-		};
-	}
-
-	private static Sprites getSortingOrderButton(boolean hover) {
-		return switch (DeepPocketClientHelper.get().getSortingOrder()) {
-			case COUNT -> hover ? Sprites.SORTING_ORDER_0H : Sprites.SORTING_ORDER_0N;
-			case ID -> hover ? Sprites.SORTING_ORDER_1H : Sprites.SORTING_ORDER_1N;
-			case NAME -> hover ? Sprites.SORTING_ORDER_2H : Sprites.SORTING_ORDER_2N;
-			case MOD -> hover ? Sprites.SORTING_ORDER_3H : Sprites.SORTING_ORDER_3N;
-		};
-	}
-
-	private static Sprites getSortAscendingButton(boolean hover) {
-		return DeepPocketClientHelper.get().isSortAscending() ?
-						hover ? Sprites.SORT_ASCENDING_1H : Sprites.SORT_ASCENDING_1N :
-						hover ? Sprites.SORT_ASCENDING_0H : Sprites.SORT_ASCENDING_0N;
 	}
 
 	private static Sprites getDisplayAscendingButton(boolean hover) {

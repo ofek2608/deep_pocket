@@ -72,7 +72,7 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 		my -= offY;
 		
 		maxScroll = Math.max(((types.size() - 1) / 9 + 1) * 16 - height, 0);
-		scroll = scroll < 0 ? 0 : scroll > maxScroll ? maxScroll : scroll;
+		scroll = Math.max(Math.min(scroll, maxScroll), 0);
 		holdCraft = Screen.hasControlDown();
 		hoverScroll = 152 <= mx && mx < 160 && 0 <= my && my < height;
 		insideContainer = 4 <= mx && mx < 148 && 0 <= my && my < height;
