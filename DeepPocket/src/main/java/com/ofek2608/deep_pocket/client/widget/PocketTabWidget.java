@@ -6,6 +6,7 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.Pocket;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -63,7 +64,7 @@ public class PocketTabWidget implements WidgetWithTooltip, GuiEventListener, Non
 			Screen.blit(
 					poseStack,
 					movingOffX, offY,
-					tabIndex * TAB_W, current ? 2 * TAB_H : hover ? TAB_H : 0,
+					tabIndex * TAB_W + 4, current ? 2 * TAB_H : hover ? TAB_H : 0,
 					TAB_W, TAB_H,
 					256, 256
 			);
@@ -71,13 +72,31 @@ public class PocketTabWidget implements WidgetWithTooltip, GuiEventListener, Non
 			movingOffX += TAB_W;
 		}
 		
+		//Background to the left of the tabs
+		Screen.blit(
+				poseStack,
+				offX, offY,
+				0, TAB_H * 3,
+				4, TAB_H,
+				256, 256
+		);
+		//Background to the right of the tabs
 		Screen.blit(
 				poseStack,
 				movingOffX, offY,
-				112, 0,
+				movingOffX - offX, TAB_H * 3,
 				offX + 152 - movingOffX, TAB_H,
 				256, 256
 		);
+		//Background below the tabs
+		Screen.blit(
+				poseStack,
+				offX, offY + TAB_H,
+				0, TAB_H * 4,
+				152, 16,
+				256, 256
+		);
+		Minecraft.getInstance().font.draw(poseStack, pocket.getName(), offX + 4, offY + TAB_H + 4, 0xFFFFFF);
 	}
 	
 	@Override

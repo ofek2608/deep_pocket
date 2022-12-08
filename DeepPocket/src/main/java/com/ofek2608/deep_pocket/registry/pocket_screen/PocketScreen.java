@@ -77,6 +77,9 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.pocketSearchWidget.setPos(leftPos + 15, topPos + 19);
 		this.pocketSearchWidget.setHeight(rowsHeight);
 		
+		this.pocketTabWidget.offX = leftPos + 15;
+		this.pocketTabWidget.offY = topPos - 36;
+		
 		this.patternWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN ? pocketSearchWidget.getOffY() + pocketSearchWidget.getHeight() + 4 : -0xFFFFFF);
 	}
 
