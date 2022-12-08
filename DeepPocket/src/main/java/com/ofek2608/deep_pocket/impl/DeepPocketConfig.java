@@ -20,6 +20,7 @@ public final class DeepPocketConfig {
 		private Client() {}
 
 		private static final ForgeConfigSpec SPEC;
+		public static final ForgeConfigSpec.ConfigValue<String> SEARCH;
 		public static final ForgeConfigSpec.EnumValue<SearchMode> SEARCH_MODE;
 		public static final ForgeConfigSpec.EnumValue<SortingOrder> SORTING_ORDER;
 		public static final ForgeConfigSpec.BooleanValue SORT_ASCENDING;
@@ -30,7 +31,8 @@ public final class DeepPocketConfig {
 			var builder = new ForgeConfigSpec.Builder();
 
 			{
-				builder.push("GameSettings");
+				builder.push("Searching");
+				SEARCH = builder.define("Search", "");
 				SEARCH_MODE = builder.defineEnum("SearchMode", SearchMode.NORMAL);
 				SORTING_ORDER = builder.defineEnum("SortingOrder", SortingOrder.COUNT);
 				SORT_ASCENDING = builder.define("SortAscending", false);

@@ -4,7 +4,6 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
@@ -68,13 +67,12 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 		if (height <= 0)
 			return;
 		Pocket pocket = pocketSupplier.get();
-		Predicate<Pocket.Entry> filter = filterSupplier.get();
-		if (pocket == null || filter == null)
+		if (pocket == null)
 			return;
 		
-		List<Pocket.Entry> types = DeepPocketClientApi.get()
-				.getSortedKnowledge0(pocket)
-				.filter(filter)
+		List<Pocket.Entry> types = pocket.entries()
+				.sorted(HELPER.getSearchComparator())
+				.filter(HELPER.getSearchFilter())
 				.toList();
 		
 		mx -= offX;

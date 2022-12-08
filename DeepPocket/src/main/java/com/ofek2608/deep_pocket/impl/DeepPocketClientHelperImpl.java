@@ -11,7 +11,9 @@ import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.integration.DeepPocketJEI;
 import com.ofek2608.deep_pocket.utils.AdvancedLongMath;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -19,6 +21,8 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.function.Predicate;
 
 final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements DeepPocketClientHelper {
 	private final Minecraft minecraft;
@@ -113,6 +117,24 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 		renderElementTypeTooltip(poseStack, x, y, ElementTypeStack.of(entry.getType(), entry.getMaxExtract()), screen);
 	}
 	
+	@Override
+	public String getSearch() {
+		String jeiSearch = DeepPocketJEI.getSearch();
+		String search;
+		if (getSearchMode().syncFrom && jeiSearch != null)
+			DeepPocketConfig.Client.SEARCH.set(search = jeiSearch);
+		else
+			search = DeepPocketConfig.Client.SEARCH.get();
+		return search;
+	}
+	
+	@Override
+	public void setSearch(String search) {
+		DeepPocketConfig.Client.SEARCH.set(search);
+		if (getSearchMode().syncTo)
+			DeepPocketJEI.setSearch(search);
+	}
+	
 	@Override public SearchMode getSearchMode() { return DeepPocketConfig.Client.SEARCH_MODE.get(); }
 	@Override public void setSearchMode(SearchMode searchMode) { DeepPocketConfig.Client.SEARCH_MODE.set(searchMode); }
 	@Override public SortingOrder getSortingOrder() { return DeepPocketConfig.Client.SORTING_ORDER.get(); }
@@ -123,4 +145,24 @@ final class DeepPocketClientHelperImpl extends DeepPocketHelperImpl implements D
 	@Override public void setPocketDisplayFilter(PocketDisplayFilter pocketDisplayFilter) { DeepPocketConfig.Client.POCKET_DISPLAY_FILTER.set(pocketDisplayFilter); }
 	@Override public PocketDisplayMode getPocketDisplayMode() { return DeepPocketConfig.Client.POCKET_DISPLAY_MODE.get(); }
 	@Override public void setPocketDisplayMode(PocketDisplayMode pocketDisplayMode) { DeepPocketConfig.Client.POCKET_DISPLAY_MODE.set(pocketDisplayMode); }
+	
+	
+	
+	@Override
+	public Comparator<Pocket.Entry> getSearchComparator() {
+		Comparator<Pocket.Entry> comparator = getSortingOrder();
+		return isSortAscending() ? comparator : comparator.reversed();
+	}
+	
+	@Override
+	public Predicate<Pocket.Entry> getSearchFilter() {
+		Predicate<ElementType> searchFilter = DeepPocketUtils.createFilter(getSearch());
+		PocketDisplayFilter displayFilter = getPocketDisplayFilter();
+		return entry -> {
+			ElementType type = entry.getType();
+			return (type instanceof ElementType.TItem && displayFilter.displayItems ||
+					type instanceof ElementType.TFluid && displayFilter.displayFluids) &&
+					searchFilter.test(type);
+		};
+	}
 }

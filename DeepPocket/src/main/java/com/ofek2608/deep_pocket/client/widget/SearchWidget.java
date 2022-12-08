@@ -56,6 +56,9 @@ public final class SearchWidget extends SimpleContainerWidget {
 			});
 			updateXOffset();
 		}));
+		
+		searchWidget.setResponder(HELPER::setSearch);
+		
 		updateXOffset();
 	}
 	
@@ -121,6 +124,12 @@ public final class SearchWidget extends SimpleContainerWidget {
 	
 	@Override
 	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
+		//Fixing search
+		String searchNeededValue = HELPER.getSearch();
+		if (!searchWidget.getValue().equals(searchNeededValue))
+			searchWidget.setValue(searchNeededValue);
+		
+		
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
@@ -133,7 +142,4 @@ public final class SearchWidget extends SimpleContainerWidget {
 		);
 		super.render(poseStack, mx, my, partialTick);
 	}
-	
-	//TODO manage changes from and to jei
-	//TODO a getter for the pocket entry stream
 }

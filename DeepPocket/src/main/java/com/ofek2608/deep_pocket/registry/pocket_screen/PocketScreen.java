@@ -11,7 +11,6 @@ import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;
 import com.ofek2608.deep_pocket.api.enums.SortingOrder;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.client.widget.*;
 import com.ofek2608.deep_pocket.integration.DeepPocketJEI;

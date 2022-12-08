@@ -10,6 +10,7 @@ import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.api.struct.ItemAmount;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.impl.DeepPocketManager;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,6 +18,8 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.function.Predicate;
 
 public interface DeepPocketClientHelper extends DeepPocketHelper {
 	static DeepPocketClientHelper get() { return DeepPocketManager.getClientHelper(); }
@@ -43,6 +46,10 @@ public interface DeepPocketClientHelper extends DeepPocketHelper {
 	//===============
 	// Client Config
 	//===============
+	
+	
+	String getSearch();
+	void setSearch(String search);
 	SearchMode getSearchMode();
 	void setSearchMode(SearchMode searchMode);
 	SortingOrder getSortingOrder();
@@ -54,4 +61,13 @@ public interface DeepPocketClientHelper extends DeepPocketHelper {
 	
 	PocketDisplayMode getPocketDisplayMode();//TODO remove
 	void setPocketDisplayMode(PocketDisplayMode pocketDisplayMode);//TODO remove
+	
+	
+	
+	//===============
+	// Display Utils
+	//===============
+	
+	Comparator<Pocket.Entry> getSearchComparator();
+	Predicate<Pocket.Entry> getSearchFilter();
 }

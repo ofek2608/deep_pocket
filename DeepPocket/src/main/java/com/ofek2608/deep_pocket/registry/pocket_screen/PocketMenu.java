@@ -222,10 +222,12 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		}
 
 		DeepPocketClientApi api = DeepPocketClientApi.get();
-		if (pocket != null)
-			for (ElementType type : api.getSortedKnowledge0(pocket).map(Pocket.Entry::getType).toList())
-				if (type instanceof ElementType.TItem item && ingredient.test(item.create()) && (!consume || pocket.extractItem(api.getKnowledge0(), type, 1) == 1))
+		Knowledge0 knowledge = api.getKnowledge0();
+		if (pocket != null) {
+			for (ElementType type : pocket.entries().sorted(HELPER.getSearchComparator()).map(Pocket.Entry::getType).toList())
+				if (type instanceof ElementType.TItem item && ingredient.test(item.create()) && (!consume || pocket.extractItem(knowledge, type, 1) == 1))
 					return type;
+		}
 		if (consume)
 			return ElementType.empty();
 		ItemStack[] ingredientItems = ingredient.getItems();
