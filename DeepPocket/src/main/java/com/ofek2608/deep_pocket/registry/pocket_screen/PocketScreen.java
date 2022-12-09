@@ -76,18 +76,18 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	private void reloadPosition() {
 		this.pocketDisplayMode = DeepPocketClientHelper.get().getPocketDisplayMode();
-		int imageHeightExcludingRows = pocketDisplayMode == PocketDisplayMode.NORMAL ? 96 : 148;
+		int imageHeightExcludingRows = pocketDisplayMode == PocketDisplayMode.NORMAL ? 110 : 162;
 		int rowsHeight = Math.min(height - imageHeightExcludingRows, 144);
 		this.imageWidth = 180;
 		this.imageHeight = imageHeightExcludingRows + rowsHeight;
 		this.leftPos = (this.width - 152) / 2 - 15;
 		this.topPos = (this.height - this.imageHeight) / 2;
 		
-		this.pocketSearchWidget.setPos(leftPos + 15, topPos + 19);
+		this.pocketSearchWidget.setPos(leftPos + 15, topPos + 33);
 		this.pocketSearchWidget.setHeight(rowsHeight);
 		
 		this.pocketTabWidget.offX = leftPos + 15;
-		this.pocketTabWidget.offY = topPos - 36;
+		this.pocketTabWidget.offY = topPos + 1;
 		
 		this.patternWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN ? pocketSearchWidget.getOffY() + pocketSearchWidget.getHeight() + 4 : -0xFFFFFF);
 		
@@ -122,35 +122,30 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		return y + height;
 	}
 
-	private int renderAndMove(PoseStack poseStack, Sprites sprite, int x, int y) {
-		return renderAndMove(poseStack, sprite, x, y, sprite.h);
-	}
-
 	private void renderOutline(PoseStack poseStack) {
 		int y = topPos;
 		y = renderAndMove(poseStack, Sprites.OUTLINE_0, leftPos, y, 1);
-		y = renderAndMove(poseStack, Sprites.OUTLINE_1, leftPos, y, 13);
+		y = renderAndMove(poseStack, Sprites.OUTLINE_1, leftPos, y, 41);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_2, leftPos, y, 1);
-		y = renderAndMove(poseStack, Sprites.OUTLINE_3, leftPos, y, 48);
+		y = renderAndMove(poseStack, Sprites.OUTLINE_3, leftPos, y, 20);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_4, leftPos, y, 1);
-		y = renderAndMove(poseStack, Sprites.OUTLINE_5, leftPos, y, pocketSearchWidget.getHeight() - 41);
+		y = renderAndMove(poseStack, Sprites.OUTLINE_5, leftPos, y, pocketSearchWidget.getHeight() - 27);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_6, leftPos, y, 1);
 		y = renderAndMove(poseStack, Sprites.OUTLINE_7, leftPos, y, pocketDisplayMode == PocketDisplayMode.NORMAL ? 71 : 123);
 		renderAndMove(poseStack, Sprites.OUTLINE_8, leftPos, y, 1);
 	}
 
 	private void renderFrame(PoseStack poseStack) {
-		Sprites.BUTTONS_FRAME.blit(poseStack, leftPos + 1, topPos + 1);
-
 		int x = leftPos + 15;
-		int y = topPos + 1;
-		y = renderAndMove(poseStack, Sprites.TOP, x, y);
-		y = renderAndMove(poseStack, Sprites.GAP_SCROLL, x, y);
-		y += pocketSearchWidget.getHeight(); // container
-		y = renderAndMove(poseStack, Sprites.GAP_SCROLL, x, y);
+		int y = topPos + 33 + pocketSearchWidget.getHeight();
+		Sprites.GAP_SCROLL.blit(
+				poseStack,
+				x, y
+		);
 	}
 
 	private void renderHoverAbles(PoseStack poseStack) {
+		//TODO remove
 		{ //Render: Buttons
 			getSettingsButton(hoverButton == 0).blit(poseStack, leftPos + 5, topPos + 5);
 			getDisplayAscendingButton(hoverButton == 4).blit(poseStack, leftPos + 5, topPos + 49);
@@ -177,14 +172,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 
 	@Override
-	protected void renderLabels(PoseStack poseStack, int mx, int my) {
-		Pocket pocket = menu.getPocket();
-		if (pocket != null) {
-			String pocketName = pocket.getName();
-			String displayPocketName = font.width(pocketName) < 54 ? pocketName : font.plainSubstrByWidth("..." + pocketName, 54).substring(3) + "...";
-			font.draw(poseStack, displayPocketName, 20, 6, 0xFFFFFF);
-		}
-	}
+	protected void renderLabels(PoseStack poseStack, int mx, int my) {}
 
 	@Override
 	protected void renderTooltip(PoseStack poseStack, int x, int y) {
@@ -274,8 +262,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	@Override
 	public boolean mouseClicked(double mx, double my, int button) {
 		reloadPosition((int)mx, (int)my);
-		
-		
+		//TODO remove
 		//Buttons
 		if (button == InputConstants.MOUSE_BUTTON_LEFT) {
 			if (handleButtonClick())
@@ -368,41 +355,12 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		OUTLINE_7(0,41,180,1),
 		OUTLINE_8(0,42,180,1),
 		//Frame
-		TOP(0,0,152,14),
-		GAP_SMALL(0,14,152,4),
-		ROW_SMALL(0,18,152,16),
 		GAP_SCROLL(0,14,164,4),
-		ROW_SCROLL(0,18,164,16),
-		BUTTONS_FRAME(202,0,14,62),
-		CRAFTING_FRAME(0,43,152,48),
-		CREATE_PATTERN_FRAME(0,91,152,48),
-		//Slot Base
-		SLOT_BASE_N(186, 0, 16, 16),
-		SLOT_BASE_H(186, 16, 16, 16),
-		SLOT_BASE_CRAFTING_OUTPUT_N(152, 43, 24, 24),
-		SLOT_BASE_CRAFTING_OUTPUT_H(152, 67, 24, 24),
-		//Scroll
-		SCROLL_N(152,10,8,2),
-		SCROLL_H(152,12,8,2),
 		//Buttons
-		SEARCH_MODE_0N(216, 0, 10, 10),SEARCH_MODE_0H(216, 30, 10, 10),
-		SEARCH_MODE_1N(226, 0, 10, 10),SEARCH_MODE_1H(226, 30, 10, 10),
-		SEARCH_MODE_2N(236, 0, 10, 10),SEARCH_MODE_2H(236, 30, 10, 10),
-		SEARCH_MODE_3N(246, 0, 10, 10),SEARCH_MODE_3H(246, 30, 10, 10),
-		SORTING_ORDER_0N(216, 10, 10, 10),SORTING_ORDER_0H(216, 40, 10, 10),
-		SORTING_ORDER_1N(226, 10, 10, 10),SORTING_ORDER_1H(226, 40, 10, 10),
-		SORTING_ORDER_2N(236, 10, 10, 10),SORTING_ORDER_2H(236, 40, 10, 10),
-		SORTING_ORDER_3N(246, 10, 10, 10),SORTING_ORDER_3H(246, 40, 10, 10),
-		SORT_ASCENDING_0N(216, 20, 10, 10),SORT_ASCENDING_0H(216, 50, 10, 10),
-		SORT_ASCENDING_1N(226, 20, 10, 10),SORT_ASCENDING_1H(226, 50, 10, 10),
 		DISPLAY_CRAFTING_0N(236, 20, 10, 10),DISPLAY_CRAFTING_0H(236, 50, 10, 10),
 		DISPLAY_CRAFTING_1N(246, 20, 10, 10),DISPLAY_CRAFTING_1H(246, 50, 10, 10),
 		DISPLAY_CRAFTING_2N(236, 60, 10, 10),DISPLAY_CRAFTING_2H(246, 60, 10, 10),
 		SETTINGS_N(216, 60, 10, 10),SETTINGS_H(226, 60, 10, 10),
-		CLEAR_UN(224, 70, 16, 16),CLEAR_UH(240, 70, 16, 16),
-		CLEAR_DN(224, 86, 16, 16),CLEAR_DH(240, 86, 16, 16),
-		BULK_CRAFTING_N(224, 102, 16, 16),BULK_CRAFTING_H(240, 102, 16, 16),BULK_CRAFTING_D(208, 102, 16, 16),
-		CLEAR_PATTERN_N(224, 118, 16, 16),CLEAR_PATTERN_H(240, 118, 16, 16),
 		;
 
 		private final int u, v, w, h;
