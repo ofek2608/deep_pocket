@@ -33,12 +33,12 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	//render fields
 	private PocketDisplayMode pocketDisplayMode;
 	//render hover fields
-	private int hoverSlotIndex;
 	private int hoverButton;
 	//widgets
 	private final PocketSearchWidget pocketSearchWidget;
 	private final PocketTabWidget pocketTabWidget;
 	private final PatternWidget patternWidget;
+	private final InventoryDisplayWidget inventoryDisplayWidget;
 	private final CraftingDisplayWidget craftingDisplayWidget;
 	
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
@@ -47,6 +47,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		addRenderableWidget(pocketSearchWidget = new PocketSearchWidget(this, menu::getPocket));
 		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getPocket));
 		addRenderableWidget(patternWidget = new PatternWidget(this));
+		addRenderableWidget(inventoryDisplayWidget = new InventoryDisplayWidget(0, this::renderSlotItemSingle));
 		addRenderableWidget(craftingDisplayWidget = new CraftingDisplayWidget(
 				36,
 				this::renderSlotItemSingle,
@@ -59,8 +60,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 				},
 				()->menu.getSlot(45).hasItem()
 		));
-		
-		patternWidget.setPos(100, 50);
 		
 		Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
 	}
@@ -92,52 +91,19 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		
 		this.patternWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN ? pocketSearchWidget.getOffY() + pocketSearchWidget.getHeight() + 4 : -0xFFFFFF);
 		
-		this.craftingDisplayWidget.setPos(leftPos + 15, height - 48);
+		this.inventoryDisplayWidget.offX = leftPos + 15;
+		this.inventoryDisplayWidget.offY = topPos + imageHeight - 77;
+		
+		this.craftingDisplayWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CRAFTING ? pocketSearchWidget.getOffY() + pocketSearchWidget.getHeight() + 4 : -0xFFFFFF);
 	}
 
 	private void reloadPosition(int mx, int my) {
 		reloadPosition();
 
-		this.hoverSlotIndex = getHoverSlotIndex(mx, my);
 		this.hoverButton = getHoverButton(mx, my);
 		
-		reloadHoverSlotIndex(my);
-	}
-
-
-	private boolean isInSlot(int mx, int my) {
-		return (mx & 0xF) == mx && (my & 0xF) == my;
-	}
-
-	private int getHoverSlotIndex(int mx, int my) {
-		mx -= leftPos + 19;
-		my -= topPos + 19;
-		my -= pocketSearchWidget.getHeight() + 4;//pocket size + gap
-		//Check: Crafting
-		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
-			for (int gridY = 0; gridY < 3; gridY++)
-				for (int gridX = 0; gridX < 3; gridX++)
-					if (isInSlot(mx - 18 - 16 * gridX, my - 16 * gridY))
-						return 36 + gridX + gridY * 3;
-			if (102 <= mx && mx <= 125 && 12 <= my && my <= 35)
-				return 45;
-			my -= 52;//crafting size + gap
-		}
-		if (pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN) {
-			my -= 52;//patterns size + gap
-		}
-		//Check: Inventory
-		for (int y = 0; y < 3; y++)
-			for (int x = 0; x < 9; x++)
-				if (isInSlot(mx - x * 16, my - y * 16))
-					return x + y * 9;
-		my -= 52;//inventory size + gap
-		//Check: Hotbar
-		for (int x = 0; x < 9; x++)
-			if (isInSlot(mx - x * 16, my))
-				return 27 + x;
-		//Don't hover a slot
-		return -1;
+		this.hoveredSlot = null;
+		reloadHoveredSlotIndex(my);
 	}
 
 	private int getHoverButton(int mx, int my) {
@@ -146,14 +112,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		if (5 <= mx && mx <= 14) {
 			if (5 <= my && my <= 14) return 0;
 			if (49 <= my && my <= 58) return 4;
-		}
-		my -= 23 + pocketSearchWidget.getHeight();
-		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
-			if (19 <= mx && mx <= 34) {
-				if (0 <= my && my <= 15) return 5;
-				if (32 <= my && my <= 47) return 6;
-			}
-			if (isInSlot(mx - 147, my - 16)) return 7;
 		}
 		return -1;
 	}
@@ -190,67 +148,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		y = renderAndMove(poseStack, Sprites.GAP_SCROLL, x, y);
 		y += pocketSearchWidget.getHeight(); // container
 		y = renderAndMove(poseStack, Sprites.GAP_SCROLL, x, y);
-		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
-			y = renderAndMove(poseStack, Sprites.CRAFTING_FRAME, x, y);
-			y = renderAndMove(poseStack, Sprites.GAP_SMALL, x, y);
-		}
-		if (pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN) {
-			y += Sprites.CREATE_PATTERN_FRAME.h;
-			y = renderAndMove(poseStack, Sprites.GAP_SMALL, x, y);
-		}
-		y = renderAndMove(poseStack, Sprites.ROW_SMALL, x, y, 48);
-		y = renderAndMove(poseStack, Sprites.GAP_SMALL, x, y);
-		y = renderAndMove(poseStack, Sprites.ROW_SMALL, x, y, 16);
-		renderAndMove(poseStack, Sprites.GAP_SMALL, x, y);
-	}
-
-	private void renderSlotBase(PoseStack poseStack, int x, int y, int slotIndex) {
-		boolean isHover = slotIndex == hoverSlotIndex;
-		isHover = isHover || isQuickCrafting && 0 <= slotIndex && slotIndex < menu.slots.size() && quickCraftSlots.contains(menu.getSlot(slotIndex));
-		(isHover ? Sprites.SLOT_BASE_H : Sprites.SLOT_BASE_N).blit(poseStack, x, y);
-	}
-
-	private int renderSlotBaseContainer(PoseStack poseStack, int x, int y, int height, int slotIndex) {
-		for (int row = 0; row < height; row++)
-			for (int col = 0; col < 9; col++)
-				renderSlotBase(poseStack, x + 16 * col, y + 16 * row, slotIndex++);
-		return y + height * 16 + 4;
-	}
-
-	private int renderCraftingSlotBases(PoseStack poseStack, int x, int y) {
-		int slotIndex = 36;
-		for (int gridY = 0; gridY < 3; gridY++)
-			for (int gridX = 0; gridX < 3; gridX++)
-				renderSlotBase(poseStack, x + 18 + 16 * gridX, y + 16 * gridY, slotIndex++);
-		//Rendering the crafting output
-		boolean isHover = 45 == hoverSlotIndex;
-		(isHover ? Sprites.SLOT_BASE_CRAFTING_OUTPUT_H : Sprites.SLOT_BASE_CRAFTING_OUTPUT_N).blit(poseStack, x + 102, y + 12);
-		return y + 52;
-	}
-
-	private void renderAllSlotBases(PoseStack poseStack) {
-		int x = leftPos + 19;
-		int y = topPos + 19;
-		y += pocketSearchWidget.getHeight() + 4; // Container
-		if (pocketDisplayMode == PocketDisplayMode.CRAFTING)
-			y = renderCraftingSlotBases(poseStack, x, y);
-		if (pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN)
-			y += 52;
-		y = renderSlotBaseContainer(poseStack, x, y, 3, 0);
-		renderSlotBaseContainer(poseStack, x, y, 1, 27);
 	}
 
 	private void renderHoverAbles(PoseStack poseStack) {
 		{ //Render: Buttons
 			getSettingsButton(hoverButton == 0).blit(poseStack, leftPos + 5, topPos + 5);
 			getDisplayAscendingButton(hoverButton == 4).blit(poseStack, leftPos + 5, topPos + 49);
-			if (pocketDisplayMode == PocketDisplayMode.CRAFTING) {
-				getClearUButton(hoverButton == 5).blit(poseStack, leftPos + 19, topPos + 23 + pocketSearchWidget.getHeight());
-				getClearDButton(hoverButton == 6).blit(poseStack, leftPos + 19, topPos + 55 + pocketSearchWidget.getHeight());
-				getBulkCraftButton(menu.getSlot(45).hasItem(), hoverButton == 7).blit(poseStack, leftPos + 147, topPos + 39 + pocketSearchWidget.getHeight());
-			}
 		}
-		renderAllSlotBases(poseStack);
 	}
 
 	private void renderSlotItemSingle(PoseStack poseStack, int x, int y, int slotIndex) {
@@ -271,34 +175,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		dpClientHelper.renderItem(poseStack, x, y, slotItem, itemRenderer, font);
 	}
 
-	private void renderSlotItemsRow(PoseStack poseStack, int x, int y, int slotIndex) {
-		for (int i = 0; i < 9; i++)
-			renderSlotItemSingle(poseStack, x + 16 * i, y, slotIndex + i);
-	}
-
-	private void renderSlotItems(PoseStack poseStack) {
-		int xOffset = leftPos + 19;
-		int yOffset = topPos + 19;
-		yOffset += pocketSearchWidget.getHeight() + 4;
-		if (pocketDisplayMode == PocketDisplayMode.CRAFTING) { //Render: Crafting Slots
-			int slotIndex = 36;
-			for (int gridY = 0; gridY < 3; gridY++)
-				for (int gridX = 0; gridX < 3; gridX++)
-					renderSlotItemSingle(poseStack, xOffset + 18 + 16 * gridX, yOffset + 16 * gridY, slotIndex++);
-			renderSlotItemSingle(poseStack, xOffset + 106, yOffset + 16, 45);
-			yOffset += 52;
-		}
-		if (pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN) { //Render: Crafting Slots
-			yOffset += 52;
-		}
-		{ //Render: Inventory Slots
-			renderSlotItemsRow(poseStack, xOffset, yOffset, 0);
-			renderSlotItemsRow(poseStack, xOffset, yOffset + 16, 9);
-			renderSlotItemsRow(poseStack, xOffset, yOffset + 32, 18);
-			renderSlotItemsRow(poseStack, xOffset, yOffset + 52, 27);//hotbar
-		}
-	}
-
 
 	@Override
 	protected void renderLabels(PoseStack poseStack, int mx, int my) {
@@ -316,8 +192,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			return;
 		if (hoverButton >= 0)
 			this.renderButtonTooltip(poseStack, x, y);
-		else if (hoverSlotIndex <= 45)
-			super.renderTooltip(poseStack, x, y);
+		
+		super.renderTooltip(poseStack, x, y);
 		
 		for (var child : children())
 			if (child instanceof WidgetWithTooltip tooltip)
@@ -328,9 +204,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		Component text = switch (hoverButton) {
 			case 0 -> Component.literal("Settings");
 			case 4 -> Component.literal("Display Mode: ").append(Component.literal(DeepPocketClientHelper.get().getPocketDisplayMode().displayName).withStyle(ChatFormatting.AQUA));
-			case 5 -> Component.literal("Clear To Pocket");
-			case 6 -> Component.literal("Clear To Inventory");
-			case 7 -> Component.literal("Bulk Crafting");
 			default -> null;
 		};
 		if (text == null)
@@ -338,11 +211,11 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		super.renderTooltip(poseStack, text, x, y);
 	}
 	
-	private void reloadHoverSlotIndex(int my) {
-		menu.setHoverSlotIndex(
-				Math.max(craftingDisplayWidget.getHoverSlotIndex(), hoverSlotIndex),
-				my - topPos
-		);
+	private void reloadHoveredSlotIndex(int my) {
+		int hoveredSlotIndex = Math.max(inventoryDisplayWidget.getHoveredSlotIndex(), craftingDisplayWidget.getHoveredSlotIndex());
+		menu.setHoveredSlotIndex(hoveredSlotIndex, my - topPos);
+		if (0 <= hoveredSlotIndex && hoveredSlotIndex < menu.slots.size())
+			hoveredSlot = menu.getSlot(hoveredSlotIndex);
 	}
 
 	@Override
@@ -352,10 +225,11 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		
 		renderBackground(poseStack);
 		super.render(poseStack, mx, my, partialTick);
-		renderSlotItems(poseStack);
+		
+		reloadHoveredSlotIndex(my);
 		renderTooltip(poseStack, mx, my);
 		
-		reloadHoverSlotIndex(my);
+		reloadHoveredSlotIndex(my);
 		
 		ItemStack hoveredItem = pocketSearchWidget.pocketWidget.getHoveredItem();
 		if (!hoveredItem.isEmpty()) {
@@ -391,13 +265,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 					ClientScreens.settingsEdit(pocket);
 			}
 			case 4 -> toggleDisplayCrafting();
-			case 5 -> DeepPocketPacketHandler.sbClearCraftingGrid(true);
-			case 6 -> DeepPocketPacketHandler.sbClearCraftingGrid(false);
-			case 7 -> {
-				Pocket pocket = menu.getPocket();
-				if (pocket != null && menu.getSlot(45).hasItem())
-					ClientScreens.bulkCrafting(pocket, menu.getCrafting());
-			}
 			default -> { return false; }
 		}
 		DeepPocketUtils.playClickSound();
@@ -466,18 +333,6 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	private static Sprites getSettingsButton(boolean hover) {
 		return hover ? Sprites.SETTINGS_H : Sprites.SETTINGS_N;
-	}
-
-	private static Sprites getClearUButton(boolean hover) {
-		return hover ? Sprites.CLEAR_UH : Sprites.CLEAR_UN;
-	}
-
-	private static Sprites getClearDButton(boolean hover) {
-		return hover ? Sprites.CLEAR_DH : Sprites.CLEAR_DN;
-	}
-
-	private static Sprites getBulkCraftButton(boolean active, boolean hover) {
-		return active ? hover ? Sprites.BULK_CRAFTING_H : Sprites.BULK_CRAFTING_N : Sprites.BULK_CRAFTING_D;
 	}
 
 	private static void toggleDisplayCrafting() {

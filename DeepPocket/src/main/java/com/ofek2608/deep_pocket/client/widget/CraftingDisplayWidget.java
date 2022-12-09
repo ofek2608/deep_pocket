@@ -110,7 +110,7 @@ public class CraftingDisplayWidget extends SimpleContainerWidget implements GuiE
 			screen.renderTooltip(poseStack, Component.literal("Bulk Crafting"), mx, my);
 	}
 	
-	public int getHoverSlotIndex() {
+	public int getHoveredSlotIndex() {
 		return hoveredSlotIndex < 0 ? -1 : slotIndex + hoveredSlotIndex;
 	}
 }

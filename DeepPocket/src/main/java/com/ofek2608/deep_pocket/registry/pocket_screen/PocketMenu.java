@@ -39,7 +39,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	private @Nullable Pocket pocket;//should not use except in get and set pocket
 	public @Nullable Object screen;
 	
-	private int lastHoverSlotIndex = -1;
+	private int lastHoveredSlotIndex = -1;
 
 	protected PocketMenu(@Nullable MenuType<?> menuType, int containerId, Inventory playerInventory) {
 		super(menuType, containerId);
@@ -67,22 +67,22 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		setPocket(pocket);
 	}
 	
-	public void setHoverSlotIndex(int index, int mouseY) {
+	public void setHoveredSlotIndex(int index, int mouseY) {
 		if (index < 0 || slots.size() <= index)
 			index = -1;
-		if (index == lastHoverSlotIndex)
+		if (index == lastHoveredSlotIndex)
 			return;
 		
 		if (index >= 0)
 			slots.get(index).y = mouseY - 8;
-		if (lastHoverSlotIndex >= 0)
-			slots.get(lastHoverSlotIndex).y = INVISIBLE_SLOT_Y;
+		if (lastHoveredSlotIndex >= 0)
+			slots.get(lastHoveredSlotIndex).y = INVISIBLE_SLOT_Y;
 		
-		lastHoverSlotIndex = index;
+		lastHoveredSlotIndex = index;
 	}
 	
 	public void clearHoverSlotIndex() {
-		setHoverSlotIndex(-1, 0);
+		setHoveredSlotIndex(-1, 0);
 	}
 
 
