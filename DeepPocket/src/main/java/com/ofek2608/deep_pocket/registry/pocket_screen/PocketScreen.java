@@ -10,10 +10,7 @@ import com.ofek2608.deep_pocket.api.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
-import com.ofek2608.deep_pocket.client.widget.PatternWidget;
-import com.ofek2608.deep_pocket.client.widget.PocketSearchWidget;
-import com.ofek2608.deep_pocket.client.widget.PocketTabWidget;
-import com.ofek2608.deep_pocket.client.widget.WidgetWithTooltip;
+import com.ofek2608.deep_pocket.client.widget.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
@@ -42,6 +39,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private final PocketSearchWidget pocketSearchWidget;
 	private final PocketTabWidget pocketTabWidget;
 	private final PatternWidget patternWidget;
+	private final CraftingDisplayWidget craftingDisplayWidget;
 	
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
@@ -49,6 +47,18 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		addRenderableWidget(pocketSearchWidget = new PocketSearchWidget(this, menu::getPocket));
 		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getPocket));
 		addRenderableWidget(patternWidget = new PatternWidget(this));
+		addRenderableWidget(craftingDisplayWidget = new CraftingDisplayWidget(
+				36,
+				this::renderSlotItemSingle,
+				()->DeepPocketPacketHandler.sbClearCraftingGrid(true),
+				()->DeepPocketPacketHandler.sbClearCraftingGrid(false),
+				()-> {
+					Pocket pocket = menu.getPocket();
+					if (pocket != null && menu.getSlot(45).hasItem())
+						ClientScreens.bulkCrafting(pocket, menu.getCrafting());
+				},
+				()->menu.getSlot(45).hasItem()
+		));
 		
 		patternWidget.setPos(100, 50);
 		
@@ -81,6 +91,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.pocketTabWidget.offY = topPos - 36;
 		
 		this.patternWidget.setPos(leftPos + 15, pocketDisplayMode == PocketDisplayMode.CREATE_PATTERN ? pocketSearchWidget.getOffY() + pocketSearchWidget.getHeight() + 4 : -0xFFFFFF);
+		
+		this.craftingDisplayWidget.setPos(leftPos + 15, height - 48);
 	}
 
 	private void reloadPosition(int mx, int my) {
@@ -89,7 +101,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		this.hoverSlotIndex = getHoverSlotIndex(mx, my);
 		this.hoverButton = getHoverButton(mx, my);
 		
-		menu.setHoverSlotIndex(hoverSlotIndex, my - topPos);
+		reloadHoverSlotIndex(my);
 	}
 
 
@@ -325,6 +337,13 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 			return;
 		super.renderTooltip(poseStack, text, x, y);
 	}
+	
+	private void reloadHoverSlotIndex(int my) {
+		menu.setHoverSlotIndex(
+				Math.max(craftingDisplayWidget.getHoverSlotIndex(), hoverSlotIndex),
+				my - topPos
+		);
+	}
 
 	@Override
 	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
@@ -336,7 +355,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		renderSlotItems(poseStack);
 		renderTooltip(poseStack, mx, my);
 		
-		menu.setHoverSlotIndex(hoverSlotIndex, my - topPos);
+		reloadHoverSlotIndex(my);
 		
 		ItemStack hoveredItem = pocketSearchWidget.pocketWidget.getHoveredItem();
 		if (!hoveredItem.isEmpty()) {

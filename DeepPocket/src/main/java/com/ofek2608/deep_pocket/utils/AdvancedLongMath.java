@@ -66,7 +66,7 @@ public final class AdvancedLongMath {
 	 * @return the minimum between the numbers
 	 */
 	public static long advancedMin(long a, long b) {
-		if (a < 0) return b < 0 ? -1 : 0;
+		if (a < 0) return b < 0 ? -1 : b;
 		if (b < 0) return a;
 		return Math.min(a, b);
 	}
