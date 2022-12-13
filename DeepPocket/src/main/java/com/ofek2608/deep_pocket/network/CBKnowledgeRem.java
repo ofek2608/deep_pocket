@@ -1,25 +1,25 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
 class CBKnowledgeRem {
-	private final ItemType[] types;
+	private final ElementType[] types;
 
-	CBKnowledgeRem(ItemType ... types) {
+	CBKnowledgeRem(ElementType... types) {
 		this.types = types;
 	}
 
 	CBKnowledgeRem(FriendlyByteBuf buf) {
-		this(DPPacketUtils.decodeItemTypeArray(buf));
+		this(DPPacketUtils.decodeElementTypeArray(buf));
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		DPPacketUtils.encodeItemTypeArray(buf, types);
+		DPPacketUtils.encodeElementTypeArray(buf, types);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {

@@ -1,14 +1,15 @@
 package com.ofek2608.deep_pocket.api.events;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import net.minecraftforge.eventbus.api.Event;
 
-public class DeepPocketItemConversionsUpdatedEvent extends Event {
+public class DeepPocketConversionsUpdatedEvent extends Event {
 	private final DeepPocketClientApi api;
-	private final ItemConversions conversions;
+	private final ElementConversions conversions;
 
-	public DeepPocketItemConversionsUpdatedEvent(DeepPocketClientApi api, ItemConversions conversions) {
+	public DeepPocketConversionsUpdatedEvent(DeepPocketClientApi api, ElementConversions conversions) {
 		this.api = api;
 		this.conversions = conversions;
 	}
@@ -17,7 +18,7 @@ public class DeepPocketItemConversionsUpdatedEvent extends Event {
 		return api;
 	}
 
-	public ItemConversions getConversions() {
+	public ElementConversions getConversions() {
 		return conversions;
 	}
 }

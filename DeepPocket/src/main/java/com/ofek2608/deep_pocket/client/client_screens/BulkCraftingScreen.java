@@ -100,7 +100,7 @@ class BulkCraftingScreen extends Screen {
 			Minecraft.getInstance().keyboardHandler.setSendRepeatsToGui(true);
 			return true;
 		}
-		Knowledge0 knowledge = DeepPocketClientApi.get().getKnowledge0();
+		Knowledge0 knowledge = DeepPocketClientApi.get().getKnowledge();
 		if (hoverBtn0) {
 			DeepPocketUtils.playClickSound();
 			count = pocket.getMaxExtract(knowledge, recipe) >> 2;

@@ -4,8 +4,8 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.events.DeepPocketBuildConversionsEvent;
 import com.ofek2608.deep_pocket.api.events.DeepPocketServerStartedEvent;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -93,7 +93,7 @@ public final class DeepPocketManager {
 			Player player = event.getEntity();
 			if (player == null || player.level.isClientSide || serverApi == null)
 				return;
-			serverApi.getKnowledge(player.getUUID()).add(new ItemType(event.getCrafting()));
+			serverApi.getKnowledge(player.getUUID()).add(ElementType.item(event.getCrafting()));
 		}
 	}
 

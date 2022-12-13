@@ -75,7 +75,7 @@ public class PatternResultWidget implements WidgetWithTooltip, GuiEventListener,
 	private boolean canCreatePattern() {
 		Pocket pocket = screen.getMenu().getPocket();
 		return pocket != null && pocket.getMaxExtract(
-				DeepPocketClientApi.get().getKnowledge0(),
+				DeepPocketClientApi.get().getKnowledge(),
 				ElementType.item(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get())
 		) != 0;
 	}

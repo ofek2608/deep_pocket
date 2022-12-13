@@ -11,8 +11,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public interface DeepPocketApi {
-	public static @Nullable DeepPocketApi get(boolean isClientSide) { return isClientSide ? DeepPocketClientApi.get() : DeepPocketServerApi.get(); }
-	public static @Nullable DeepPocketApi get(Level level) { return get(level.isClientSide); }
+	static @Nullable DeepPocketApi get(boolean isClientSide) { return isClientSide ? DeepPocketClientApi.get() : DeepPocketServerApi.get(); }
+	static @Nullable DeepPocketApi get(Level level) { return get(level.isClientSide); }
 
 	DeepPocketHelper getHelper();
 

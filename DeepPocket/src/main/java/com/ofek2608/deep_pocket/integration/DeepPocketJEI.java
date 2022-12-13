@@ -5,7 +5,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.events.DeepPocketItemConversionsUpdatedEvent;
+import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
 import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
@@ -76,7 +76,7 @@ public final class DeepPocketJEI {
 	@Mod.EventBusSubscriber(modid = DeepPocketMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 	private static final class ForgeEvents {
 		@SubscribeEvent
-		public static void event(DeepPocketItemConversionsUpdatedEvent event) {
+		public static void event(DeepPocketConversionsUpdatedEvent event) {
 			if (hasMod())
 				JEIPlugin.setConversionsKeys(event.getConversions().getKeys());
 		}

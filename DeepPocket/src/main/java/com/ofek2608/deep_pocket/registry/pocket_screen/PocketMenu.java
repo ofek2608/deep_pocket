@@ -223,7 +223,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		}
 
 		DeepPocketClientApi api = DeepPocketClientApi.get();
-		Knowledge0 knowledge = api.getKnowledge0();
+		Knowledge0 knowledge = api.getKnowledge();
 		if (pocket != null) {
 			for (ElementType type : pocket.entries().sorted(HELPER.getSearchComparator()).map(Pocket.Entry::getType).toList())
 				if (type instanceof ElementType.TItem item && ingredient.test(item.create()) && (!consume || pocket.extractItem(knowledge, type, 1) == 1))
@@ -289,7 +289,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		Pocket pocket = getPocket();
 		if (api == null || pocket == null)
 			return false;
-		return pocket.extractItem(api.getKnowledge0(playerInventory.player.getUUID()), type, 1) == 1;
+		return pocket.extractItem(api.getKnowledge(playerInventory.player.getUUID()), type, 1) == 1;
 	}
 	
 	public void extractType(ServerPlayer player, ElementType.TItem type, boolean toCarry, byte count) {
@@ -297,7 +297,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		Pocket pocket = getPocket();
 		if (count <= 0 || api == null || pocket == null)
 			return;
-		Knowledge0 knowledge = api.getKnowledge0(player.getUUID());
+		Knowledge0 knowledge = api.getKnowledge(player.getUUID());
 		if (!knowledge.contains(type))
 			return;
 		int maxStack = type.create().getMaxStackSize();
@@ -317,7 +317,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		if (extractRequestCount <= 0)
 			return;
 		
-		ItemStack extracted = type.create((int)pocket.extractItem(api.getKnowledge0(player.getUUID()), type, extractRequestCount));
+		ItemStack extracted = type.create((int)pocket.extractItem(api.getKnowledge(player.getUUID()), type, extractRequestCount));
 		if (extracted.isEmpty())
 			return;
 		setCarried(type.create(currentCount + extracted.getCount()));
@@ -371,7 +371,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return;
 		if (toCarry && !getCarried().isEmpty())
 			return;
-		if (pocket.extractItem(api.getKnowledge0(player.getUUID()), ElementType.item(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get()), 1L) != 1)
+		if (pocket.extractItem(api.getKnowledge(player.getUUID()), ElementType.item(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get()), 1L) != 1)
 			return;
 		ItemStack newPattern = CraftingPatternItem.createItem(input, output);
 		if (toCarry)
@@ -405,7 +405,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		NonNullList<ItemStack> remainingItems = player.level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, player.level);
 		ForgeHooks.setCraftingPlayer(null);
 
-		Knowledge0 knowledge = api.getKnowledge0(player.getUUID());
+		Knowledge0 knowledge = api.getKnowledge(player.getUUID());
 		ElementType.TItem[] crafting = getCrafting();
 		long max = pocket.getMaxExtract(knowledge, crafting);
 		if (0 <= max && max < count)

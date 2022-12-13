@@ -58,7 +58,7 @@ public class PocketResultSlot extends ResultSlot {
 				pocket.insertElement(ElementType.item(newItem), newItem.getCount());
 				continue;
 			}
-			if (pocket.extractItem(api.getKnowledge0(player.getUUID()), oldItemType, 1) == 1) {
+			if (pocket.extractItem(api.getKnowledge(player.getUUID()), oldItemType, 1) == 1) {
 				// if there is 1 item in the original slot, and we could extract from the pocket.
 				// we need to give the player the remaining item, and the slot is already caught
 				// also we can put the remaining item there
