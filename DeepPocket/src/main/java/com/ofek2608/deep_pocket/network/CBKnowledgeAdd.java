@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.Knowledge0;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
@@ -31,7 +31,7 @@ class CBKnowledgeAdd {
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
 		ctxSupplier.get().enqueueWork(() -> {
-			Knowledge0 knowledge = DeepPocketClientApi.get().getKnowledge();
+			Knowledge knowledge = DeepPocketClientApi.get().getKnowledge();
 			if (clear)
 				knowledge.asSet().clear();
 			knowledge.add(types);

@@ -11,7 +11,6 @@ import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.impl.DeepPocketManager;
 
 import java.util.UUID;
-import java.util.stream.Stream;
 
 public interface DeepPocketHelper {
 	static DeepPocketHelper get() { return DeepPocketManager.getHelper(); }
@@ -20,7 +19,7 @@ public interface DeepPocketHelper {
 	Pocket createPocket(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo);
 	PocketContent createPocketContent();
 	PocketPatterns createPocketPatterns();
-	Knowledge0 createKnowledge(ElementConversions conversions);
+	Knowledge createKnowledge(ElementConversions conversions);
 	ProvidedResources createProvidedResources(ItemType[] types);
 	PocketProcessManager createProcessManager();
 }

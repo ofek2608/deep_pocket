@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
-import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import com.ofek2608.deep_pocket.impl.DeepPocketManager;
 
 public interface DeepPocketClientApi extends DeepPocketApi {
@@ -15,5 +14,5 @@ public interface DeepPocketClientApi extends DeepPocketApi {
 	boolean isPermitPublicPocket();
 	void setPermitPublicPocket(boolean value);
 
-	Knowledge0 getKnowledge();
+	Knowledge getKnowledge();
 }

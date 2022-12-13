@@ -26,8 +26,8 @@ class DeepPocketHelperImpl implements DeepPocketHelper {
 	}
 	
 	@Override
-	public Knowledge0 createKnowledge(ElementConversions conversions) {
-		return new Knowledge0Impl(conversions);
+	public Knowledge createKnowledge(ElementConversions conversions) {
+		return new KnowledgeImpl(conversions);
 	}
 
 	@Override

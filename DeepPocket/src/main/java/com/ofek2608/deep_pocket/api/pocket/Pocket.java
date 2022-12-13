@@ -1,19 +1,14 @@
 package com.ofek2608.deep_pocket.api.pocket;
 
 import com.ofek2608.deep_pocket.api.Knowledge;
-import com.ofek2608.deep_pocket.api.Knowledge0;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -31,9 +26,9 @@ public interface Pocket {
 	boolean canAccess(Player player);
 	PocketContent getContent();
 	void insertElement(ElementType type, long count);
-	long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType,Long> counts);
-	long getMaxExtract(@Nullable Knowledge0 knowledge, ElementType ... items);
-	long extractItem(@Nullable Knowledge0 knowledge, ElementType type, long count);
+	long getMaxExtract(@Nullable Knowledge knowledge, Map<ElementType,Long> counts);
+	long getMaxExtract(@Nullable Knowledge knowledge, ElementType ... items);
+	long extractItem(@Nullable Knowledge knowledge, ElementType type, long count);
 	
 	@Deprecated(forRemoval = true) Map<ItemType,Long> getItemsMap();
 	@Deprecated(forRemoval = true) long getItemCount(ItemType type);

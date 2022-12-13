@@ -91,12 +91,12 @@ final class PocketImpl implements Pocket {
 	}
 	
 	@Override
-	public long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType, Long> counts) {
+	public long getMaxExtract(@Nullable Knowledge knowledge, Map<ElementType, Long> counts) {
 		return content.getMaxExtract(knowledge, counts);
 	}
 	
 	@Override
-	public long getMaxExtract(@Nullable Knowledge0 knowledge, ElementType ... types) {
+	public long getMaxExtract(@Nullable Knowledge knowledge, ElementType ... types) {
 		return content.getMaxExtract(knowledge, types);
 	}
 	
@@ -193,7 +193,7 @@ final class PocketImpl implements Pocket {
 	}
 	
 	@Override
-	public long extractItem(@Nullable Knowledge0 knowledge, ElementType type, long count) {
+	public long extractItem(@Nullable Knowledge knowledge, ElementType type, long count) {
 		if (knowledge != null && !knowledge.contains(type))
 			return 0;
 		return content.extract(type, count);

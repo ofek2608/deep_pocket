@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.impl;
 
-import com.ofek2608.deep_pocket.api.Knowledge0;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.pocket.PocketContent;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
@@ -188,7 +188,7 @@ final class PocketContentImpl implements PocketContent {
 		return maxExtract;
 	}
 	
-	private long getMaxExtract0(@Nullable Knowledge0 knowledge, Map<ElementType, Long> counts) {
+	private long getMaxExtract0(@Nullable Knowledge knowledge, Map<ElementType, Long> counts) {
 		long[] baseElementsRequirement = conversions.convertMapToArray(counts);
 		long maxExtract = getMaxExtract(baseElementsRequirement);
 		for (var entry : counts.entrySet()) {
@@ -201,12 +201,12 @@ final class PocketContentImpl implements PocketContent {
 	}
 	
 	@Override
-	public long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType, Long> counts) {
+	public long getMaxExtract(@Nullable Knowledge knowledge, Map<ElementType, Long> counts) {
 		return getMaxExtract0(knowledge, new HashMap<>(counts));
 	}
 	
 	@Override
-	public long getMaxExtract(@Nullable Knowledge0 knowledge, ElementType... types) {
+	public long getMaxExtract(@Nullable Knowledge knowledge, ElementType... types) {
 		Map<ElementType, Long> map = new HashMap<>();
 		for (ElementType type : types)
 			map.put(type, advancedSum(map.getOrDefault(type, 0L), 1L));
@@ -214,7 +214,7 @@ final class PocketContentImpl implements PocketContent {
 	}
 	
 	@Override
-	public long getMaxExtract(@Nullable Knowledge0 knowledge, ElementTypeStack... stacks) {
+	public long getMaxExtract(@Nullable Knowledge knowledge, ElementTypeStack... stacks) {
 		Map<ElementType, Long> map = new HashMap<>();
 		for (ElementTypeStack stack : stacks)
 			map.put(stack.getType(), advancedSum(map.getOrDefault(stack.getType(), 0L), stack.getCount()));

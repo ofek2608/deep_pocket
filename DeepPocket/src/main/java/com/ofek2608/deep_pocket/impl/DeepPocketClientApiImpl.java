@@ -2,13 +2,13 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.Knowledge0;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import net.minecraftforge.common.MinecraftForge;
 
 final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHelper> implements DeepPocketClientApi {
-	private Knowledge0 knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
+	private Knowledge knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 	private boolean permitPublicPocket;
 
 	DeepPocketClientApiImpl(DeepPocketClientHelper helper) {
@@ -27,7 +27,7 @@ final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHe
 	@Override public void setPermitPublicPocket(boolean value) { this.permitPublicPocket = value; }
 	
 	@Override
-	public Knowledge0 getKnowledge() {
+	public Knowledge getKnowledge() {
 		return knowledge;
 	}
 }

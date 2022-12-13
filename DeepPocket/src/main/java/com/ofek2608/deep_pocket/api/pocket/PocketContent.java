@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.api.pocket;
 
-import com.ofek2608.deep_pocket.api.Knowledge0;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
@@ -30,9 +30,9 @@ public interface PocketContent {
 	long extract(ElementType type, long count);
 	long extract(ElementTypeStack stack);
 	long getMaxExtract(long[] baseElements);
-	long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType,Long> counts);
-	long getMaxExtract(@Nullable Knowledge0 knowledge, ElementType ... types);
-	long getMaxExtract(@Nullable Knowledge0 knowledge, ElementTypeStack ... stacks);
+	long getMaxExtract(@Nullable Knowledge knowledge, Map<ElementType,Long> counts);
+	long getMaxExtract(@Nullable Knowledge knowledge, ElementType ... types);
+	long getMaxExtract(@Nullable Knowledge knowledge, ElementTypeStack ... stacks);
 	void clear();
 	int getSize();
 	Snapshot createSnapshot();
