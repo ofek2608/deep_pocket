@@ -10,6 +10,7 @@ import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;
@@ -59,7 +60,7 @@ final class PocketImpl implements Pocket {
 	@Override public PocketInfo getInfo() { return new PocketInfo(pocketInfo.get()); }
 	@Override public void setInfo(PocketInfo pocketInfo) { this.pocketInfo.set(new PocketInfo(pocketInfo)); }
 	@Override public String getName() { return pocketInfo.get().name; }
-	@Override public ItemType getIcon() { return pocketInfo.get().icon; }
+	@Override public ElementType getIcon() { return pocketInfo.get().icon; }
 	@Override public int getColor() { return pocketInfo.get().color; }
 	@Override public PocketSecurityMode getSecurityMode() { return pocketInfo.get().securityMode; }
 	

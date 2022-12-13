@@ -4,13 +4,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 class PocketSettingsScreen extends Screen {
+	private static final DeepPocketClientHelper HELPER = DeepPocketClientHelper.get();
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/settings.png");
 	private static final int VIEW_WIDTH = 154;
 	private static final int VIEW_HEIGHT = 62;
@@ -72,40 +74,40 @@ class PocketSettingsScreen extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack stack, int mx, int my, float partialTick) {
+	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
 		updateFields(mx, my);
 
-		renderBackground(stack);
+		renderBackground(poseStack);
 
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);
 
 		DeepPocketUtils.setRenderShaderColor(pocketInfo.color);
-		Sprites.OUTLINE.blit(stack, leftPos, topPos);
+		Sprites.OUTLINE.blit(poseStack, leftPos, topPos);
 
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
-		Sprites.BASE.blit(stack, leftPos, topPos);
-		(hoverIcon ? Sprites.ICON_H : Sprites.ICON_N).blit(stack, leftPos + 5, topPos + 5);
-		(hoverSecurityMode ? Sprites.SECURITY_H : Sprites.SECURITY_N).blit(stack, leftPos + 41, topPos + 25);
-		(pocketId == null ? Sprites.HIDDEN_BUTTON : hoverDelete ? Sprites.DELETE_H : Sprites.DELETE_N).blit(stack, leftPos + 93, topPos + 41);
-		(hoverCancel ? Sprites.CANCEL_H : Sprites.CANCEL_N).blit(stack, leftPos + 113, topPos + 41);
-		(hoverConfirm ? Sprites.CONFIRM_H : Sprites.CONFIRM_N).blit(stack, leftPos + 133, topPos + 41);
+		Sprites.BASE.blit(poseStack, leftPos, topPos);
+		(hoverIcon ? Sprites.ICON_H : Sprites.ICON_N).blit(poseStack, leftPos + 5, topPos + 5);
+		(hoverSecurityMode ? Sprites.SECURITY_H : Sprites.SECURITY_N).blit(poseStack, leftPos + 41, topPos + 25);
+		(pocketId == null ? Sprites.HIDDEN_BUTTON : hoverDelete ? Sprites.DELETE_H : Sprites.DELETE_N).blit(poseStack, leftPos + 93, topPos + 41);
+		(hoverCancel ? Sprites.CANCEL_H : Sprites.CANCEL_N).blit(poseStack, leftPos + 113, topPos + 41);
+		(hoverConfirm ? Sprites.CONFIRM_H : Sprites.CONFIRM_N).blit(poseStack, leftPos + 133, topPos + 41);
 		for (int channelIndex = 0; channelIndex < 3; channelIndex++) {
 			int sliderY = (0xFF - ((pocketInfo.color >> (8 * (2 - channelIndex))) & 0xFF)) * 30 / 0xFF;
-			(hoverSlider == channelIndex ? Sprites.SLIDER_H : Sprites.SLIDER_N).blit(stack, leftPos + 5 + 8 * channelIndex, topPos + 25 + sliderY);
+			(hoverSlider == channelIndex ? Sprites.SLIDER_H : Sprites.SLIDER_N).blit(poseStack, leftPos + 5 + 8 * channelIndex, topPos + 25 + sliderY);
 		}
-
-		Minecraft.getInstance().getItemRenderer().renderGuiItem(pocketInfo.icon.create(), leftPos + 5, topPos + 5);
-		font.draw(stack, pocketInfo.name + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 26, topPos + 9, 0xDDDDDD);
+		
+		HELPER.renderElementType(poseStack, leftPos + 5, topPos + 5, pocketInfo.icon, itemRenderer, font);
+		font.draw(poseStack, pocketInfo.name + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 26, topPos + 9, 0xDDDDDD);
 		int securityOffsetX = (39 - font.width(pocketInfo.securityMode.displayName)) / 2;
-		font.draw(stack, pocketInfo.securityMode.displayName, leftPos + 42 + securityOffsetX, topPos + 26, pocketInfo.securityMode.displayColor);
+		font.draw(poseStack, pocketInfo.securityMode.displayName, leftPos + 42 + securityOffsetX, topPos + 26, pocketInfo.securityMode.displayColor);
 
 		if (hoverIcon)
-			renderTooltip(stack, Component.literal("Change Icon"), mx, my);
+			renderTooltip(poseStack, Component.literal("Change Icon"), mx, my);
 		if (hoverSecurityMode)
-			renderTooltip(stack, Component.literal("Change Security Mode"), mx, my);
+			renderTooltip(poseStack, Component.literal("Change Security Mode"), mx, my);
 		if (hoverDelete && pocketId != null) {
-			renderTooltip(stack, List.of(
+			renderTooltip(poseStack, List.of(
 							Component.literal("Delete").withStyle(holdingShift ? ChatFormatting.RED : ChatFormatting.WHITE),
 							Component.literal("Warning:").withStyle(ChatFormatting.GRAY),
 							Component.literal("It will delete all the items inside the pocket.").withStyle(ChatFormatting.GRAY),
@@ -114,9 +116,9 @@ class PocketSettingsScreen extends Screen {
 			), Optional.empty(), mx, my);
 		}
 		if (hoverCancel)
-			renderTooltip(stack, Component.literal("Cancel"), mx, my);
+			renderTooltip(poseStack, Component.literal("Cancel"), mx, my);
 		if (hoverConfirm)
-			renderTooltip(stack, Component.literal("Confirm"), mx, my);
+			renderTooltip(poseStack, Component.literal("Confirm"), mx, my);
 	}
 
 	@Override
@@ -172,8 +174,9 @@ class PocketSettingsScreen extends Screen {
 	}
 
 	private void onSelectIcon(ItemStack newIcon) {
-		if (!newIcon.isEmpty())
-			pocketInfo.icon = new ItemType(newIcon);
+		ElementType newIconElement = ElementType.item(newIcon);
+		if (!newIconElement.isEmpty())
+			pocketInfo.icon = newIconElement;
 		Minecraft.getInstance().setScreen(this);
 	}
 

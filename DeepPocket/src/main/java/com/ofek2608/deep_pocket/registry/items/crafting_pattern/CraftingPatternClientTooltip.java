@@ -112,7 +112,7 @@ public class CraftingPatternClientTooltip implements ClientTooltipComponent {
 	}
 
 	private interface SlotItemRenderer {
-		public void render(int x, int y, int index);
+		void render(int x, int y, int index);
 	}
 
 

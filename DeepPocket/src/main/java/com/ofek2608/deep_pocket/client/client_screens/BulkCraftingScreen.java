@@ -176,7 +176,7 @@ class BulkCraftingScreen extends Screen {
 		return false;
 	}
 
-	private static enum Sprites {
+	private enum Sprites {
 		BASE(0, 0, 154, 50),
 		OUTLINE(0, 50, 154, 50),
 		BTN0_N(176, 0, 16, 16), BTN0_H(176, 16, 16, 16),

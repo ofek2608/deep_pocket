@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
+import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.UUID;
 
 class PocketSelectionScreen extends Screen {
+	private static final DeepPocketClientHelper HELPER = DeepPocketClientHelper.get();
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/select_pocket.png");
 	private static final int VIEW_WIDTH = 154;
 	private static final int VIEW_HEIGHT = 220;
@@ -109,10 +111,10 @@ class PocketSelectionScreen extends Screen {
 	}
 
 	@Override
-	public void render(PoseStack stack, int mx, int my, float partialTick) {
+	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
 		updateFields(mx, my);
 
-		renderBackground(stack);
+		renderBackground(poseStack);
 
 		ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
@@ -120,7 +122,7 @@ class PocketSelectionScreen extends Screen {
 		RenderSystem.setShaderTexture(0, TEXTURE);
 
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
-		Sprites.TOP.blit(stack, leftPos, topPos);
+		Sprites.TOP.blit(poseStack, leftPos, topPos);
 		for (int i = 0; i < 8; i++) {
 			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 			RenderSystem.setShaderTexture(0, TEXTURE);
@@ -128,20 +130,20 @@ class PocketSelectionScreen extends Screen {
 			int y = topPos + 19 + 22 * i;
 			Pocket pocket = visiblePockets[i];
 			DeepPocketUtils.setRenderShaderColor(pocket == null ? 0x000000 : pocket.getColor());
-			Sprites.POCKET_OUTLINE.blit(stack, leftPos, y);
+			Sprites.POCKET_OUTLINE.blit(poseStack, leftPos, y);
 			DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
-			Sprites.BORDERS.blit(stack, leftPos, y);
-			(hoveredPocket == i ? Sprites.POCKET_H : Sprites.POCKET_N).blit(stack, leftPos, y);
+			Sprites.BORDERS.blit(poseStack, leftPos, y);
+			(hoveredPocket == i ? Sprites.POCKET_H : Sprites.POCKET_N).blit(poseStack, leftPos, y);
 			if (pocket == null)
 				continue;
 			String pocketName = pocket.getName();
 			String ownerName = DeepPocketClientApi.get().getCachedPlayerName(pocket.getOwner());
 			PocketSecurityMode securityMode = pocket.getSecurityMode();
-
-			itemRenderer.renderGuiItem(pocket.getIcon().create(), leftPos + 8, y + 3);
-			font.draw(stack, pocketName, leftPos + 26, y + 2, 0xFFFFFF);
-			font.draw(stack, ownerName, leftPos + 26, y + 12, 0xFFFFFF);
-			font.draw(stack, securityMode.displayName, leftPos + 26 + font.width(ownerName) + 4, y + 12, securityMode.displayColor);
+			
+			HELPER.renderElementType(poseStack, leftPos + 8, y + 3, pocket.getIcon(), itemRenderer, font);
+			font.draw(poseStack, pocketName, leftPos + 26, y + 2, 0xFFFFFF);
+			font.draw(poseStack, ownerName, leftPos + 26, y + 12, 0xFFFFFF);
+			font.draw(poseStack, securityMode.displayName, leftPos + 26 + font.width(ownerName) + 4, y + 12, securityMode.displayColor);
 		}
 
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -149,23 +151,23 @@ class PocketSelectionScreen extends Screen {
 
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
 
-		Sprites.BOTTOM.blit(stack, leftPos, topPos + 195);
-		(hoverPrevPage ? Sprites.PREV_PAGE_H : Sprites.PREV_PAGE_N).blit(stack, leftPos + 40, topPos + 199);
-		(hoverNextPage ? Sprites.NEXT_PAGE_H : Sprites.NEXT_PAGE_N).blit(stack, leftPos + 98, topPos + 199);
+		Sprites.BOTTOM.blit(poseStack, leftPos, topPos + 195);
+		(hoverPrevPage ? Sprites.PREV_PAGE_H : Sprites.PREV_PAGE_N).blit(poseStack, leftPos + 40, topPos + 199);
+		(hoverNextPage ? Sprites.NEXT_PAGE_H : Sprites.NEXT_PAGE_N).blit(poseStack, leftPos + 98, topPos + 199);
 
 
-		font.draw(stack, search + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 6, topPos + 6, 0xDDDDDD);
-		drawPageText(stack, "/", leftPos + 77, topPos + 203);
-		drawPageText(stack, "" + (pageIndex + 1), leftPos + 67, topPos + 203);
-		drawPageText(stack, "" + pageCount, leftPos + 87, topPos + 203);
+		font.draw(poseStack, search + (focusSearch ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 6, topPos + 6, 0xDDDDDD);
+		drawPageText(poseStack, "/", leftPos + 77, topPos + 203);
+		drawPageText(poseStack, "" + (pageIndex + 1), leftPos + 67, topPos + 203);
+		drawPageText(poseStack, "" + pageCount, leftPos + 87, topPos + 203);
 
 
 		if (hoverNextPage)
-			renderTooltip(stack, Component.literal("Next Page"), mx, my);
+			renderTooltip(poseStack, Component.literal("Next Page"), mx, my);
 		if (hoverPrevPage)
-			renderTooltip(stack, Component.literal("Previous Page"), mx, my);
+			renderTooltip(poseStack, Component.literal("Previous Page"), mx, my);
 		if (0 <= hoveredPocket && hoveredPocket < visiblePockets.length && visiblePockets[hoveredPocket] != null)
-			renderTooltip(stack, Component.literal("Select"), mx, my);
+			renderTooltip(poseStack, Component.literal("Select"), mx, my);
 	}
 
 	private void drawPageText(PoseStack stack, String text, int x, int y) {

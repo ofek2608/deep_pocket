@@ -90,7 +90,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	}
 
 	private Pocket loadPocket(boolean allowPublicPocket, CompoundTag saved) {
-		Pocket pocket = helper.createPocket(conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
+		Pocket pocket = helper.createPocket(conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), PocketInfo.load(saved.getCompound("info")));
 
 //		Map<ItemType,Long> items = pocket.getItemsMap();
 //		Map<UUID, CraftingPatternOld> patterns = pocket.getPatternsMap();
@@ -234,7 +234,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		CompoundTag saved = new CompoundTag();
 		saved.putUUID("pocketId", pocket.getPocketId());
 		saved.putUUID("owner", pocket.getOwner());
-		saved.put("info", pocket.getInfo().save());
+		saved.put("info", PocketInfo.save(pocket.getInfo()));
 //		ListTag itemCounts = new ListTag();
 //		for (var entry : pocket.getItemsMap().entrySet()) {
 //			CompoundTag itemCount = new CompoundTag();
