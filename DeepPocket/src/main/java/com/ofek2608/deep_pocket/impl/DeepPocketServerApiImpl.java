@@ -645,8 +645,8 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, addedPatterns, removedPatterns.toArray(UUID[]::new));
 			
 			//Update default patterns
-			var addedDefaultPatterns = snapshot.getAddedDefaultPatterns();
-			var removedDefaultPatterns = snapshot.getRemovedDefaultPatterns();
+			var addedDefaultPatterns = patternsSnapshot.getAddedDefaults();
+			var removedDefaultPatterns = patternsSnapshot.getRemovedDefaults();
 			if (addedDefaultPatterns.size() > 0 || removedDefaultPatterns.length > 0)
 				DeepPocketPacketHandler.cbUpdateDefaultPatterns(packetTarget, pocketId, addedDefaultPatterns, removedDefaultPatterns);
 
@@ -665,8 +665,8 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			if (patternsToRemove.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, Collections.emptyMap(), patternsToRemove);
 			ElementType[] defaultPatternsToRemove = Stream.concat(
-							pocket.getDefaultPatternsMap().keySet().stream(),
-							Stream.of(pocketSnapshot.getRemovedDefaultPatterns())
+					pocket.getPatterns().getDefaultsMap().keySet().stream(),
+					Stream.of(pocketSnapshot.getPatternsSnapshot().getRemovedDefaults())
 			).toArray(ElementType[]::new);
 			if (defaultPatternsToRemove.length > 0)
 				DeepPocketPacketHandler.cbUpdateDefaultPatterns(packetTarget, pocketId, Collections.emptyMap(), defaultPatternsToRemove);
@@ -694,7 +694,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			pocketPatterns.getAllPatterns().forEach(patternId -> patternsMap.put(patternId, pocketPatterns.get(patternId)));
 			if (patternsMap.size() > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patternsMap, new UUID[0]);
-			var defaultPatterns = pocket.getDefaultPatternsMap();
+			var defaultPatterns = pocketPatterns.getDefaultsMap();
 			if (defaultPatterns.size() > 0)
 				DeepPocketPacketHandler.cbUpdateDefaultPatterns(packetTarget, pocketId, defaultPatterns, new ElementType[0]);
 		}

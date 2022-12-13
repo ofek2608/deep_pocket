@@ -213,8 +213,8 @@ class RequestProcessScreen extends Screen {
 		return selectedPatterns.computeIfAbsent(elementType, type -> {
 			PocketPatterns pocketPatterns = pocket.getPatterns();
 			//pocket default
-			if (pocket.getDefaultPatternsMap().containsKey(type)) {
-				Optional<UUID> defaultPatternId = pocket.getDefaultPattern(type);
+			if (pocketPatterns.getDefaultsMap().containsKey(type)) {
+				Optional<UUID> defaultPatternId = pocketPatterns.getDefault(type);
 				if (defaultPatternId.isEmpty() || pocketPatterns.get(defaultPatternId.get()) != null)
 					return defaultPatternId;
 			}

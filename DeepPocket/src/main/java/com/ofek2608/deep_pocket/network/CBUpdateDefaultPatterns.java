@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
@@ -42,10 +43,11 @@ class CBUpdateDefaultPatterns {
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket == null)
 				return;
+			PocketPatterns pocketPatterns = pocket.getPatterns();
 			for (var entry : addedDefaults.entrySet())
-				pocket.getDefaultPatternsMap().put(entry.getKey(), entry.getValue());
+				pocketPatterns.getDefaultsMap().put(entry.getKey(), entry.getValue());
 			for (ElementType type : removedDefaults)
-				pocket.getDefaultPatternsMap().remove(type);
+				pocketPatterns.getDefaultsMap().remove(type);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Deprecated(forRemoval = true)
 public sealed class CraftingPatternOld permits WorldCraftingPatternOld {
 	private final UUID patternId;
 	private final ItemTypeAmount[] input;

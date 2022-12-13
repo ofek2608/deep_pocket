@@ -44,13 +44,8 @@ public interface Pocket {
 	@Deprecated(forRemoval = true) long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
 	@Deprecated(forRemoval = true) long getMaxExtractOld(@Nullable Knowledge knowledge, ItemType ... items);
 	PocketPatterns getPatterns();
-	Map<UUID, CraftingPatternOld> getPatternsMap();
 	@Nullable CraftingPatternOld getPattern(UUID patternId);
-	UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
 	void removePattern(UUID patternId);
-	Map<ElementType,Optional<UUID>> getDefaultPatternsMap();
-	Optional<UUID> getDefaultPattern(ElementType type);
-	void setDefaultPattern(ElementType type, @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<UUID> patternId);
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();
@@ -72,7 +67,5 @@ public interface Pocket {
 		boolean didChangedInfo();
 		PocketContent.Snapshot getContentSnapshot();
 		PocketPatterns.Snapshot getPatternsSnapshot();
-		@UnmodifiableView Map<ElementType,Optional<UUID>> getAddedDefaultPatterns();
-		ElementType[] getRemovedDefaultPatterns();
 	}
 }

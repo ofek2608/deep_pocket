@@ -3,6 +3,7 @@ package com.ofek2608.deep_pocket.impl;
 import com.ofek2608.collections.CaptureMap;
 import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.LevelBlockPos;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -14,11 +15,13 @@ public class PocketPatternsImpl implements PocketPatterns {
 	@Nonnull private final CaptureMap<UUID,CraftingPattern> patterns;
 	@Nonnull private final Map<CraftingPattern,UUID> patternsId;
 	@Nonnull private final Map<UUID,List<LevelBlockPos>> patternsLocations;
+	@Nonnull private final DefaultPatterns defaultPatterns;
 	
 	PocketPatternsImpl() {
 		this.patterns = new CaptureMap<>();
 		this.patternsId = new HashMap<>();
 		this.patternsLocations = new HashMap<>();
+		this.defaultPatterns = new DefaultPatterns();
 	}
 	
 	private PocketPatternsImpl(PocketPatternsImpl copy) {
@@ -26,6 +29,7 @@ public class PocketPatternsImpl implements PocketPatterns {
 		this.patternsId = new HashMap<>(copy.patternsId);
 		this.patternsLocations = new HashMap<>();
 		copy.patternsLocations.forEach((patternId,positions)->this.patternsLocations.put(patternId, new ArrayList<>(positions)));
+		this.defaultPatterns = new DefaultPatterns(copy.defaultPatterns);
 	}
 	
 	@Override
@@ -82,6 +86,21 @@ public class PocketPatternsImpl implements PocketPatterns {
 	}
 	
 	@Override
+	public Map<ElementType, Optional<UUID>> getDefaultsMap() {
+		return defaultPatterns;
+	}
+	
+	@Override
+	public Optional<UUID> getDefault(ElementType type) {
+		return defaultPatterns.get(type);
+	}
+	
+	@Override
+	public void setDefault(ElementType type, Optional<UUID> patternId) {
+		defaultPatterns.put(type, patternId);
+	}
+	
+	@Override
 	public Snapshot createSnapshot() {
 		return new SnapshotImpl();
 	}
@@ -102,6 +121,7 @@ public class PocketPatternsImpl implements PocketPatterns {
 	
 	private final class SnapshotImpl implements Snapshot {
 		private final CaptureMap<UUID,CraftingPattern>.Snapshot internal = patterns.createSnapshot();
+		private final CaptureMap<ElementType,Optional<UUID>>.Snapshot internalDefault = defaultPatterns.createSnapshot();
 		@Override
 		public @UnmodifiableView Map<UUID, CraftingPattern> getAdded() {
 			return internal.getAddedAsMap();
@@ -110,6 +130,30 @@ public class PocketPatternsImpl implements PocketPatterns {
 		@Override
 		public @UnmodifiableView Set<UUID> getRemoved() {
 			return internal.getRemovedKeys();
+		}
+		
+		@Override
+		public @UnmodifiableView Map<ElementType, Optional<UUID>> getAddedDefaults() {
+			return internalDefault.getAddedAsMap();
+		}
+		
+		@Override
+		public ElementType[] getRemovedDefaults() {
+			return internalDefault.getRemovedKeys().toArray(new ElementType[0]);
+		}
+	}
+	
+	private static final class DefaultPatterns extends CaptureMap<ElementType,Optional<UUID>> {
+		public DefaultPatterns() { }
+		public DefaultPatterns(Map<? extends ElementType, ? extends Optional<UUID>> m) { super(m); }
+		
+		@Override
+		public Optional<UUID> validate(ElementType key, Optional<UUID> val) {
+			Objects.requireNonNull(key);
+			Objects.requireNonNull(val);
+			if (key.isEmpty())
+				throw new IllegalArgumentException();
+			return val;
 		}
 	}
 }

@@ -9,11 +9,8 @@ import com.ofek2608.deep_pocket.api.pocket.PocketContent;
 import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
-import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.UnmodifiableView;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -229,45 +226,15 @@ final class PocketImpl implements Pocket {
 	}
 	
 	@Override
-	public Map<UUID, CraftingPatternOld> getPatternsMap() {
-		return patternsOld;
-	}
-
-	@Override
 	public @Nullable CraftingPatternOld getPattern(UUID patternId) {
 		return patternsOld.get(patternId);
 	}
-
-	@Override
-	public UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos) {
-		UUID patternId;
-		do {
-			patternId = UUID.randomUUID();
-		} while (patternsOld.containsKey(patternId));
-		patternsOld.put(patternId, new WorldCraftingPatternOld(patternId, input, output, level, pos));
-		return patternId;
-	}
-
+	
 	@Override
 	public void removePattern(UUID patternId) {
 		patternsOld.remove(patternId);
 	}
-
-	@Override
-	public Map<ElementType, Optional<UUID>> getDefaultPatternsMap() {
-		return defaultPatterns;
-	}
-
-	@Override
-	public Optional<UUID> getDefaultPattern(ElementType type) {
-		return defaultPatterns.get(type);
-	}
-
-	@Override
-	public void setDefaultPattern(ElementType type, Optional<UUID> patternId) {
-		defaultPatterns.put(type, patternId);
-	}
-
+	
 	@Override
 	public PocketProcessManager getProcesses() {
 		return processes;
@@ -357,7 +324,6 @@ final class PocketImpl implements Pocket {
 		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
 		private final PocketContent.Snapshot contentSnapshot = content.createSnapshot();
 		private final PocketPatterns.Snapshot patternsSnapshot = patterns.createSnapshot();
-		private final CaptureMap<ElementType,Optional<UUID>>.Snapshot defaultPatternsSnapshot = defaultPatterns.createSnapshot();
 
 		@Override
 		public PocketImpl getPocket() {
@@ -377,16 +343,6 @@ final class PocketImpl implements Pocket {
 		@Override
 		public PocketPatterns.Snapshot getPatternsSnapshot() {
 			return patternsSnapshot;
-		}
-
-		@Override
-		public @UnmodifiableView Map<ElementType, Optional<UUID>> getAddedDefaultPatterns() {
-			return defaultPatternsSnapshot.getAddedAsMap();
-		}
-
-		@Override
-		public ElementType[] getRemovedDefaultPatterns() {
-			return defaultPatternsSnapshot.getRemovedKeys().toArray(new ElementType[0]);
 		}
 	}
 

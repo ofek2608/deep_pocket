@@ -43,7 +43,7 @@ class SBRequestProcess {
 			Pocket pocket = menu.getPocket();
 			if (pocket == null)
 				return;
-			pocket.getDefaultPatternsMap().putAll(setDefaultPatterns);
+			pocket.getPatterns().getDefaultsMap().putAll(setDefaultPatterns);
 			api.requestProcessFor(player, pocket.getPocketId(), requests);
 		});
 		ctxSupplier.get().setPacketHandled(true);
