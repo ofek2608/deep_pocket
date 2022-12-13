@@ -15,6 +15,7 @@ public interface DeepPocketHelper {
 
 	//Constructions
 	Pocket createPocket(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo);
+	public PocketContent createPocketContent();
 	Knowledge createKnowledge(ItemConversions conversions);
 	Knowledge0 createKnowledge(ElementConversions conversions);
 	ProvidedResources createProvidedResources(ItemType[] types);

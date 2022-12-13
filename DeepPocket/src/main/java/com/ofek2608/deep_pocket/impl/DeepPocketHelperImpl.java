@@ -12,6 +12,11 @@ class DeepPocketHelperImpl implements DeepPocketHelper {
 	public Pocket createPocket(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
 		return new PocketImpl(conversions, conversions0, pocketId, owner, pocketInfo, createProcessManager());
 	}
+	
+	@Override
+	public PocketContent createPocketContent() {
+		return new PocketContentImpl();
+	}
 
 	@Override
 	public Knowledge createKnowledge(ItemConversions conversions) {
