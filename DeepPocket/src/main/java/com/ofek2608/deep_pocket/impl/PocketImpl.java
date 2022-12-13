@@ -392,6 +392,20 @@ final class PocketImpl implements Pocket {
 		}
 	}
 
+	private static final class PocketPatterns extends CaptureMap<UUID,CraftingPattern> {
+		public PocketPatterns() { }
+		public PocketPatterns(Map<? extends UUID, ? extends CraftingPattern> m) { super(m); }
+
+		@Override
+		public CraftingPattern validate(UUID key, CraftingPattern val) throws IllegalArgumentException {
+			Objects.requireNonNull(key);
+			Objects.requireNonNull(val);
+			if (!val.getPatternId().equals(key))
+				throw new IllegalArgumentException();
+			return val;
+		}
+	}
+
 	private static final class PocketDefaultPatterns extends CaptureMap<ItemType,Optional<UUID>> {
 		public PocketDefaultPatterns() { }
 		public PocketDefaultPatterns(Map<? extends ItemType, ? extends Optional<UUID>> m) { super(m); }
