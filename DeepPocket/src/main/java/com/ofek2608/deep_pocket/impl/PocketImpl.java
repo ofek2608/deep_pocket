@@ -20,8 +20,6 @@ import java.util.stream.Stream;
 import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 final class PocketImpl implements Pocket {
-	@Nonnull private final ItemConversions conversions;
-	@Nonnull private ElementConversions conversions0;
 	@Nonnull private final UUID pocketId;
 	@Nonnull private final UUID owner;
 	@Nonnull private final CaptureReference<PocketInfo> pocketInfo;
@@ -32,14 +30,12 @@ final class PocketImpl implements Pocket {
 	@Nonnull private final PocketDefaultPatterns defaultPatterns;
 	@Nonnull private final PocketProcessManager processes;
 
-	PocketImpl(DeepPocketHelper helper, ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
-		this.conversions = conversions;
-		this.conversions0 = conversions0;
+	PocketImpl(DeepPocketHelper helper, ElementConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
 		this.pocketId = pocketId;
 		this.owner = owner;
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
 		this.items = new PocketItems();
-		this.content = helper.createPocketContent();
+		this.content = helper.createPocketContent(conversions);
 		this.patternsOld = new PocketPatternsOld();
 		this.patterns = helper.createPocketPatterns();
 		this.defaultPatterns = new PocketDefaultPatterns();
@@ -47,8 +43,6 @@ final class PocketImpl implements Pocket {
 	}
 
 	private PocketImpl(PocketImpl copy) {
-		this.conversions = copy.conversions;
-		this.conversions0 = copy.conversions0;
 		this.pocketId = copy.pocketId;
 		this.owner = copy.owner;
 		this.pocketInfo = new CaptureReference<>(copy.pocketInfo);
@@ -71,7 +65,6 @@ final class PocketImpl implements Pocket {
 	
 	@Override
 	public void setConversions(ElementConversions conversions) {
-		this.conversions0 = conversions;
 		content.setConversions(conversions);
 	}
 	
@@ -120,14 +113,7 @@ final class PocketImpl implements Pocket {
 	public void insertItem(ItemType type, long count) {
 		if (type.isEmpty() || count == 0)
 			return;
-		long[] value = conversions.getValue(type, count);
-		if (value == null) {
-			insertItem0(type, count);
-			return;
-		}
-		for (int i = 0; i < value.length; i++)
-			if (value[i] != 0)
-				insertItem0(conversions.getBaseItem(i), value[i]);
+		insertItem0(type, count);
 	}
 
 	@Override
@@ -161,9 +147,7 @@ final class PocketImpl implements Pocket {
 
 	@Override
 	public long getMaxExtractOld(Map<ItemType,Long> counts) {
-		counts = new HashMap<>(counts);
-		conversions.convertMap(counts);
-		return getMaxExtract0(counts);
+		return getMaxExtract0(new HashMap<>(counts));
 	}
 
 	@Override
@@ -171,7 +155,6 @@ final class PocketImpl implements Pocket {
 		if (overallCount == 0)
 			return 0;
 		counts = new HashMap<>(counts);
-		conversions.convertMap(counts);
 		long maxExtract = getMaxExtract0(counts);
 		if (maxExtract == 0)
 			return 0;
@@ -244,7 +227,7 @@ final class PocketImpl implements Pocket {
 						IntStream.range(0, content.getSize())
 								.mapToObj(content::getType)
 								.filter(type->!(type instanceof ElementType.TConvertible)),
-						conversions0.getKeys().stream()
+						content.getConversions().getKeys().stream()
 				),
 				patterns.getAllPatterns()
 						.stream()
@@ -303,7 +286,7 @@ final class PocketImpl implements Pocket {
 		
 		@Override
 		public boolean canBeConverted() {
-			return conversions0.hasValue(type);
+			return content.getConversions().hasValue(type);
 		}
 	}
 
@@ -339,7 +322,7 @@ final class PocketImpl implements Pocket {
 
 
 
-	private final class PocketItems extends CaptureMap<ItemType,Long> {
+	private static final class PocketItems extends CaptureMap<ItemType,Long> {
 		public PocketItems() { }
 		public PocketItems(Map<? extends ItemType, ? extends Long> m) { super(m); }
 
@@ -347,7 +330,7 @@ final class PocketImpl implements Pocket {
 		public Long validate(ItemType key, Long val) {
 			Objects.requireNonNull(key);
 			Objects.requireNonNull(val);
-			if (key.isEmpty() || conversions.hasValue(key))
+			if (key.isEmpty())
 				throw new IllegalArgumentException();
 			return val < 0 ? -1 : val;
 		}

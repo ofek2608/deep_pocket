@@ -13,13 +13,15 @@ import java.util.*;
 import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 final class PocketContentImpl implements PocketContent {
-	private ElementConversions conversions = ElementConversions.EMPTY;
+	private ElementConversions conversions;
 	private final Map<ElementType,Integer> indexMap = new HashMap<>();
 	private final List<ElementType> types = new ArrayList<>();
 	private final List<Long> counts = new ArrayList<>();
 	private SnapshotImpl lastSnapshot = new SnapshotImpl();
 	
-	PocketContentImpl() {}
+	PocketContentImpl(ElementConversions conversions) {
+		this.conversions = conversions;
+	}
 	
 	@Override
 	public ElementConversions getConversions() {
@@ -244,11 +246,10 @@ final class PocketContentImpl implements PocketContent {
 	
 	@Override
 	public PocketContent copy() {
-		PocketContentImpl copy = new PocketContentImpl();
-		copy.conversions = conversions;
-		copy.indexMap.putAll(indexMap);
-		copy.types.addAll(types);
-		copy.counts.addAll(counts);
+		PocketContentImpl copy = new PocketContentImpl(this.conversions);
+		copy.indexMap.putAll(this.indexMap);
+		copy.types.addAll(this.types);
+		copy.counts.addAll(this.counts);
 		return copy;
 	}
 	

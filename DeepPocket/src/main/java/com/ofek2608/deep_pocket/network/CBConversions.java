@@ -1,29 +1,29 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.struct.ItemConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-class CBItemConversions {
-	private final ItemConversions conversions;
+class CBConversions {
+	private final ElementConversions conversions;
 
-	CBItemConversions(ItemConversions conversions) {
+	CBConversions(ElementConversions conversions) {
 		this.conversions = conversions;
 	}
 
-	CBItemConversions(FriendlyByteBuf buf) {
-		this(ItemConversions.decode(buf));
+	CBConversions(FriendlyByteBuf buf) {
+		this(ElementConversions.decode(buf));
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		ItemConversions.encode(buf, conversions);
+		ElementConversions.encode(buf, conversions);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
-		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().setItemConversions(conversions));
+		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().setConversions(conversions));
 		ctxSupplier.get().setPacketHandled(true);
 	}
 }

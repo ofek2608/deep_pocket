@@ -2,7 +2,6 @@ package com.ofek2608.deep_pocket.api.events;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
-import com.ofek2608.deep_pocket.api.struct.ItemConversions;
 import net.minecraftforge.eventbus.api.Event;
 
 public class DeepPocketConversionsUpdatedEvent extends Event {

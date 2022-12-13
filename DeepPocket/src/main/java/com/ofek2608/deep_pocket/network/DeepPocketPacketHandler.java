@@ -10,7 +10,6 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public final class DeepPocketPacketHandler {
@@ -27,7 +26,7 @@ public final class DeepPocketPacketHandler {
 
 		CHANNEL.registerMessage(++pid, CBPermitPublicPocket.class, CBPermitPublicPocket::encode, CBPermitPublicPocket::new, CBPermitPublicPocket::handle, clientbound);
 
-		CHANNEL.registerMessage(++pid, CBItemConversions.class, CBItemConversions::encode, CBItemConversions::new, CBItemConversions::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBConversions.class, CBConversions::encode, CBConversions::new, CBConversions::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBSetPlayersName.class, CBSetPlayersName::encode, CBSetPlayersName::new, CBSetPlayersName::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBPocketCreate.class, CBPocketCreate::encode, CBPocketCreate::new, CBPocketCreate::handle, clientbound);
@@ -66,7 +65,7 @@ public final class DeepPocketPacketHandler {
 
 	public static void cbPermitPublicPocket(PacketDistributor.PacketTarget target, boolean value) { CHANNEL.send(target, new CBPermitPublicPocket(value)); }
 
-	public static void cbItemConversions(PacketDistributor.PacketTarget target, ItemConversions conversions) { CHANNEL.send(target, new CBItemConversions(conversions)); }
+	public static void cbConversions(PacketDistributor.PacketTarget target, ElementConversions conversions) { CHANNEL.send(target, new CBConversions(conversions)); }
 	public static void cbSetPlayersName(PacketDistributor.PacketTarget target, Map<UUID,String> names) { CHANNEL.send(target, new CBSetPlayersName(names)); }
 
 	public static void cbCreatePocket(PacketDistributor.PacketTarget target, UUID pocketId, UUID owner, PocketInfo info) { CHANNEL.send(target, new CBPocketCreate(pocketId, owner, info)); }

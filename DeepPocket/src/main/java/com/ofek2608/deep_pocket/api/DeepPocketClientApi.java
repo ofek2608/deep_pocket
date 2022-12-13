@@ -9,7 +9,7 @@ public interface DeepPocketClientApi extends DeepPocketApi {
 
 	@Override DeepPocketClientHelper getHelper();
 
-	void setItemConversions(ElementConversions conversions);
+	void setConversions(ElementConversions conversions);
 	//server config
 	boolean isPermitPublicPocket();
 	void setPermitPublicPocket(boolean value);

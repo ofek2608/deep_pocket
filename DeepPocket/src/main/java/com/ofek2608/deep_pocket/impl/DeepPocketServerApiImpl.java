@@ -48,13 +48,13 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
 	private final Map<UUID, Knowledge.Snapshot> knowledge = new HashMap<>();
 
-	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions) {
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversions conversions) {
 		super(helper);
 		this.server = server;
-		this.conversionsOld = conversions;
+		this.conversions = conversions;
 	}
 
-	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions, CompoundTag tag) {
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversions conversions, CompoundTag tag) {
 		this(helper, server, conversions);
 		boolean errors = false;
 		// Loading: Pockets
@@ -90,7 +90,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	}
 
 	private Pocket loadPocket(boolean allowPublicPocket, CompoundTag saved) {
-		Pocket pocket = helper.createPocket(conversionsOld, conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
+		Pocket pocket = helper.createPocket(conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
 
 //		Map<ItemType,Long> items = pocket.getItemsMap();
 //		Map<UUID, CraftingPatternOld> patterns = pocket.getPatternsMap();
@@ -612,7 +612,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			//permit public key
 			DeepPocketPacketHandler.cbPermitPublicPocket(packetTarget, DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get());
 			//item conversions
-			DeepPocketPacketHandler.cbItemConversions(packetTarget, conversionsOld);
+			DeepPocketPacketHandler.cbConversions(packetTarget, conversions);
 			//player name cache
 			DeepPocketPacketHandler.cbSetPlayersName(packetTarget, getPlayerNameCache());
 			//knowledge

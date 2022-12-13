@@ -16,7 +16,7 @@ final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHe
 	}
 
 	@Override
-	public void setItemConversions(ElementConversions conversions) {
+	public void setConversions(ElementConversions conversions) {
 		this.conversions = conversions;
 		this.knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 		MinecraftForge.EVENT_BUS.post(new DeepPocketConversionsUpdatedEvent(this, conversions));
