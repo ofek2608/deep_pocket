@@ -34,8 +34,8 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, CBClearPockets.class, CBClearPockets::encode, CBClearPockets::new, CBClearPockets::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBPocketInfo.class, CBPocketInfo::encode, CBPocketInfo::new, CBPocketInfo::handle, clientbound);
-		CHANNEL.registerMessage(++pid, CBPocketSetElementCount.class, CBPocketSetElementCount::encode, CBPocketSetElementCount::new, CBPocketSetElementCount::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketClearElements.class, CBPocketClearElements::encode, CBPocketClearElements::new, CBPocketClearElements::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBPocketContentUpdate.class, CBPocketContentUpdate::encode, CBPocketContentUpdate::new, CBPocketContentUpdate::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBUpdatePatterns.class, CBUpdatePatterns::encode, CBUpdatePatterns::new, CBUpdatePatterns::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBUpdateDefaultPatterns.class, CBUpdateDefaultPatterns::encode, CBUpdateDefaultPatterns::new, CBUpdateDefaultPatterns::handle, clientbound);
@@ -73,8 +73,8 @@ public final class DeepPocketPacketHandler {
 	public static void cbClearPockets(PacketDistributor.PacketTarget target) { CHANNEL.send(target, new CBClearPockets()); }
 
 	public static void cbPocketInfo(PacketDistributor.PacketTarget target, UUID pocketId, PocketInfo info) { CHANNEL.send(target, new CBPocketInfo(pocketId, info)); }
-	public static void cbPocketSetElementCount(PacketDistributor.PacketTarget target, UUID pocketId, Map<ElementType,Long> counts) { CHANNEL.send(target, new CBPocketSetElementCount(pocketId, counts)); }
 	public static void cbPocketClearElements(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearElements(pocketId)); }
+	public static void cbPocketContentUpdate(PacketDistributor.PacketTarget target, UUID pocketId, int newSize, int[] changedTypeIndexes, ElementType[] changedType, long[] changedTypeCount, int[] changedCountIndexes, long[] changedCount) { CHANNEL.send(target, new CBPocketContentUpdate(pocketId, newSize, changedTypeIndexes, changedType, changedTypeCount, changedCountIndexes, changedCount)); }
 
 	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, CraftingPattern[] addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
 	public static void cbUpdateDefaultPatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Optional<UUID>> addedDefaults, ItemType[] removedDefaults) { CHANNEL.send(target, new CBUpdateDefaultPatterns(pocketId, addedDefaults, removedDefaults)); }
@@ -98,8 +98,8 @@ public final class DeepPocketPacketHandler {
 	public static void sbClearCraftingGrid(boolean up) { CHANNEL.send(serverTarget(), new SBClearCraftingGrid(up)); }
 	public static void sbBulkCrafting(long count) { CHANNEL.send(serverTarget(), new SBBulkCrafting(count)); }
 	public static void sbRequestProcess(RecipeRequest[] requests, Map<ItemType, Optional<UUID>> setDefaultPatterns) { CHANNEL.send(serverTarget(), new SBRequestProcess(requests, setDefaultPatterns)); }
-
+	
 	public static void sbPocketSignalSettings(BlockPos pos, SignalSettings settings) { CHANNEL.send(serverTarget(), new SBPocketSignalSettings(pos, settings)); }
-
+	
 	private static PacketDistributor.PacketTarget serverTarget() { return PacketDistributor.SERVER.noArg(); }
 }

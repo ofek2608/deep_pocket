@@ -27,6 +27,9 @@ public final class PocketContentImpl implements PocketContent {
 	@Override
 	public void setConversions(ElementConversions conversions) {
 		this.conversions = conversions;
+		for (int i = 0; i < types.size(); i++)
+			if (conversions.hasValue(types.get(i)))
+				remove(i--);
 	}
 	
 	@Override
@@ -266,6 +269,12 @@ public final class PocketContentImpl implements PocketContent {
 			types.set(index, type);
 			lastSnapshot.changedTypes.add(index);
 		}
+	}
+	
+	@Override
+	public void limitSize(int newSize) {
+		while (getSize() > newSize)
+			remove(getSize() - 1);
 	}
 	
 	private static final class SnapshotImpl implements Snapshot {

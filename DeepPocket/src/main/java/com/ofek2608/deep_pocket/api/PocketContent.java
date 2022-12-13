@@ -39,6 +39,8 @@ public interface PocketContent {
 	
 	@ApiStatus.Internal
 	void setType(int index, ElementType type);
+	@ApiStatus.Internal
+	void limitSize(int newSize);
 	
 	
 	interface Snapshot {

@@ -614,17 +614,33 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		//Pocket Update
 		for (var entry : toSendPocketUpdate.entrySet()) {
 			Pocket.Snapshot snapshot = entry.getKey();
-			UUID pocketId = snapshot.getPocket().getPocketId();
+			Pocket pocket = snapshot.getPocket();
+			UUID pocketId = pocket.getPocketId();
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
-			//Changed items
-			Map<ElementType,Long> changedItems = snapshot.getChangedElements();
-			if (!changedItems.isEmpty())
-				DeepPocketPacketHandler.cbPocketSetElementCount(packetTarget, pocketId, changedItems);
+			
+			//Changed elements
+			PocketContent.Snapshot pocketSnapshot = snapshot.getContentSnapshot();
+			PocketContent content = pocket.getContent();
+			int contentSize = content.getSize();
+			
+			Set<Integer> changedTypeSet = pocketSnapshot.getChangedTypes();
+			Set<Integer> changedCountSet = pocketSnapshot.getChangedCount();
+			
+			int[] changedTypeIndexes = changedTypeSet.stream().mapToInt(Integer::intValue).filter(i -> i < contentSize).sorted().toArray();
+			ElementType[] changedType = IntStream.of(changedTypeIndexes).mapToObj(content::getType).toArray(ElementType[]::new);
+			long[] changedTypeCount = IntStream.of(changedTypeIndexes).mapToLong(content::getCount).toArray();
+			
+			int[] changedCountIndexes = changedCountSet.stream().mapToInt(Integer::intValue).filter(i -> i < contentSize).filter(i -> !changedTypeSet.contains(i)).sorted().toArray();
+			long[] changedCount = IntStream.of(changedCountIndexes).mapToLong(content::getCount).toArray();
+			
+			DeepPocketPacketHandler.cbPocketContentUpdate(packetTarget, pocketId, contentSize, changedTypeIndexes, changedType, changedTypeCount, changedCountIndexes, changedCount);
+			
 			//Update patterns
 			CraftingPattern[] addedPatterns = snapshot.getAddedPatterns();
 			UUID[] removedPatterns = snapshot.getRemovedPatterns();
 			if (addedPatterns.length > 0 || removedPatterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, addedPatterns, removedPatterns);
+			
 			//Update default patterns
 			var addedDefaultPatterns = snapshot.getAddedDefaultPatterns();
 			var removedDefaultPatterns = snapshot.getRemovedDefaultPatterns();
@@ -657,7 +673,19 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
 			Pocket pocket = entry.getKey();
 			UUID pocketId = pocket.getPocketId();
-			DeepPocketPacketHandler.cbPocketSetElementCount(packetTarget, pocketId, pocket.getContentOld());
+			
+			PocketContent content = pocket.getContent();
+			int contentSize = content.getSize();
+			DeepPocketPacketHandler.cbPocketContentUpdate(
+					packetTarget, pocketId,
+					contentSize,
+					IntStream.range(0, contentSize).toArray(),
+					IntStream.range(0, contentSize).mapToObj(content::getType).toArray(ElementType[]::new),
+					IntStream.range(0, contentSize).mapToLong(content::getCount).toArray(),
+					new int[0],
+					new long[0]
+			);
+			
 			CraftingPattern[] patterns = pocket.getPatternsMap().values().toArray(CraftingPattern[]::new);
 			if (patterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns, new UUID[0]);

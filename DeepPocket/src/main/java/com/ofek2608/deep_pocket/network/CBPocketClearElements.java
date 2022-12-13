@@ -28,7 +28,7 @@ class CBPocketClearElements {
 			DeepPocketClientApi api = DeepPocketClientApi.get();
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket != null)
-				pocket.getContentOld().clear();
+				pocket.getContent().clear();
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

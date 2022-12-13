@@ -26,7 +26,6 @@ public interface Pocket {
 	void setConversions(ElementConversions conversions);
 
 	boolean canAccess(Player player);
-	Map<ElementType,Long> getContentOld();
 	PocketContent getContent();
 	void insertElement(ElementType type, long count);
 	long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType,Long> counts);
@@ -67,8 +66,7 @@ public interface Pocket {
 	interface Snapshot {
 		Pocket getPocket();
 		boolean didChangedInfo();
-		@UnmodifiableView Map<ItemType,Long> getChangedItems();
-		@UnmodifiableView Map<ElementType,Long> getChangedElements();
+		public PocketContent.Snapshot getContentSnapshot();
 		CraftingPattern[] getAddedPatterns();
 		@UnmodifiableView Map<ItemType,Optional<UUID>> getAddedDefaultPatterns();
 		ItemType[] getRemovedDefaultPatterns();
