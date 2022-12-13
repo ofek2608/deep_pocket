@@ -252,7 +252,7 @@ class PocketSettingsScreen extends Screen {
 		return false;
 	}
 
-	private static enum Sprites {
+	private enum Sprites {
 		BASE(0, 0, 154, 62),
 		OUTLINE(0, 62, 154, 62),
 		ICON_N(240, 0, 16, 16),

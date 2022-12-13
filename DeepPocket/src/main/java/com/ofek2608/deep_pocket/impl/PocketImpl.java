@@ -10,7 +10,6 @@ import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import javax.annotation.Nonnull;

@@ -10,7 +10,6 @@ import java.util.HashMap;
 
 import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
-@SuppressWarnings("ClassCanBeRecord")
 public final class CraftingPattern {
 	private final ElementTypeStack[] input;
 	private final ElementTypeStack[] output;

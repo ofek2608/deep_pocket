@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import java.util.Objects;
 import java.util.UUID;
 
+@Deprecated(forRemoval = true)
 public final class WorldCraftingPatternOld extends CraftingPatternOld {
 	private final ServerLevel level;
 	private final BlockPos pos;

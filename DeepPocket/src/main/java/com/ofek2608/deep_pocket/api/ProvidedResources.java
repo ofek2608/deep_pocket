@@ -5,7 +5,7 @@ import net.minecraft.nbt.ListTag;
 
 public interface ProvidedResources {
 	int getTypeCount();
-	public ItemType[] getTypes();
+	ItemType[] getTypes();
 	ItemType getType(int index);
 	long getProvided(int index);
 	void provide(int index, long amount);

@@ -1,8 +1,9 @@
 package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 
 import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -51,7 +52,8 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedMul;
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedSum;
 
 public class CrafterBlock extends Block implements EntityBlock {
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
@@ -130,18 +132,25 @@ public class CrafterBlock extends Block implements EntityBlock {
 		public Ent(BlockPos pos, BlockState state) {
 			this(DeepPocketRegistry.CRAFTER_ENTITY.get(), pos, state, 9);
 		}
+		
+		private LevelBlockPos getLevelPos(ServerLevel level) {
+			return new LevelBlockPos(level.dimension(), getBlockPos());
+		}
 
 		@Override
 		public void setPocket(UUID pocketId) {
-			if (level == null || level.isClientSide) {
+			if (!(level instanceof ServerLevel serverLevel)) {
 				super.setPocket(pocketId);
 				return;
 			}
 			Pocket oldPocket = getServerPocket();
-			if (oldPocket != null)
+			if (oldPocket != null) {
+				PocketPatterns pocketPatterns = oldPocket.getPatterns();
+				LevelBlockPos pos = getLevelPos(serverLevel);
 				for (UUID pattern : patterns)
 					if (pattern != null)
-						oldPocket.removePattern(pattern);
+						pocketPatterns.remove(pattern, pos);
+			}
 			Arrays.fill(patterns, null);
 
 			super.setPocket(pocketId);
@@ -157,16 +166,15 @@ public class CrafterBlock extends Block implements EntityBlock {
 			if (pocket == null)
 				return;
 			ItemStack stack = items.get(slot);
-			LevelBlockPos pos = new LevelBlockPos(serverLevel.dimension(), getBlockPos());
 			if (stack.isEmpty()) {
 				UUID patternId = patterns[slot];
 				if (patternId != null) {
-					pocket.getPatterns().remove(patternId, pos);
+					pocket.getPatterns().remove(patternId, getLevelPos(serverLevel));
 					patterns[slot] = null;
 				}
 				return;
 			}
-			patterns[slot] = pocket.getPatterns().add(CraftingPatternItem.retrieve(stack), pos);
+			patterns[slot] = pocket.getPatterns().add(CraftingPatternItem.retrieve(stack), getLevelPos(serverLevel));
 		}
 
 		@Override

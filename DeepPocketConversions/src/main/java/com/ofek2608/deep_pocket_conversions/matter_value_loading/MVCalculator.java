@@ -33,6 +33,7 @@ public final class MVCalculator {
 		// Removing unstable value while I can (while last call changed something)
 		// If there is a recipe to recheck, the result of the item is in an infinite loop that decrement each time
 		// But maybe I haven't got to a stable position, so I won't set a value 0 for it.
+		//noinspection StatementWithEmptyBody
 		while(mvCalculationContext.removeUnstableValues());
 		//Build and return
 		return mvCalculationContext.buildValues();

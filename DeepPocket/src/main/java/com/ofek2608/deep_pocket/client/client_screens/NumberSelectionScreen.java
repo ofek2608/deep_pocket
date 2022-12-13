@@ -155,7 +155,7 @@ class NumberSelectionScreen extends Screen {
 		return false;
 	}
 
-	private static enum Sprites {
+	private enum Sprites {
 		BASE(0, 0, 126, 50),
 		OUTLINE(0, 50, 126, 50),
 		BTN_CANCEL_N(224, 0, 16, 16), BTN_CANCEL_H(224, 16, 16, 16),

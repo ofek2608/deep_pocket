@@ -6,6 +6,6 @@ import net.minecraft.world.item.crafting.Recipe;
 import java.util.function.Consumer;
 
 public interface IRecipeLoader<R extends Recipe<?>> {
-	public ResourceLocation getId();
-	public void load(Consumer<ICompilableRecipe> recipeRegister, R recipe);
+	ResourceLocation getId();
+	void load(Consumer<ICompilableRecipe> recipeRegister, R recipe);
 }

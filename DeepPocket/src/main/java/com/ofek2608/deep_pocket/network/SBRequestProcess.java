@@ -4,7 +4,6 @@ import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import net.minecraft.network.FriendlyByteBuf;

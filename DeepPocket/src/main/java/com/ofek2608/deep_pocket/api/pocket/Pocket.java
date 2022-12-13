@@ -6,7 +6,6 @@ import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -40,8 +39,8 @@ public interface Pocket {
 	@Deprecated(forRemoval = true) long extractItem(ItemType type, long count);
 	@Deprecated(forRemoval = true) long getMaxExtractOld(ItemType ... items);
 	PocketPatterns getPatterns();
-	@Nullable CraftingPatternOld getPattern(UUID patternId);
-	void removePattern(UUID patternId);
+	@Deprecated(forRemoval = true) @Nullable CraftingPatternOld getPattern(UUID patternId);
+	@Deprecated(forRemoval = true) void removePattern(UUID patternId);
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();

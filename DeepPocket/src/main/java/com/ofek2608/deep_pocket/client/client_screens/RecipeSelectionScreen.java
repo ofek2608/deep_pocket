@@ -25,7 +25,6 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 class RecipeSelectionScreen extends Screen {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/select_recipe.png");

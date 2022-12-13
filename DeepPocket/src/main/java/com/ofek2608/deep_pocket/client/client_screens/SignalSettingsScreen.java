@@ -215,7 +215,7 @@ class SignalSettingsScreen extends Screen {
 		return false;
 	}
 
-	private static enum Sprites {
+	private enum Sprites {
 		BASE_0(0, 0, 186, 26),
 		OUTLINE_0(0, 26, 186, 26),
 		BASE_1(0, 52, 186, 26),

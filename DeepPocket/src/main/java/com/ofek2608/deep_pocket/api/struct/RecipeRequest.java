@@ -4,7 +4,6 @@ import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.UUID;
 
-@SuppressWarnings("ClassCanBeRecord")
 public final class RecipeRequest {
 	private final ElementType result;
 	private final long amount;
