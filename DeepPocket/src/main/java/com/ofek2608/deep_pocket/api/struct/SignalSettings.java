@@ -45,8 +45,8 @@ public final class SignalSettings {
 		if (api == null) return false;
 		Pocket pocket = api.getPocket(pocketId);
 		if (pocket == null) return false;
-		long firstNum = pocket.getMaxExtractOld(null, first);
-		long secondNum = secondItem == null ? secondCount : pocket.getMaxExtractOld(null, secondItem);
+		long firstNum = pocket.getMaxExtractOld(first);
+		long secondNum = secondItem == null ? secondCount : pocket.getMaxExtractOld(secondItem);
 		if (bigger) {
 			long temp = firstNum;
 			firstNum = secondNum;

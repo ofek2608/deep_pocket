@@ -8,7 +8,7 @@ import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import net.minecraftforge.common.MinecraftForge;
 
 final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHelper> implements DeepPocketClientApi {
-	private Knowledge0 knowledge = DeepPocketManager.getHelper().createKnowledge(conversions0);
+	private Knowledge0 knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 	private boolean permitPublicPocket;
 
 	DeepPocketClientApiImpl(DeepPocketClientHelper helper) {
@@ -17,7 +17,7 @@ final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHe
 
 	@Override
 	public void setItemConversions(ElementConversions conversions) {
-		this.conversions0 = conversions;
+		this.conversions = conversions;
 		this.knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 		MinecraftForge.EVENT_BUS.post(new DeepPocketConversionsUpdatedEvent(this, conversions));
 	}

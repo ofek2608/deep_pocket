@@ -20,7 +20,6 @@ public interface DeepPocketHelper {
 	Pocket createPocket(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo);
 	PocketContent createPocketContent();
 	PocketPatterns createPocketPatterns();
-	Knowledge createKnowledge(ItemConversions conversions);
 	Knowledge0 createKnowledge(ElementConversions conversions);
 	ProvidedResources createProvidedResources(ItemType[] types);
 	PocketProcessManager createProcessManager();

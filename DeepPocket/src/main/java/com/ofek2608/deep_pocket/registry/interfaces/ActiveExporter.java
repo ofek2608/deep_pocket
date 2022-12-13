@@ -100,7 +100,7 @@ public class ActiveExporter extends Block implements EntityBlock {
 				transferCount -= itemHandler.insertItem(i, filter.create(transferCount), true).getCount();
 				if (transferCount <= 0)
 					continue;
-				transferCount = (int)pocket.extractItem(null, filter, transferCount);
+				transferCount = (int)pocket.extractItem(filter, transferCount);
 				if (transferCount <= 0)
 					return;
 				int leftOver = itemHandler.insertItem(i, filter.create(transferCount), false).getCount();

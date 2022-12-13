@@ -39,10 +39,10 @@ public interface Pocket {
 	@Deprecated(forRemoval = true) long getItemCount(ItemType type);
 	@Deprecated(forRemoval = true) void insertItem(ItemType type, long count);
 	void insertAll(ProvidedResources resources);
-	@Deprecated(forRemoval = true) long getMaxExtractOld(@Nullable Knowledge knowledge, Map<ItemType,Long> counts);
-	@Deprecated(forRemoval = true) long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount);
-	@Deprecated(forRemoval = true) long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
-	@Deprecated(forRemoval = true) long getMaxExtractOld(@Nullable Knowledge knowledge, ItemType ... items);
+	@Deprecated(forRemoval = true) long getMaxExtractOld(Map<ItemType,Long> counts);
+	@Deprecated(forRemoval = true) long extract(Map<ItemType,Long> counts, long overallCount);
+	@Deprecated(forRemoval = true) long extractItem(ItemType type, long count);
+	@Deprecated(forRemoval = true) long getMaxExtractOld(ItemType ... items);
 	PocketPatterns getPatterns();
 	@Nullable CraftingPatternOld getPattern(UUID patternId);
 	void removePattern(UUID patternId);

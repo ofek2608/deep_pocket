@@ -15,8 +15,8 @@ import java.util.stream.Stream;
 
 abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements DeepPocketApi {
 	protected final Helper helper;
-	protected @Nonnull ItemConversions conversions = ItemConversions.EMPTY;
-	protected @Nonnull ElementConversions conversions0 = ElementConversions.EMPTY;
+	protected @Nonnull ItemConversions conversionsOld = ItemConversions.EMPTY;
+	protected @Nonnull ElementConversions conversions = ElementConversions.EMPTY;
 	protected final Map<UUID, Pocket.Snapshot> pocketSnapshots = new HashMap<>();
 	protected final Map<UUID, String> playerNameCache = new HashMap<>();
 
@@ -28,15 +28,10 @@ abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements Dee
 	public Helper getHelper() {
 		return helper;
 	}
-
-	@Override
-	public ItemConversions getItemConversions() {
-		return conversions;
-	}
 	
 	@Override
 	public ElementConversions getConversions() {
-		return conversions0;
+		return conversions;
 	}
 	
 	@Override
@@ -52,7 +47,7 @@ abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements Dee
 	public @Nullable Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
 		if (pocketSnapshots.containsKey(pocketId))
 			return null;
-		Pocket newPocket = helper.createPocket(conversions, conversions0, pocketId, owner, info);
+		Pocket newPocket = helper.createPocket(conversionsOld, conversions, pocketId, owner, info);
 		pocketSnapshots.put(pocketId, newPocket.createSnapshot());
 		return newPocket;
 	}

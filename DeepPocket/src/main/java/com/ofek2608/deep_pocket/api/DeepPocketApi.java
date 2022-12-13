@@ -15,8 +15,7 @@ public interface DeepPocketApi {
 	static @Nullable DeepPocketApi get(Level level) { return get(level.isClientSide); }
 
 	DeepPocketHelper getHelper();
-
-	ItemConversions getItemConversions();
+	
 	ElementConversions getConversions();
 
 	Stream<Pocket> getPockets();

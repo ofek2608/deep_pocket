@@ -51,7 +51,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions) {
 		super(helper);
 		this.server = server;
-		this.conversions = conversions;
+		this.conversionsOld = conversions;
 	}
 
 	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ItemConversions conversions, CompoundTag tag) {
@@ -90,7 +90,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	}
 
 	private Pocket loadPocket(boolean allowPublicPocket, CompoundTag saved) {
-		Pocket pocket = helper.createPocket(conversions, conversions0, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
+		Pocket pocket = helper.createPocket(conversionsOld, conversions, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
 
 //		Map<ItemType,Long> items = pocket.getItemsMap();
 //		Map<UUID, CraftingPatternOld> patterns = pocket.getPatternsMap();
@@ -143,7 +143,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	}
 
 	private Knowledge0 loadKnowledge(CompoundTag saved) {
-		Knowledge0 knowledge = helper.createKnowledge(conversions0);
+		Knowledge0 knowledge = helper.createKnowledge(conversions);
 		knowledge.add(loadElementArray(saved.getList("items", 10)));
 		return knowledge;
 	}
@@ -363,7 +363,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	
 	@Override
 	public Knowledge0 getKnowledge(UUID playerId) {
-		return knowledge.computeIfAbsent(playerId, id->helper.createKnowledge(conversions0).createSnapshot()).getKnowledge();
+		return knowledge.computeIfAbsent(playerId, id->helper.createKnowledge(conversions).createSnapshot()).getKnowledge();
 	}
 
 	private void open(ServerPlayer player, UUID pocketId, Function<Pocket, MenuConstructor> menu) {
@@ -497,7 +497,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 	private Knowledge0.Snapshot getKnowledgeSnapshot(UUID playerId) {
 		Knowledge0.Snapshot snapshot = knowledge.get(playerId);
 		if (snapshot == null) {
-			snapshot = helper.createKnowledge(conversions0).createSnapshot();
+			snapshot = helper.createKnowledge(conversions).createSnapshot();
 			knowledge.put(playerId, snapshot);
 		} else {
 			knowledge.put(playerId, snapshot.getKnowledge().createSnapshot());
@@ -612,7 +612,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			//permit public key
 			DeepPocketPacketHandler.cbPermitPublicPocket(packetTarget, DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get());
 			//item conversions
-			DeepPocketPacketHandler.cbItemConversions(packetTarget, conversions);
+			DeepPocketPacketHandler.cbItemConversions(packetTarget, conversionsOld);
 			//player name cache
 			DeepPocketPacketHandler.cbSetPlayersName(packetTarget, getPlayerNameCache());
 			//knowledge

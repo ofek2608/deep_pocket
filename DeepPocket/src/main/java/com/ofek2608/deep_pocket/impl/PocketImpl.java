@@ -159,32 +159,19 @@ final class PocketImpl implements Pocket {
 		return min;
 	}
 
-	private boolean isInvalidKnowledge(@Nullable Knowledge knowledge, Map<ItemType,Long> counts) {
-		if (knowledge == null)
-			return false;
-		for (ItemType item : counts.keySet())
-			if (!knowledge.contains(item))
-				return true;
-		return false;
-	}
-
 	@Override
-	public long getMaxExtractOld(@Nullable Knowledge knowledge, Map<ItemType,Long> counts) {
+	public long getMaxExtractOld(Map<ItemType,Long> counts) {
 		counts = new HashMap<>(counts);
 		conversions.convertMap(counts);
-		if (isInvalidKnowledge(knowledge, counts))
-			return 0;
 		return getMaxExtract0(counts);
 	}
 
 	@Override
-	public long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount) {
+	public long extract(Map<ItemType,Long> counts, long overallCount) {
 		if (overallCount == 0)
 			return 0;
 		counts = new HashMap<>(counts);
 		conversions.convertMap(counts);
-		if (isInvalidKnowledge(knowledge, counts))
-			return 0;
 		long maxExtract = getMaxExtract0(counts);
 		if (maxExtract == 0)
 			return 0;
@@ -201,8 +188,8 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
-	public long extractItem(@Nullable Knowledge knowledge, ItemType type, long count) {
-		return extract(knowledge, Map.of(type, 1L), count);
+	public long extractItem(ItemType type, long count) {
+		return extract(Map.of(type, 1L), count);
 	}
 	
 	@Override
@@ -213,11 +200,11 @@ final class PocketImpl implements Pocket {
 	}
 	
 	@Override
-	public long getMaxExtractOld(@Nullable Knowledge knowledge, ItemType ... items) {
+	public long getMaxExtractOld(ItemType ... items) {
 		Map<ItemType,Long> itemsMap = new HashMap<>();
 		for (ItemType item : items)
 			itemsMap.put(item, itemsMap.getOrDefault(item, 0L) + 1);
-		return getMaxExtractOld(knowledge, itemsMap);
+		return getMaxExtractOld(itemsMap);
 	}
 	
 	@Override

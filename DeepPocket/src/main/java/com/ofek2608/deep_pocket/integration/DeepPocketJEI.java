@@ -6,8 +6,8 @@ import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
-import com.ofek2608.deep_pocket.api.struct.ItemConversions;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketScreen;
@@ -16,6 +16,7 @@ import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.builder.IRecipeSlotBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.handlers.IGhostIngredientHandler;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -86,8 +87,8 @@ public final class DeepPocketJEI {
 	public static final class JEIPlugin implements IModPlugin {
 		private static final ResourceLocation PLUGIN_UID = DeepPocketMod.loc("main");
 		private static @Nullable IJeiRuntime runtime;
-		private static final Set<ItemType> existingRecipes = new HashSet<>();
-		private static final Set<ItemType> displayedRecipes = new HashSet<>();
+		private static final Set<ElementType> existingRecipes = new HashSet<>();
+		private static final Set<ElementType> displayedRecipes = new HashSet<>();
 
 		private static @Nullable String getSearch() {
 			return runtime == null ? null : runtime.getIngredientFilter().getFilterText();
@@ -105,7 +106,7 @@ public final class DeepPocketJEI {
 
 		@Override
 		public void registerCategories(IRecipeCategoryRegistration registration) {
-			registration.addRecipeCategories(new ItemConversionRecipeCategory(registration.getJeiHelpers()));
+			registration.addRecipeCategories(new ElementConversionRecipeCategory(registration.getJeiHelpers()));
 		}
 
 		@Override
@@ -128,19 +129,19 @@ public final class DeepPocketJEI {
 			JEIPlugin.runtime = runtime;
 			existingRecipes.clear();
 			displayedRecipes.clear();
-			setConversionsKeys(DeepPocketClientApi.get().getItemConversions().getKeys());
+			setConversionsKeys(DeepPocketClientApi.get().getConversions().getKeys());
 		}
 
-		public static void setConversionsKeys(Set<ItemType> keys) {
+		public static void setConversionsKeys(Set<ElementType> keys) {
 			if (runtime == null)
 				return;
 			IRecipeManager manager = runtime.getRecipeManager();
 			//Add new recipes
-			manager.addRecipes(ItemConversionRecipeCategory.RECIPE_TYPE, keys.stream().filter(type->!existingRecipes.contains(type)).toList());
+			manager.addRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, keys.stream().filter(type->!existingRecipes.contains(type)).toList());
 			//UnHide recipe that had been added
-			manager.unhideRecipes(ItemConversionRecipeCategory.RECIPE_TYPE, keys.stream().filter(existingRecipes::contains).toList());
+			manager.unhideRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, keys.stream().filter(existingRecipes::contains).toList());
 			//Hide recipes that were before and shouldn't exist
-			manager.hideRecipes(ItemConversionRecipeCategory.RECIPE_TYPE, displayedRecipes.stream().filter(type->!keys.contains(type)).toList());
+			manager.hideRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, displayedRecipes.stream().filter(type->!keys.contains(type)).toList());
 
 			existingRecipes.addAll(keys);
 			displayedRecipes.clear();
@@ -148,20 +149,20 @@ public final class DeepPocketJEI {
 		}
 	}
 
-	private static final class ItemConversionRecipeCategory implements IRecipeCategory<ItemType> {
-		private static final RecipeType<ItemType> RECIPE_TYPE = new RecipeType<>(DeepPocketMod.loc("pocket_item_conversions"), ItemType.class);
+	private static final class ElementConversionRecipeCategory implements IRecipeCategory<ElementType> {
+		private static final RecipeType<ElementType> RECIPE_TYPE = new RecipeType<>(DeepPocketMod.loc("pocket_item_conversions"), ElementType.class);
 		private static final ResourceLocation BACKGROUND_TEXTURE_LOC = DeepPocketMod.loc("textures/gui/jei/pocket_item_conversions.png");
 
 		private final IDrawable background;
 		private final IDrawable icon;
 
-		private ItemConversionRecipeCategory(IJeiHelpers jeiHelpers) {
+		private ElementConversionRecipeCategory(IJeiHelpers jeiHelpers) {
 			this.background = jeiHelpers.getGuiHelper().createDrawable(BACKGROUND_TEXTURE_LOC, 0, 0, 175, 50);
 			this.icon = jeiHelpers.getGuiHelper().createDrawableItemStack(new ItemStack(DeepPocketRegistry.POCKET_LINK_ITEM.get()));
 		}
 
 		@Override
-		public RecipeType<ItemType> getRecipeType() {
+		public RecipeType<ElementType> getRecipeType() {
 			return RECIPE_TYPE;
 		}
 
@@ -189,8 +190,8 @@ public final class DeepPocketJEI {
 		}
 
 		@Override
-		public void setRecipe(IRecipeLayoutBuilder builder, ItemType recipe, IFocusGroup focuses) {
-			ItemConversions conversions = DeepPocketClientApi.get().getItemConversions();
+		public void setRecipe(IRecipeLayoutBuilder builder, ElementType recipe, IFocusGroup focuses) {
+			ElementConversions conversions = DeepPocketClientApi.get().getConversions();
 			long[] value = conversions.getValue(recipe);
 			if (value == null) {
 				LOGGER.warn("Jei displays empty recipe");
@@ -200,18 +201,27 @@ public final class DeepPocketJEI {
 			for (int i = 0; i < value.length; i++) {
 				if (value[i] == 0)
 					continue;
-				ItemStack stack = conversions.getBaseItem(i).create();
-				if (slotIndex >= 27) {
-					builder.addInvisibleIngredients(RecipeIngredientRole.INPUT)
-									.addItemStack(stack);
-				} else {
-					builder.addSlot(RecipeIngredientRole.INPUT, getSlotX(slotIndex), getSlotY(slotIndex))
-									.addItemStack(stack)
-									.setOverlay(new ItemCountOverlay(value[i]), 0, 0);
-				}
+				//TODO custom ingredient type
+//				ElementType.TConvertible type = conversions.getBaseElement(i);
+//				if (slotIndex >= 27) {
+//					builder.addInvisibleIngredients(RecipeIngredientRole.INPUT)
+//									.addItemStack(stack);
+//				} else {
+//					builder.addSlot(RecipeIngredientRole.INPUT, getSlotX(slotIndex), getSlotY(slotIndex))
+//									.addItemStack(stack)
+//									.setOverlay(new ItemCountOverlay(value[i]), 0, 0);
+//				}
 				slotIndex++;
 			}
-			builder.addSlot(RecipeIngredientRole.OUTPUT, 158, 33).addItemStack(recipe.create());
+			{
+				IRecipeSlotBuilder slotBuilder = builder.addSlot(RecipeIngredientRole.OUTPUT, 158, 33);
+				if (recipe instanceof ElementType.TItem item)
+					slotBuilder.addItemStack(item.create());
+				else if (recipe instanceof ElementType.TFluid fluid)
+					slotBuilder.addFluidStack(fluid.getFluid(), 1);
+				//TODO more types
+			}
+			
 			//TODO if there are 27 or more items, show in a tooltip
 		}
 
