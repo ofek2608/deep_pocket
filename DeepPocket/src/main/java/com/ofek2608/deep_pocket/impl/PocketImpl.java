@@ -25,7 +25,7 @@ final class PocketImpl implements Pocket {
 	@Nonnull private final CaptureReference<PocketInfo> pocketInfo;
 	@Nonnull private final PocketItems items;
 	@Nonnull private final PocketContent content;
-	@Nonnull private final PocketPatternsOld patternsOld;
+	@Nonnull @Deprecated(forRemoval = true) private final PocketPatternsOld patternsOld;
 	@Nonnull private final PocketPatterns patterns;
 	@Nonnull private final PocketDefaultPatterns defaultPatterns;
 	@Nonnull private final PocketProcessManager processes;
@@ -198,11 +198,6 @@ final class PocketImpl implements Pocket {
 	@Override
 	public @Nullable CraftingPatternOld getPattern(UUID patternId) {
 		return patternsOld.get(patternId);
-	}
-	
-	@Override
-	public void removePattern(UUID patternId) {
-		patternsOld.remove(patternId);
 	}
 	
 	@Override

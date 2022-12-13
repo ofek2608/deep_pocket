@@ -40,7 +40,6 @@ public interface Pocket {
 	@Deprecated(forRemoval = true) long getMaxExtractOld(ItemType ... items);
 	PocketPatterns getPatterns();
 	@Deprecated(forRemoval = true) @Nullable CraftingPatternOld getPattern(UUID patternId);
-	@Deprecated(forRemoval = true) void removePattern(UUID patternId);
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();
