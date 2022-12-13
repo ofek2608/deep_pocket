@@ -23,11 +23,10 @@ final class PocketImpl implements Pocket {
 	@Nonnull private final UUID pocketId;
 	@Nonnull private final UUID owner;
 	@Nonnull private final CaptureReference<PocketInfo> pocketInfo;
-	@Nonnull private final PocketItems items;
+	@Nonnull @Deprecated(forRemoval = true) private final PocketItems items;
 	@Nonnull private final PocketContent content;
 	@Nonnull @Deprecated(forRemoval = true) private final PocketPatternsOld patternsOld;
 	@Nonnull private final PocketPatterns patterns;
-	@Nonnull private final PocketDefaultPatterns defaultPatterns;
 	@Nonnull private final PocketProcessManager processes;
 
 	PocketImpl(DeepPocketHelper helper, ElementConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
@@ -38,7 +37,6 @@ final class PocketImpl implements Pocket {
 		this.content = helper.createPocketContent(conversions);
 		this.patternsOld = new PocketPatternsOld();
 		this.patterns = helper.createPocketPatterns();
-		this.defaultPatterns = new PocketDefaultPatterns();
 		this.processes = processes;
 	}
 
@@ -50,7 +48,6 @@ final class PocketImpl implements Pocket {
 		this.content = copy.content.copy();
 		this.patternsOld = new PocketPatternsOld(copy.patternsOld);
 		this.patterns = copy.patterns.copy();
-		this.defaultPatterns = new PocketDefaultPatterns(copy.defaultPatterns);
 		this.processes = copy.processes.recreate();
 	}
 
@@ -345,20 +342,6 @@ final class PocketImpl implements Pocket {
 			Objects.requireNonNull(key);
 			Objects.requireNonNull(val);
 			if (!val.getPatternId().equals(key))
-				throw new IllegalArgumentException();
-			return val;
-		}
-	}
-
-	private static final class PocketDefaultPatterns extends CaptureMap<ElementType,Optional<UUID>> {
-		public PocketDefaultPatterns() { }
-		public PocketDefaultPatterns(Map<? extends ElementType, ? extends Optional<UUID>> m) { super(m); }
-
-		@Override
-		public Optional<UUID> validate(ElementType key, Optional<UUID> val) {
-			Objects.requireNonNull(key);
-			Objects.requireNonNull(val);
-			if (key.isEmpty())
 				throw new IllegalArgumentException();
 			return val;
 		}
