@@ -59,13 +59,13 @@ class CBPocketContentUpdate {
 		for (int i = 0; i < changedTypeIndexes.length; i++) {
 			buf.writeVarInt(changedTypeIndexes[i]);
 			ElementType.encode(buf, changedType[i]);
-			buf.writeVarLong(changedTypeCount[i]);
+			buf.writeVarLong(changedTypeCount[i] + 1);
 		}
 		
 		buf.writeVarInt(changedCountIndexes.length);
 		for (int i = 0; i < changedCountIndexes.length; i++) {
 			buf.writeVarInt(changedCountIndexes[i]);
-			buf.writeVarLong(changedCount[i]);
+			buf.writeVarLong(changedCount[i] + 1);
 		}
 	}
 
