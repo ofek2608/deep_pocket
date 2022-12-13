@@ -6,6 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
@@ -19,7 +20,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -34,7 +34,7 @@ class RequestProcessScreen extends Screen {
 	private static final int VIEW_HEIGHT = 50 + DISPLAY_ROW_COUNT * 18;
 	private final @Nullable Screen backScreen;
 	private final Pocket pocket;
-	private final ItemType requestedType;
+	private final ElementType requestedType;
 	private long requestedAmount;
 
 	//Update Fields
@@ -55,14 +55,14 @@ class RequestProcessScreen extends Screen {
 	private boolean errorDependencyLoop;
 	//focus fields
 	private boolean focusScroll;
-	private final Map<ItemType, Optional<CraftingPatternOld>> selectedPatterns = new HashMap<>();
+	private final Map<ElementType, Optional<UUID>> selectedPatterns = new HashMap<>();
 
 
 	RequestProcessScreen(@Nullable Screen backScreen, Pocket pocket, ElementType requestedType, long requestedAmount) {
 		super(Component.empty());
 		this.backScreen = backScreen;
 		this.pocket = pocket;
-		this.requestedType = requestedType instanceof ElementType.TItem item ? new ItemType(item.create()) : ItemType.EMPTY;
+		this.requestedType = requestedType;
 		this.requestedAmount = requestedAmount;
 	}
 
@@ -97,23 +97,27 @@ class RequestProcessScreen extends Screen {
 
 	private void updatePatterns() {
 		allPatterns.clear();
-		Map<ItemType,Integer> indexMap = new HashMap<>();
+		Map<ElementType,Integer> indexMap = new HashMap<>();
 		{ // initialize allPatterns and indexMap
 			int currentIndex = 0;
 			allPatterns.add(new DisplayedPattern(requestedType));
 			indexMap.put(requestedType, 0);
 			while (currentIndex < allPatterns.size()) {
 				DisplayedPattern display = allPatterns.get(currentIndex++);
-				Optional<CraftingPatternOld> selectedPatternOpt = getPatternFor(display.type);
+				Optional<UUID> selectedPatternOpt = getPatternFor(display.type);
 				if (selectedPatternOpt.isEmpty())
 					continue;
+				UUID selectedPatternId = selectedPatternOpt.get();
+				CraftingPattern selectedPattern = pocket.getPatterns().get(selectedPatternId);
+				if (selectedPattern == null)
+					continue;
 				display.border = PatternBorder.LOOP;
-				CraftingPatternOld selectedPattern = selectedPatternOpt.get();
+				display.patternId = selectedPatternId;
 				display.pattern = selectedPattern;
-				for (ItemTypeAmount input : selectedPattern.getInput()) {
+				for (ElementTypeStack input : selectedPattern.getInput()) {
 					if (input.isEmpty())
 						continue;
-					indexMap.computeIfAbsent(input.getItemType(), type -> {
+					indexMap.computeIfAbsent(input.getType(), type -> {
 						allPatterns.add(new DisplayedPattern(type));
 						return indexMap.size();
 					});
@@ -131,19 +135,19 @@ class RequestProcessScreen extends Screen {
 			int[] leftToCraft = new int[patternCount];
 			// filling left to craft, craftingOrder, and dependentOn
 			for (int i = 0; i < patternCount; i++) {
-				CraftingPatternOld pattern = allPatterns.get(i).pattern;
+				CraftingPattern pattern = allPatterns.get(i).pattern;
 				if (pattern == null) {
 					leftToCraft[i] = 0;
 					craftingOrder.add(i);
 					continue;
 				}
-				Set<ItemType> inputs = pattern.getInputCountMap().keySet();
-				int requiredCount = inputs.size();
+				ElementTypeStack[] inputs = pattern.getInputCountMap();
+				int requiredCount = inputs.length;
 				leftToCraft[i] = requiredCount;
 				if (requiredCount == 0)
 					craftingOrder.add(i);
-				for (ItemType input : inputs)
-					dependentOn.get(indexMap.get(input)).add(i);
+				for (ElementTypeStack input : inputs)
+					dependentOn.get(indexMap.get(input.getType())).add(i);
 			}
 			// tracking which item can be crafted and reducing the leftToCraft[dependentOn.get(i)]
 			int currentCheck = 0;
@@ -168,7 +172,7 @@ class RequestProcessScreen extends Screen {
 				DisplayedPattern display = allPatterns.get(patternIndex);
 				long thisRequiredAmount = requiredAmount[patternIndex];
 				long thisCraftAmount = craftAmount[patternIndex];
-				long thisExistingAmount = patternIndex == 0 ? 0 : pocket.getItemCount(display.type);
+				long thisExistingAmount = patternIndex == 0 ? 0 : pocket.getContent().getCount(display.type);
 				long total = advancedSum(thisCraftAmount, thisExistingAmount);
 				long thisNeededAmount = total < 0 ? 0 : thisRequiredAmount < 0 ? -1 : thisRequiredAmount <= total ? 0 : thisRequiredAmount - total;
 				display.requiredAmount = thisRequiredAmount;
@@ -177,7 +181,7 @@ class RequestProcessScreen extends Screen {
 					continue;
 				if (thisNeededAmount == 0)
 					continue;
-				long patternOutputCount = display.pattern.getOutputCountMap().get(display.type);
+				long patternOutputCount = display.pattern.getOutputCount(display.type);
 				long craftingTimes = patternOutputCount < 0 ? 1 : thisNeededAmount < 0 ? -1 : (thisNeededAmount - 1) / patternOutputCount + 1;
 				display.craftingTimes = craftingTimes;
 
@@ -196,33 +200,28 @@ class RequestProcessScreen extends Screen {
 		}
 	}
 
-	private static void addItemsToLongArrayByIndexMap(ItemTypeAmount[] items, long multiply, long[] counts, Map<ItemType,Integer> indexMap) {
-		for (ItemTypeAmount item : items) {
-			int index = indexMap.getOrDefault(item.getItemType(), -1);
+	private static void addItemsToLongArrayByIndexMap(ElementTypeStack[] items, long multiply, long[] counts, Map<ElementType,Integer> indexMap) {
+		for (ElementTypeStack item : items) {
+			int index = indexMap.getOrDefault(item.getType(), -1);
 			if (index < 0)
 				return;
-			counts[index] = advancedSum(counts[index], advancedMul(multiply, item.getAmount()));
+			counts[index] = advancedSum(counts[index], advancedMul(multiply, item.getCount()));
 		}
 	}
 
-	private Optional<CraftingPatternOld> getPatternFor(ItemType itemType) {
-		return selectedPatterns.computeIfAbsent(itemType, type -> {
+	private Optional<UUID> getPatternFor(ElementType elementType) {
+		return selectedPatterns.computeIfAbsent(elementType, type -> {
+			PocketPatterns pocketPatterns = pocket.getPatterns();
 			//pocket default
 			if (pocket.getDefaultPatternsMap().containsKey(type)) {
 				Optional<UUID> defaultPatternId = pocket.getDefaultPattern(type);
-				if (defaultPatternId.isEmpty())
-					return Optional.empty();
-				CraftingPatternOld pattern = pocket.getPattern(defaultPatternId.get());
-				if (pattern != null)
-					return Optional.of(pattern);
+				if (defaultPatternId.isEmpty() || pocketPatterns.get(defaultPatternId.get()) != null)
+					return defaultPatternId;
 			}
 			//find recipe
-			return pocket.getPatternsMap().values().stream().filter(pattern->{
-				var outputArr = pattern.getOutput();
-				for (ItemTypeAmount output : outputArr)
-					if (!output.isEmpty() && type.equals(output.getItemType()))
-						return true;
-				return false;
+			return pocketPatterns.getAllPatterns().stream().filter(patternId->{
+				CraftingPattern pattern = pocketPatterns.get(patternId);
+				return pattern != null && pattern.hasOutput(type);
 			}).findAny();
 		});
 	}
@@ -264,7 +263,7 @@ class RequestProcessScreen extends Screen {
 						(hoverRequest ? Sprites.BUTTON_ERROR_H : Sprites.BUTTON_ERROR_N) :
 						(hoverRequest ? Sprites.BUTTON_REQUEST_H : Sprites.BUTTON_REQUEST_N)
 		).blit(stack, leftPos + 151, topPos + VIEW_HEIGHT - 21);
-		dpClientHelper.renderItemAmount(stack, leftPos + 151, topPos + 5, requestedType.create(), requestedAmount, itemRenderer, font);
+		dpClientHelper.renderElementTypeStack(stack, leftPos + 151, topPos + 5, ElementTypeStack.of(requestedType, requestedAmount), itemRenderer, font);
 
 		//patterns
 		for (int row = 0; row < DISPLAY_ROW_COUNT; row++) {
@@ -278,7 +277,7 @@ class RequestProcessScreen extends Screen {
 				DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
 				(pattern == null ? PatternBorder.NONE : pattern.border).getSprite(hoveredPatternIndex == patternIndex).blit(stack, x, y);
 				if (pattern != null) {
-					dpClientHelper.renderItem(stack, x + 1, y + 1, pattern.type.create(), itemRenderer, font);
+					dpClientHelper.renderElementType(stack, x + 1, y + 1, pattern.type, itemRenderer, font);
 					dpClientHelper.renderAmount(stack, x + 1, y + 1, pattern.requiredAmount, itemRenderer, font);
 				}
 			}
@@ -311,7 +310,7 @@ class RequestProcessScreen extends Screen {
 			DisplayedPattern pattern = visiblePatterns[hoveredPatternIndex];
 			if (pattern != null) {
 				List<Component> tooltip = new ArrayList<>();
-				tooltip.add(getItemName(pattern.type.create()));
+				tooltip.add(pattern.type.getDisplayName());
 				tooltip.add(Component.literal("Required: ").append(createNumberComponent(pattern.requiredAmount).withStyle(ChatFormatting.DARK_AQUA)));
 				tooltip.add(Component.literal("Existing: ").append(createNumberComponent(pattern.existingAmount).withStyle(ChatFormatting.DARK_AQUA)));
 				if (pattern.border == PatternBorder.CRAFT)
@@ -327,17 +326,12 @@ class RequestProcessScreen extends Screen {
 		}
 	}
 
-	private MutableComponent getItemName(ItemStack itemStack) {
-		MutableComponent name = Component.empty().append(itemStack.getHoverName());
-		return itemStack.hasCustomHoverName() ? name.withStyle(ChatFormatting.ITALIC) : name;
-	}
-
 	private MutableComponent createNumberComponent(long num) {
 //		return Component.literal(holdShift ? num < 0 ? "Inf" : "" + num : DeepPocketUtils.advancedToString(num));
 		return Component.literal(advancedToString(num, holdShift ? 19 : 6));
 	}
 
-	private static Optional<TooltipComponent> getPatternTooltip(@Nullable CraftingPatternOld pattern) {
+	private static Optional<TooltipComponent> getPatternTooltip(@Nullable CraftingPattern pattern) {
 		if (pattern == null)
 			return Optional.empty();
 		return Optional.of(new CraftingPatternTooltip(pattern.getInput(), pattern.getOutput()));
@@ -361,30 +355,12 @@ class RequestProcessScreen extends Screen {
 		selectedPatterns.keySet().retainAll(allPatterns.stream().map(pattern->pattern.type).toList());
 
 		List<RecipeRequest> requests = new ArrayList<>();
-		for (DisplayedPattern display : allPatterns) {
-			UUID[] patterns = getSimilarPatterns(display.pattern);
-			if (patterns.length > 0)
-				requests.add(new RecipeRequest(display.type, display.craftingTimes, patterns));
-		}
-
-		Map<ItemType,Optional<UUID>> setDefaultPatterns = new HashMap<>();
-		for (var entry : selectedPatterns.entrySet())
-			setDefaultPatterns.put(entry.getKey(), entry.getValue().map(CraftingPatternOld::getPatternId));
-
-		DeepPocketPacketHandler.sbRequestProcess(requests.toArray(RecipeRequest[]::new), setDefaultPatterns);
+		for (DisplayedPattern display : allPatterns)
+			if (display.patternId != null)
+				requests.add(new RecipeRequest(display.type, display.craftingTimes, display.patternId));
+		
+		DeepPocketPacketHandler.sbRequestProcess(requests.toArray(RecipeRequest[]::new), selectedPatterns);
 		onClose();
-	}
-
-	private UUID[] getSimilarPatterns(@Nullable CraftingPatternOld pattern) {
-		if (pattern == null)
-			return new UUID[0];
-		var inputMap = pattern.getInputCountMap();
-		var outputMap = pattern.getOutputCountMap();
-		return pocket.getPatternsMap().values().stream()
-						.filter(other -> other.getInputCountMap().equals(inputMap))
-						.filter(other -> other.getOutputCountMap().equals(outputMap))
-						.map(CraftingPatternOld::getPatternId)
-						.toArray(UUID[]::new);
 	}
 
 	@Override
@@ -511,12 +487,13 @@ class RequestProcessScreen extends Screen {
 	}
 
 	private static final class DisplayedPattern {
-		private final ItemType type;
+		private final ElementType type;
 		private long requiredAmount = 0, existingAmount = 0, craftingTimes = 0;
 		private PatternBorder border = PatternBorder.MISSING;
-		private @Nullable CraftingPatternOld pattern = null;
+		private @Nullable UUID patternId = null;
+		private @Nullable CraftingPattern pattern = null;
 
-		private DisplayedPattern(ItemType type) {
+		private DisplayedPattern(ElementType type) {
 			this.type = type;
 		}
 	}

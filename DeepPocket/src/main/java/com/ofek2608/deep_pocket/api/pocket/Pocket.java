@@ -48,9 +48,9 @@ public interface Pocket {
 	@Nullable CraftingPatternOld getPattern(UUID patternId);
 	UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
 	void removePattern(UUID patternId);
-	Map<ItemType,Optional<UUID>> getDefaultPatternsMap();
-	Optional<UUID> getDefaultPattern(ItemType type);
-	void setDefaultPattern(ItemType type, @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<UUID> patternId);
+	Map<ElementType,Optional<UUID>> getDefaultPatternsMap();
+	Optional<UUID> getDefaultPattern(ElementType type);
+	void setDefaultPattern(ElementType type, @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<UUID> patternId);
 	PocketProcessManager getProcesses();
 	Snapshot createSnapshot();
 	Pocket copy();
@@ -70,10 +70,9 @@ public interface Pocket {
 	interface Snapshot {
 		Pocket getPocket();
 		boolean didChangedInfo();
-		public PocketContent.Snapshot getContentSnapshot();
-		CraftingPatternOld[] getAddedPatterns();
-		@UnmodifiableView Map<ItemType,Optional<UUID>> getAddedDefaultPatterns();
-		ItemType[] getRemovedDefaultPatterns();
-		UUID[] getRemovedPatterns();
+		PocketContent.Snapshot getContentSnapshot();
+		PocketPatterns.Snapshot getPatternsSnapshot();
+		@UnmodifiableView Map<ElementType,Optional<UUID>> getAddedDefaultPatterns();
+		ElementType[] getRemovedDefaultPatterns();
 	}
 }

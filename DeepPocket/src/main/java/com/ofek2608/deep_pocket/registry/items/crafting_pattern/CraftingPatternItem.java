@@ -1,8 +1,6 @@
 package com.ofek2608.deep_pocket.registry.items.crafting_pattern;
 
-import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.registry.DeepPocketBEWLR;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
@@ -53,10 +51,10 @@ public class CraftingPatternItem extends Item {
 	}
 
 	private static ItemStack getDisplayedResult(ItemStack stack) {
-		ItemTypeAmount[] outputs = CraftingPatternItem.retrieveOutput(stack);
-		for (ItemTypeAmount output : outputs)
-			if (!output.isEmpty())
-				return output.getItemType().create();
+		ElementTypeStack[] outputs = CraftingPatternItem.retrieveOutput(stack);
+		for (ElementTypeStack output : outputs)
+			if (output.getType() instanceof ElementType.TItem item)
+				return item.create();
 		return ItemStack.EMPTY;
 	}
 
@@ -69,49 +67,43 @@ public class CraftingPatternItem extends Item {
 		return newPattern;
 	}
 	
-	@Deprecated(forRemoval = true)
-	public static ItemStack createItem(ItemTypeAmount[] input, ItemTypeAmount[] output) {
-		ItemStack newPattern = new ItemStack(DeepPocketRegistry.CRAFTING_PATTERN_ITEM.get());
-		CompoundTag tag = new CompoundTag();
-//		tag.put("patternInput", saveParam(input));
-//		tag.put("patternOutput", saveParam(output));
-		newPattern.setTag(tag);
-		return newPattern;
+	public static CraftingPattern retrieve(ItemStack stack) {
+		return new CraftingPattern(retrieveInput(stack), retrieveOutput(stack));
 	}
-
-	public static ItemTypeAmount[] retrieveInput(ItemStack stack) {
+	
+	public static ElementTypeStack[] retrieveInput(ItemStack stack) {
 		return retrieveInput(stack.getTag());
 	}
-
-	public static ItemTypeAmount[] retrieveInput(@Nullable CompoundTag itemTag) {
+	
+	public static ElementTypeStack[] retrieveInput(@Nullable CompoundTag itemTag) {
 		return retrieveParam(itemTag, "patternInput");
 	}
-
-	public static ItemTypeAmount[] retrieveOutput(ItemStack stack) {
+	
+	public static ElementTypeStack[] retrieveOutput(ItemStack stack) {
 		return retrieveOutput(stack.getTag());
 	}
-
-	public static ItemTypeAmount[] retrieveOutput(@Nullable CompoundTag itemTag) {
+	
+	public static ElementTypeStack[] retrieveOutput(@Nullable CompoundTag itemTag) {
 		return retrieveParam(itemTag, "patternOutput");
+	}
+	
+	private static ElementTypeStack[] retrieveParam(@Nullable CompoundTag itemTag, String name) {
+		if (itemTag != null) {
+			ListTag inputTag = itemTag.getList(name, 10);
+			ElementTypeStack[] value = inputTag.stream()
+					.map(tag->tag instanceof CompoundTag compoundTag ? compoundTag : null)
+					.filter(Objects::nonNull)
+					.map(ElementTypeStack::load)
+					.toArray(ElementTypeStack[]::new);
+			if (value.length > 0)
+				return value;
+		}
+		return new ElementTypeStack[] {ElementTypeStack.empty()};
 	}
 
 	private static Tag saveParam(ElementTypeStack[] value) {
 		ListTag saved = new ListTag();
 		Stream.of(value).map(ElementTypeStack::save).forEach(saved::add);
 		return saved;
-	}
-
-	private static ItemTypeAmount[] retrieveParam(@Nullable CompoundTag itemTag, String name) {
-		if (itemTag != null) {
-			ListTag inputTag = itemTag.getList(name, 10);
-			ItemTypeAmount[] value = inputTag.stream()
-							.map(tag->tag instanceof CompoundTag compoundTag ? compoundTag : null)
-							.filter(Objects::nonNull)
-							.map(ItemTypeAmount::new)
-							.toArray(ItemTypeAmount[]::new);
-			if (value.length > 0)
-				return value;
-		}
-		return new ItemTypeAmount[] {new ItemTypeAmount(ItemType.EMPTY, 0)};
 	}
 }

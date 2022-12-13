@@ -50,7 +50,7 @@ public final class ClientScreens {
 			minecraft.setScreen(new NumberSelectionScreen(title, color, initialValue, onSelect));
 	}
 
-	public static void selectRecipe(Pocket pocket, ItemType requiredOutput, Consumer<CraftingPatternOld> onSelect) {
+	public static void selectRecipe(Pocket pocket, ElementType requiredOutput, Consumer<UUID> onSelect) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)

@@ -8,6 +8,9 @@ import org.jetbrains.annotations.UnmodifiableView;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
+
+@SuppressWarnings("ClassCanBeRecord")
 public final class CraftingPattern {
 	private final ElementTypeStack[] input;
 	private final ElementTypeStack[] output;
@@ -47,11 +50,11 @@ public final class CraftingPattern {
 	}
 
 	public ElementTypeStack[] getInput() {
-		return Arrays.copyOf(input, input.length);
+		return input.clone();
 	}
 
 	public ElementTypeStack[] getOutput() {
-		return Arrays.copyOf(output, output.length);
+		return output.clone();
 	}
 
 	public @UnmodifiableView ElementTypeStack[] getInputCountMap() {
@@ -73,6 +76,21 @@ public final class CraftingPattern {
 				.stream()
 				.map(entry->ElementTypeStack.of(entry.getKey(), entry.getValue()))
 				.toArray(ElementTypeStack[]::new);
+	}
+	
+	public boolean hasOutput(ElementType type) {
+		for (ElementTypeStack output : output)
+			if (output.getType().equals(type))
+				return true;
+		return false;
+	}
+	
+	public long getOutputCount(ElementType type) {
+		long count = 0;
+		for (ElementTypeStack output : output)
+			if (output.getType().equals(type))
+				count = advancedSum(count, output.getCount());
+		return count;
 	}
 	
 	@Override

@@ -157,20 +157,16 @@ public class CrafterBlock extends Block implements EntityBlock {
 			if (pocket == null)
 				return;
 			ItemStack stack = items.get(slot);
+			LevelBlockPos pos = new LevelBlockPos(serverLevel.dimension(), getBlockPos());
 			if (stack.isEmpty()) {
 				UUID patternId = patterns[slot];
 				if (patternId != null) {
-					pocket.removePattern(patternId);
+					pocket.getPatterns().remove(patternId, pos);
 					patterns[slot] = null;
 				}
 				return;
 			}
-			patterns[slot] = pocket.addPattern(
-							CraftingPatternItem.retrieveInput(stack),
-							CraftingPatternItem.retrieveOutput(stack),
-							serverLevel,
-							getBlockPos()
-			);
+			patterns[slot] = pocket.getPatterns().add(CraftingPatternItem.retrieve(stack), pos);
 		}
 
 		@Override
@@ -184,6 +180,8 @@ public class CrafterBlock extends Block implements EntityBlock {
 					patterns[i] = NbtUtils.loadUUID(savedPatterns.get(i));
 				} catch (Exception ignored) {}
 			}
+			for (int i = 0; i < patterns.length; i++)
+				updatePattern(i);
 		}
 
 		@Override

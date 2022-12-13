@@ -4,13 +4,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.struct.CraftingPatternOld;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
+import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -21,9 +22,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 class RecipeSelectionScreen extends Screen {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/select_recipe.png");
@@ -33,8 +35,8 @@ class RecipeSelectionScreen extends Screen {
 	private static final int VIEW_HEIGHT = 42 + DISPLAY_PATTERN_COUNT * 16;
 	private final Player player;
 	private final Pocket pocket;
-	private final ItemType requiredOutput;
-	private final Consumer<CraftingPatternOld> onSelect;
+	private final ElementType requiredOutput;
+	private final Consumer<UUID> onSelect;
 
 	//Update Fields
 	private int leftPos;
@@ -44,10 +46,10 @@ class RecipeSelectionScreen extends Screen {
 	private int hoveredPattern;
 	private int pageCount;
 	private int pageIndex;
-	private final CraftingPatternOld[] visiblePatterns = new CraftingPatternOld[DISPLAY_PATTERN_COUNT];
+	private final UUID[] visiblePatternIds = new UUID[DISPLAY_PATTERN_COUNT];
 
 
-	RecipeSelectionScreen(Player player, Pocket pocket, ItemType requiredOutput, Consumer<CraftingPatternOld> onSelect) {
+	RecipeSelectionScreen(Player player, Pocket pocket, ElementType requiredOutput, Consumer<UUID> onSelect) {
 		super(Component.empty());
 		this.player = player;
 		this.pocket = pocket;
@@ -74,33 +76,35 @@ class RecipeSelectionScreen extends Screen {
 			pageCount = 1;
 			pageIndex = 0;
 			for (int i = 0; i < 8; i++)
-				visiblePatterns[i] = null;
+				visiblePatternIds[i] = null;
 			return;
 		}
 
 		//find patterns of the page
-		List<CraftingPatternOld> patterns = pocket.getPatternsMap().values().stream().filter(this::filterOutput).filter(DeepPocketUtils.distinctByKey(CraftingPatternOld::getInputCountMap)).toList();
-		pageCount = (patterns.size() + DISPLAY_PATTERN_COUNT - 1) / DISPLAY_PATTERN_COUNT;
+		PocketPatterns pocketPatterns = pocket.getPatterns();
+		List<UUID> patternsId = pocketPatterns.getAllPatterns()
+				.stream()
+				.filter(id->{
+					CraftingPattern pattern = pocketPatterns.get(id);
+					return pattern != null && pattern.hasOutput(requiredOutput);
+				})
+				.toList();
+		
+		pageCount = (patternsId.size() + DISPLAY_PATTERN_COUNT - 1) / DISPLAY_PATTERN_COUNT;
 		if (pageCount == 0) pageCount = 1;
 		pageIndex = Math.max(Math.min(pageIndex, pageCount - 1), 0);
 		for (int i = 0; i < DISPLAY_PATTERN_COUNT; i++) {
 			int pocketIndex = pageIndex * DISPLAY_PATTERN_COUNT + i;
-			visiblePatterns[i] = pocketIndex < patterns.size() ? patterns.get(pocketIndex) : null;
+			visiblePatternIds[i] = pocketIndex < patternsId.size() ? patternsId.get(pocketIndex) : null;
 		}
 	}
 
-	private boolean filterOutput(CraftingPatternOld pattern) {
-		for (ItemTypeAmount output : pattern.getOutput())
-			if (output.getItemType().equals(requiredOutput))
-				return true;
-		return false;
-	}
-
 	@Override
-	public void render(PoseStack stack, int mx, int my, float partialTick) {
+	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
 		updateFields(mx, my);
+		PocketPatterns pocketPatterns = pocket.getPatterns();
 
-		renderBackground(stack);
+		renderBackground(poseStack);
 
 		ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
 
@@ -109,82 +113,81 @@ class RecipeSelectionScreen extends Screen {
 
 		//outline
 		DeepPocketUtils.setRenderShaderColor(pocket.getColor());
-		Sprites.OUTLINE_TOP.blit(stack, leftPos, topPos);
-		Sprites.OUTLINE_MIDDLE.blit(stack, leftPos, topPos + 1, VIEW_WIDTH, VIEW_HEIGHT - 2);
-		Sprites.OUTLINE_BOTTOM.blit(stack, leftPos, topPos + VIEW_HEIGHT - 1);
+		Sprites.OUTLINE_TOP.blit(poseStack, leftPos, topPos);
+		Sprites.OUTLINE_MIDDLE.blit(poseStack, leftPos, topPos + 1, VIEW_WIDTH, VIEW_HEIGHT - 2);
+		Sprites.OUTLINE_BOTTOM.blit(poseStack, leftPos, topPos + VIEW_HEIGHT - 1);
 
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
 		//frame
-		Sprites.FRAME_TOP.blit(stack, leftPos, topPos + 1);
-		Sprites.FRAME_MIDDLE.blit(stack, leftPos, topPos + 1 + Sprites.FRAME_TOP.h, VIEW_WIDTH, VIEW_HEIGHT - 2 - Sprites.FRAME_TOP.h - Sprites.FRAME_BOTTOM.h);
-		Sprites.FRAME_BOTTOM.blit(stack, leftPos, topPos + VIEW_HEIGHT - 1 - Sprites.FRAME_BOTTOM.h);
+		Sprites.FRAME_TOP.blit(poseStack, leftPos, topPos + 1);
+		Sprites.FRAME_MIDDLE.blit(poseStack, leftPos, topPos + 1 + Sprites.FRAME_TOP.h, VIEW_WIDTH, VIEW_HEIGHT - 2 - Sprites.FRAME_TOP.h - Sprites.FRAME_BOTTOM.h);
+		Sprites.FRAME_BOTTOM.blit(poseStack, leftPos, topPos + VIEW_HEIGHT - 1 - Sprites.FRAME_BOTTOM.h);
 
 		//buttons
-		(hoverPrevPage ? Sprites.PREV_PAGE_H : Sprites.PREV_PAGE_N).blit(stack, leftPos + 72, topPos + VIEW_HEIGHT - 21);
-		(hoverNextPage ? Sprites.NEXT_PAGE_H : Sprites.NEXT_PAGE_N).blit(stack, leftPos + 130, topPos + VIEW_HEIGHT - 21);
+		(hoverPrevPage ? Sprites.PREV_PAGE_H : Sprites.PREV_PAGE_N).blit(poseStack, leftPos + 72, topPos + VIEW_HEIGHT - 21);
+		(hoverNextPage ? Sprites.NEXT_PAGE_H : Sprites.NEXT_PAGE_N).blit(poseStack, leftPos + 130, topPos + VIEW_HEIGHT - 21);
 		for (int i = 0; i < DISPLAY_PATTERN_COUNT; i++)
-			(hoveredPattern == i ? Sprites.PATTERN_H : Sprites.PATTERN_N).blit(stack, leftPos, topPos + 1 + Sprites.FRAME_TOP.h + 16 * i);
+			(hoveredPattern == i ? Sprites.PATTERN_H : Sprites.PATTERN_N).blit(poseStack, leftPos, topPos + 1 + Sprites.FRAME_TOP.h + 16 * i);
 
 		//patterns
 		for (int i = 0; i < DISPLAY_PATTERN_COUNT; i++) {
 			int y = topPos + 1 + Sprites.FRAME_TOP.h + 16 * i;
 
-			CraftingPatternOld pattern = visiblePatterns[i];
+			CraftingPattern pattern = pocketPatterns.get(visiblePatternIds[i]);
 			if (pattern == null)
 				continue;
-			var inputCounts = new ArrayList<>(pattern.getInputCountMap().entrySet());
+			var inputCounts = pattern.getInputCountMap();
 			var outputCounts = pattern.getOutputCountMap();
-			if (!outputCounts.containsKey(requiredOutput))
-				continue;
-
-			long outputCount = outputCounts.get(requiredOutput);
-			boolean hasMoreInput = inputCounts.size() > 9;
-			boolean hasMoreOutput = outputCounts.size() > 1;
+			
+			ElementTypeStack outputStack = ElementTypeStack.of(requiredOutput, pattern.getOutputCount(requiredOutput));
+			
+			boolean hasMoreInput = inputCounts.length > 9;
+			boolean hasMoreOutput = outputCounts.length > 1;
 			//more items
 			if (hasMoreInput || hasMoreOutput) {
 				RenderSystem.setShader(GameRenderer::getPositionTexShader);
 				RenderSystem.setShaderTexture(0, TEXTURE);
 				DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
 				if (hasMoreInput)
-					Sprites.MORE_ITEMS.blit(stack, leftPos + 149, y);
+					Sprites.MORE_ITEMS.blit(poseStack, leftPos + 149, y);
 				if (hasMoreOutput)
-					Sprites.MORE_ITEMS.blit(stack, leftPos + 197, y);
+					Sprites.MORE_ITEMS.blit(poseStack, leftPos + 197, y);
 			}
 			//input
-			for (int j = 0; j < 9 && j < inputCounts.size(); j++) {
-				var entry = inputCounts.get(j);
-				dpClientHelper.renderItemAmount(
-								stack,
+			for (int j = 0; j < 9 && j < inputCounts.length; j++) {
+				ElementTypeStack stack = inputCounts[j];
+				dpClientHelper.renderElementTypeStack(
+								poseStack,
 								leftPos + 5 + 16 * j, y,
-								entry.getKey().create(), entry.getValue(),
+								stack,
 								itemRenderer, font
 				);
 			}
 			//output
-			dpClientHelper.renderItemAmount(
-							stack,
+			dpClientHelper.renderElementTypeStack(
+							poseStack,
 							leftPos + 181, y,
-							requiredOutput.create(), outputCount,
+							outputStack,
 							itemRenderer, font
 			);
 		}
 		//text
-		font.draw(stack, "Select Recipe", leftPos + 5, topPos + 5, 0xDDDDDD);
-		drawPageText(stack, "/", leftPos + 109, topPos + VIEW_HEIGHT - 17);
-		drawPageText(stack, "" + (pageIndex + 1), leftPos + 99, topPos + VIEW_HEIGHT - 17);
-		drawPageText(stack, "" + pageCount, leftPos + 119, topPos + VIEW_HEIGHT - 17);
+		font.draw(poseStack, "Select Recipe", leftPos + 5, topPos + 5, 0xDDDDDD);
+		drawPageText(poseStack, "/", leftPos + 109, topPos + VIEW_HEIGHT - 17);
+		drawPageText(poseStack, "" + (pageIndex + 1), leftPos + 99, topPos + VIEW_HEIGHT - 17);
+		drawPageText(poseStack, "" + pageCount, leftPos + 119, topPos + VIEW_HEIGHT - 17);
 
 		//tooltip
 		if (hoverNextPage)
-			renderTooltip(stack, Component.literal("Next Page"), mx, my);
+			renderTooltip(poseStack, Component.literal("Next Page"), mx, my);
 		if (hoverPrevPage)
-			renderTooltip(stack, Component.literal("Previous Page"), mx, my);
-		if (0 <= hoveredPattern && hoveredPattern < visiblePatterns.length) {
-			CraftingPatternOld pattern = visiblePatterns[hoveredPattern];
+			renderTooltip(poseStack, Component.literal("Previous Page"), mx, my);
+		if (0 <= hoveredPattern && hoveredPattern < visiblePatternIds.length) {
+			CraftingPattern pattern = pocketPatterns.get(visiblePatternIds[hoveredPattern]);
 			if (pattern != null) {
 				ItemStack displayItemTooltip = CraftingPatternItem.createItem(pattern.getInput(), pattern.getOutput());
 				displayItemTooltip.setHoverName(Component.literal("Select").withStyle(Style.EMPTY.withItalic(false)));
-				renderTooltip(stack, displayItemTooltip, mx, my);
+				renderTooltip(poseStack, displayItemTooltip, mx, my);
 			}
 		}
 	}
@@ -216,10 +219,10 @@ class RecipeSelectionScreen extends Screen {
 			return true;
 		}
 		if (0 <= hoveredPattern && hoveredPattern < 8) {
-			CraftingPatternOld pattern = visiblePatterns[hoveredPattern];
-			if (pattern != null) {
+			UUID patternId = visiblePatternIds[hoveredPattern];
+			if (patternId != null) {
 				DeepPocketUtils.playClickSound();
-				selectPattern(pattern);
+				selectPattern(patternId);
 				return true;
 			}
 		}
@@ -242,8 +245,8 @@ class RecipeSelectionScreen extends Screen {
 		onSelect.accept(null);
 	}
 
-	private void selectPattern(CraftingPatternOld pattern) {
-		onSelect.accept(pattern);
+	private void selectPattern(UUID patternId) {
+		onSelect.accept(patternId);
 	}
 
 	@Override

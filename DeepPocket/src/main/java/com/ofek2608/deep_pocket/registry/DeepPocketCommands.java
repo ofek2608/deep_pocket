@@ -112,7 +112,7 @@ class DeepPocketCommands {
 	private static void test(ServerPlayer player, int function) {
 		if (function == 0) {
 			Pocket pocket = DeepPocketServerApi.get().getPocket(DeepPocketCurios.getPocket(player));
-			ItemType requiredItem = new ItemType(player.getMainHandItem());
+			ElementType requiredItem = ElementType.item(player.getMainHandItem());
 			Minecraft minecraft = Minecraft.getInstance();
 			minecraft.submit(()->{
 				Screen oldScreen = minecraft.screen;

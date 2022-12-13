@@ -91,6 +91,15 @@ public class PocketPatternsImpl implements PocketPatterns {
 		return new PocketPatternsImpl(this);
 	}
 	
+	@Override
+	public void put(UUID patternId, CraftingPattern pattern) {
+		patterns.put(patternId, pattern);
+		patternsId.put(pattern, patternId);
+		List<LevelBlockPos> locations = new ArrayList<>();
+		locations.add(LevelBlockPos.ZERO);
+		patternsLocations.put(patternId, locations);
+	}
+	
 	private final class SnapshotImpl implements Snapshot {
 		private final CaptureMap<UUID,CraftingPattern>.Snapshot internal = patterns.createSnapshot();
 		@Override

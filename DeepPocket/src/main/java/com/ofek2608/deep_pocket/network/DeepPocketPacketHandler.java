@@ -10,6 +10,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public final class DeepPocketPacketHandler {
@@ -76,8 +77,8 @@ public final class DeepPocketPacketHandler {
 	public static void cbPocketClearElements(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearElements(pocketId)); }
 	public static void cbPocketContentUpdate(PacketDistributor.PacketTarget target, UUID pocketId, int newSize, int[] changedTypeIndexes, ElementType[] changedType, long[] changedTypeCount, int[] changedCountIndexes, long[] changedCount) { CHANNEL.send(target, new CBPocketContentUpdate(pocketId, newSize, changedTypeIndexes, changedType, changedTypeCount, changedCountIndexes, changedCount)); }
 
-	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, CraftingPatternOld[] addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
-	public static void cbUpdateDefaultPatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Optional<UUID>> addedDefaults, ItemType[] removedDefaults) { CHANNEL.send(target, new CBUpdateDefaultPatterns(pocketId, addedDefaults, removedDefaults)); }
+	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<UUID,CraftingPattern> addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
+	public static void cbUpdateDefaultPatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<ElementType,Optional<UUID>> addedDefaults, ElementType[] removedDefaults) { CHANNEL.send(target, new CBUpdateDefaultPatterns(pocketId, addedDefaults, removedDefaults)); }
 
 	public static void cbKnowledgeAdd(PacketDistributor.PacketTarget target, boolean clear, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeAdd(clear, types)); }
 	public static void cbKnowledgeRem(PacketDistributor.PacketTarget target, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeRem(types)); }
@@ -97,7 +98,7 @@ public final class DeepPocketPacketHandler {
 	public static void sbRequestRecipe(ElementType[] elements) { CHANNEL.send(serverTarget(), new SBRequestRecipe(elements)); }
 	public static void sbClearCraftingGrid(boolean up) { CHANNEL.send(serverTarget(), new SBClearCraftingGrid(up)); }
 	public static void sbBulkCrafting(long count) { CHANNEL.send(serverTarget(), new SBBulkCrafting(count)); }
-	public static void sbRequestProcess(RecipeRequest[] requests, Map<ItemType, Optional<UUID>> setDefaultPatterns) { CHANNEL.send(serverTarget(), new SBRequestProcess(requests, setDefaultPatterns)); }
+	public static void sbRequestProcess(RecipeRequest[] requests, Map<ElementType, Optional<UUID>> setDefaultPatterns) { CHANNEL.send(serverTarget(), new SBRequestProcess(requests, setDefaultPatterns)); }
 	
 	public static void sbPocketSignalSettings(BlockPos pos, SignalSettings settings) { CHANNEL.send(serverTarget(), new SBPocketSignalSettings(pos, settings)); }
 	

@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 public final class LevelBlockPos {
 	public static final LevelBlockPos ZERO = new LevelBlockPos(Level.OVERWORLD, BlockPos.ZERO);
@@ -41,5 +42,18 @@ public final class LevelBlockPos {
 
 	public BlockPos getPos() {
 		return pos;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		return this == o ||
+				o instanceof LevelBlockPos that &&
+						this.level.location().equals(that.level.location()) &&
+						this.pos.equals(that.pos);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(level.location(), pos);
 	}
 }

@@ -12,9 +12,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -140,6 +138,22 @@ public final class DeepPocketUtils {
 		buf.writeVarInt(array.length);
 		for (T t : array)
 			encoder.accept(buf, t);
+	}
+	
+	public static <K,V> Map<K,V> decodeMap(FriendlyByteBuf buf, Function<FriendlyByteBuf,K> decoderK, Function<FriendlyByteBuf,V> decoderV) {
+		int count = buf.readVarInt();
+		Map<K,V> result = new HashMap<>();
+		for (int i = 0; i < count; i++)
+			result.put(decoderK.apply(buf), decoderV.apply(buf));
+		return result;
+	}
+	
+	public static <K,V> void encodeMap(FriendlyByteBuf buf, Map<K,V> map, BiConsumer<FriendlyByteBuf,K> encoderK, BiConsumer<FriendlyByteBuf,V> encoderV) {
+		buf.writeVarInt(map.size());
+		map.forEach((k,v)->{
+			encoderK.accept(buf, k);
+			encoderV.accept(buf, v);
+		});
 	}
 
 	public static int sqrt(int integer) {

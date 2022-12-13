@@ -2,20 +2,15 @@ package com.ofek2608.deep_pocket.api.enums;
 
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Comparator;
 import java.util.Objects;
 
 @SuppressWarnings("deprecation")
 public enum SortingOrder implements Comparator<Pocket.Entry> {
-	COUNT("Count", Comparator.comparingLong(typeAmount->{
-		long count = typeAmount.getAmount();
-		return count < 0 ? Long.MAX_VALUE : count - 1;
-	})) {
+	COUNT("Count") {
 		@Override
 		public int compare(Pocket.Entry e0, Pocket.Entry e1) {
 			int compClass = SortingOrder.compareClass(e0, e1);
@@ -35,7 +30,7 @@ public enum SortingOrder implements Comparator<Pocket.Entry> {
 			return arbitraryCompare(e0, e1);
 		}
 	},
-	ID("ID", Comparator.comparingInt(ta->Registry.ITEM.getId(ta.getItemType().getItem()))) {
+	ID("ID") {
 		@Override
 		public int compare(Pocket.Entry e0, Pocket.Entry e1) {
 			int compClass = SortingOrder.compareClass(e0, e1);
@@ -61,7 +56,7 @@ public enum SortingOrder implements Comparator<Pocket.Entry> {
 			return arbitraryCompare(e0, e1);
 		}
 	},
-	NAME("Name", Comparator.comparing(ta->ta.getItemType().create().getDisplayName().getString())) {
+	NAME("Name") {
 		@Override
 		public int compare(Pocket.Entry e0, Pocket.Entry e1) {
 			int compClass = SortingOrder.compareClass(e0, e1);
@@ -76,10 +71,7 @@ public enum SortingOrder implements Comparator<Pocket.Entry> {
 			return arbitraryCompare(e0, e1);
 		}
 	},
-	MOD("Mod", Comparator.comparing(ta->{
-		ResourceLocation loc = ForgeRegistries.ITEMS.getKey(ta.getItemType().getItem());
-		return loc == null ? new ResourceLocation("") : loc;
-	}, ResourceLocation::compareNamespaced)) {
+	MOD("Mod") {
 		@Override
 		public int compare(Pocket.Entry e0, Pocket.Entry e1) {
 			int compClass = SortingOrder.compareClass(e0, e1);
@@ -95,13 +87,9 @@ public enum SortingOrder implements Comparator<Pocket.Entry> {
 		}
 	};
 	public final String displayName;
-	@Deprecated(forRemoval = true) private final Comparator<ItemTypeAmount> baseComparator;
-	@Deprecated(forRemoval = true) public final Comparator<ItemTypeAmount> comparator;
 
-	SortingOrder(String displayName, Comparator<ItemTypeAmount> baseComparator) {
+	SortingOrder(String displayName) {
 		this.displayName = displayName;
-		this.baseComparator = baseComparator;
-		this.comparator = baseComparator.thenComparing(SortingOrder::arbitraryCompare);
 	}
 	
 	private static int compareClass(Pocket.Entry e0, Pocket.Entry e1) {
@@ -126,21 +114,7 @@ public enum SortingOrder implements Comparator<Pocket.Entry> {
 		return class0.compareTo(class1);
 	}
 	
-	public static int arbitraryCompare(ItemTypeAmount ta0, ItemTypeAmount ta1) {
-		for (SortingOrder value : values()) {
-			int comp = value.baseComparator.compare(ta0, ta1);
-			if (comp != 0)
-				return comp;
-		}
-		return Integer.compare(ta0.getItemType().getTag().hashCode(), ta1.getItemType().getTag().hashCode());
-	}
-	
 	public static int arbitraryCompare(Pocket.Entry e0, Pocket.Entry e1) {
-		for (SortingOrder value : values()) {
-			int comp = value.compare(e0, e1);
-			if (comp != 0)
-				return comp;
-		}
 		if (e0.getType() instanceof ElementType.TaggedType t0 && e1.getType() instanceof ElementType.TaggedType t1)
 			return Integer.compare(Objects.hashCode(t0.getTag()), Objects.hashCode(t1.getTag()));
 		return 0;

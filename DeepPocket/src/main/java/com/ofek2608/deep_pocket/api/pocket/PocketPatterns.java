@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket.api.pocket;
 
 import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
 import com.ofek2608.deep_pocket.api.struct.LevelBlockPos;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -20,6 +21,8 @@ public interface PocketPatterns {
 	@UnmodifiableView Set<UUID> getAllPatterns();
 	Snapshot createSnapshot();
 	PocketPatterns copy();
+	@ApiStatus.Internal
+	void put(UUID patternId, CraftingPattern pattern);
 	
 	interface Snapshot {
 		@UnmodifiableView Map<UUID,CraftingPattern> getAdded();

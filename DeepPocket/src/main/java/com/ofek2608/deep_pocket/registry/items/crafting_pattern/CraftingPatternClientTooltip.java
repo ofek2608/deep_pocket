@@ -53,10 +53,10 @@ public class CraftingPatternClientTooltip implements ClientTooltipComponent {
 		poseStack.translate(0, 0, blitOffset);
 		renderItems(gridSizeInput, gridSizeOutput, totalW, totalH, (x,y,slotIndex)->{
 			if (slotIndex < param.input.length)
-				dpClientHelper.renderItemAmount(poseStack, mx + x, my + y, param.input[slotIndex], itemRenderer, font);
+				dpClientHelper.renderElementTypeStack(poseStack, mx + x, my + y, param.input[slotIndex], itemRenderer, font);
 		}, (x,y,slotIndex)->{
 			if (slotIndex < param.output.length)
-				dpClientHelper.renderItemAmount(poseStack, mx + x, my + y, param.output[slotIndex], itemRenderer, font);
+				dpClientHelper.renderElementTypeStack(poseStack, mx + x, my + y, param.output[slotIndex], itemRenderer, font);
 		});
 		poseStack.popPose();
 	}

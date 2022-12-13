@@ -254,17 +254,17 @@ final class PocketImpl implements Pocket {
 	}
 
 	@Override
-	public Map<ItemType, Optional<UUID>> getDefaultPatternsMap() {
+	public Map<ElementType, Optional<UUID>> getDefaultPatternsMap() {
 		return defaultPatterns;
 	}
 
 	@Override
-	public Optional<UUID> getDefaultPattern(ItemType type) {
+	public Optional<UUID> getDefaultPattern(ElementType type) {
 		return defaultPatterns.get(type);
 	}
 
 	@Override
-	public void setDefaultPattern(ItemType type, Optional<UUID> patternId) {
+	public void setDefaultPattern(ElementType type, Optional<UUID> patternId) {
 		defaultPatterns.put(type, patternId);
 	}
 
@@ -286,10 +286,23 @@ final class PocketImpl implements Pocket {
 	@Override
 	public Stream<Entry> entries() {
 		return Stream.concat(
-				IntStream.range(0, content.getSize()).mapToObj(content::getType).filter(type->!(type instanceof ElementType.TConvertible)),
-				conversions0.getKeys().stream()
+				Stream.concat(
+						IntStream.range(0, content.getSize())
+								.mapToObj(content::getType)
+								.filter(type->!(type instanceof ElementType.TConvertible)),
+						conversions0.getKeys().stream()
+				),
+				patterns.getAllPatterns()
+						.stream()
+						.map(patterns::get)
+						.filter(Objects::nonNull)
+						.map(CraftingPattern::getOutput)
+						.flatMap(Stream::of)
+						.map(ElementTypeStack::getType)
+						.filter(type->!(type instanceof ElementType.TConvertible))
+						.filter(type -> content.getCount(type) == 0)
+						.distinct()
 		).map(EntryImpl::new);
-		//TODO add craft-able
 	}
 	
 	
@@ -327,7 +340,11 @@ final class PocketImpl implements Pocket {
 		
 		@Override
 		public boolean canBeCrafted() {
-			return false;//TODO
+			return patterns.getAllPatterns()
+					.stream()
+					.map(patterns::get)
+					.filter(Objects::nonNull)
+					.anyMatch(pattern -> pattern.hasOutput(type));
 		}
 		
 		@Override
@@ -339,8 +356,8 @@ final class PocketImpl implements Pocket {
 	private final class SnapshotImpl implements Snapshot {
 		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
 		private final PocketContent.Snapshot contentSnapshot = content.createSnapshot();
-		private final CaptureMap<UUID, CraftingPatternOld>.Snapshot patternsSnapshot = patternsOld.createSnapshot();
-		private final CaptureMap<ItemType,Optional<UUID>>.Snapshot defaultPatternsSnapshot = defaultPatterns.createSnapshot();
+		private final PocketPatterns.Snapshot patternsSnapshot = patterns.createSnapshot();
+		private final CaptureMap<ElementType,Optional<UUID>>.Snapshot defaultPatternsSnapshot = defaultPatterns.createSnapshot();
 
 		@Override
 		public PocketImpl getPocket() {
@@ -358,23 +375,18 @@ final class PocketImpl implements Pocket {
 		}
 		
 		@Override
-		public CraftingPatternOld[] getAddedPatterns() {
-			return patternsSnapshot.getAddedValues().toArray(CraftingPatternOld[]::new);
+		public PocketPatterns.Snapshot getPatternsSnapshot() {
+			return patternsSnapshot;
 		}
 
 		@Override
-		public @UnmodifiableView Map<ItemType, Optional<UUID>> getAddedDefaultPatterns() {
+		public @UnmodifiableView Map<ElementType, Optional<UUID>> getAddedDefaultPatterns() {
 			return defaultPatternsSnapshot.getAddedAsMap();
 		}
 
 		@Override
-		public ItemType[] getRemovedDefaultPatterns() {
-			return defaultPatternsSnapshot.getRemovedKeys().toArray(new ItemType[0]);
-		}
-
-		@Override
-		public UUID[] getRemovedPatterns() {
-			return patternsSnapshot.getRemovedKeys().toArray(UUID[]::new);
+		public ElementType[] getRemovedDefaultPatterns() {
+			return defaultPatternsSnapshot.getRemovedKeys().toArray(new ElementType[0]);
 		}
 	}
 
@@ -417,21 +429,17 @@ final class PocketImpl implements Pocket {
 		}
 	}
 
-	private static final class PocketDefaultPatterns extends CaptureMap<ItemType,Optional<UUID>> {
+	private static final class PocketDefaultPatterns extends CaptureMap<ElementType,Optional<UUID>> {
 		public PocketDefaultPatterns() { }
-		public PocketDefaultPatterns(Map<? extends ItemType, ? extends Optional<UUID>> m) { super(m); }
+		public PocketDefaultPatterns(Map<? extends ElementType, ? extends Optional<UUID>> m) { super(m); }
 
 		@Override
-		public Optional<UUID> validate(ItemType key, Optional<UUID> val) {
+		public Optional<UUID> validate(ElementType key, Optional<UUID> val) {
 			Objects.requireNonNull(key);
 			Objects.requireNonNull(val);
 			if (key.isEmpty())
 				throw new IllegalArgumentException();
 			return val;
 		}
-	}
-	
-	private static final class PatternLocations {
-	
 	}
 }

@@ -586,7 +586,7 @@ public sealed abstract class ElementType {
 		 */
 		@Override
 		public Component getDisplayName() {
-			return create().getDisplayName();
+			return create().getHoverName();
 		}
 	}
 	

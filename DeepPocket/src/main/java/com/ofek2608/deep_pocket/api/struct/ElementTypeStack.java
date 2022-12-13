@@ -3,6 +3,8 @@ package com.ofek2608.deep_pocket.api.struct;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
+import java.util.Objects;
+
 public final class ElementTypeStack {
 	private static final ElementTypeStack EMPTY = new ElementTypeStack(ElementType.empty(), 0);
 	
@@ -64,5 +66,17 @@ public final class ElementTypeStack {
 			return empty();
 		long count = buf.readVarLong();
 		return of(type, count <= 0 ? -1 : count);
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ElementTypeStack that)) return false;
+		return count == that.count && type.equals(that.type);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(type, count);
 	}
 }
