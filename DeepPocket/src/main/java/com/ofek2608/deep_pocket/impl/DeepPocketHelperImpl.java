@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 class DeepPocketHelperImpl implements DeepPocketHelper {
 	@Override
 	public Pocket createPocket(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
-		return new PocketImpl(conversions, conversions0, pocketId, owner, pocketInfo, createProcessManager());
+		return new PocketImpl(this, conversions, conversions0, pocketId, owner, pocketInfo, createProcessManager());
 	}
 	
 	@Override

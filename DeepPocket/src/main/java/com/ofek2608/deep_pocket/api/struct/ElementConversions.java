@@ -120,6 +120,26 @@ public final class ElementConversions {
 			}
 		}
 	}
+	
+	public long[] convertMapToArray(Map<ElementType,Long> counts) {
+		long[] result = new long[baseElements.length];
+		var iterator = counts.entrySet().iterator();
+		while (iterator.hasNext()) {
+			var entry = iterator.next();
+			if (entry.getKey().isEmpty()) {
+				iterator.remove();
+				continue;
+			}
+			long[] elementValue = values.get(entry.getKey());
+			if (elementValue == null)
+				continue;
+			long count = entry.getValue();
+			iterator.remove();
+			for (int i = 0; i < result.length; i++)
+				result[i] = advancedSum(result[i], advancedMul(elementValue[i], count));
+		}
+		return result;
+	}
 
 
 

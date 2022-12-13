@@ -2,10 +2,7 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.collections.CaptureMap;
 import com.ofek2608.collections.CaptureReference;
-import com.ofek2608.deep_pocket.api.Knowledge;
-import com.ofek2608.deep_pocket.api.Knowledge0;
-import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.ProvidedResources;
+import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
@@ -28,19 +25,21 @@ final class PocketImpl implements Pocket {
 	@Nonnull private final UUID owner;
 	@Nonnull private final CaptureReference<PocketInfo> pocketInfo;
 	@Nonnull private final PocketItems items;
+	@Nonnull private final PocketContentOld contentOld;
 	@Nonnull private final PocketContent content;
 	@Nonnull private final PocketPatterns patterns;
 	@Nonnull private final PocketDefaultPatterns defaultPatterns;
 	@Nonnull private final PocketProcessManager processes;
 
-	PocketImpl(ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
+	PocketImpl(DeepPocketHelper helper, ItemConversions conversions, ElementConversions conversions0, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
 		this.conversions = conversions;
 		this.conversions0 = conversions0;
 		this.pocketId = pocketId;
 		this.owner = owner;
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
 		this.items = new PocketItems();
-		this.content = new PocketContent();
+		this.contentOld = new PocketContentOld();
+		this.content = helper.createPocketContent();
 		this.patterns = new PocketPatterns();
 		this.defaultPatterns = new PocketDefaultPatterns();
 		this.processes = processes;
@@ -53,7 +52,8 @@ final class PocketImpl implements Pocket {
 		this.owner = copy.owner;
 		this.pocketInfo = new CaptureReference<>(copy.pocketInfo);
 		this.items = new PocketItems(copy.items);
-		this.content = new PocketContent(copy.content);
+		this.contentOld = new PocketContentOld(copy.contentOld);
+		this.content = copy.content.copy();
 		this.patterns = new PocketPatterns(copy.patterns);
 		this.defaultPatterns = new PocketDefaultPatterns(copy.defaultPatterns);
 		this.processes = copy.processes.recreate();
@@ -71,7 +71,7 @@ final class PocketImpl implements Pocket {
 	@Override
 	public void setConversions(ElementConversions conversions) {
 		this.conversions0 = conversions;
-		conversions.convertMap(content);
+		conversions.convertMap(contentOld);
 	}
 	
 	@Override
@@ -79,6 +79,11 @@ final class PocketImpl implements Pocket {
 		return pocketInfo.get().securityMode.canAccess(player, getOwner());
 	}
 
+	@Override
+	public Map<ElementType, Long> getContentOld() {
+		return contentOld;
+	}
+	
 	@Override
 	public PocketContent getContent() {
 		return content;
@@ -91,15 +96,15 @@ final class PocketImpl implements Pocket {
 		long[] valueCount = conversions0.getValue(type);
 		
 		if (valueCount == null) {
-			content.put(type, advancedSum(content.get(type), count));
+			contentOld.put(type, advancedSum(contentOld.get(type), count));
 			return;
 		}
 		
 		for (int i = 0; i < valueCount.length; i++) {
 			ElementType.TConvertible convertible = conversions0.getBaseElement(i);
-			content.put(
+			contentOld.put(
 					convertible,
-					advancedSum(content.get(convertible), advancedMul(count, valueCount[i]))
+					advancedSum(contentOld.get(convertible), advancedMul(count, valueCount[i]))
 			);
 		}
 	}
@@ -111,7 +116,7 @@ final class PocketImpl implements Pocket {
 		for (var entry : counts.entrySet()) {
 			if (knowledge != null && !knowledge.contains(entry.getKey()))
 				return 0L;
-			long current = advancedDiv(content.get(entry.getKey()), entry.getValue());
+			long current = advancedDiv(contentOld.get(entry.getKey()), entry.getValue());
 			maxExtract = advancedMin(maxExtract, current);
 		}
 		return maxExtract;
@@ -308,7 +313,7 @@ final class PocketImpl implements Pocket {
 	@Override
 	public Stream<Entry> entries() {
 		return Stream.concat(
-				content.keySet().stream().filter(type->!conversions0.hasValue(type)),
+				contentOld.keySet().stream().filter(type->!conversions0.hasValue(type)),
 				conversions0.getKeys().stream()
 		).map(EntryImpl::new);
 		//TODO add craft-able
@@ -337,11 +342,11 @@ final class PocketImpl implements Pocket {
 			long[] valueCount = conversions0.getValue(type);
 			
 			if (valueCount == null)
-				return content.get(type);
+				return contentOld.get(type);
 			
 			long maxExtract = -1;
 			for (int i = 0; i < valueCount.length; i++) {
-				long current = advancedDiv(content.get(conversions0.getBaseElement(i)), valueCount[i]);
+				long current = advancedDiv(contentOld.get(conversions0.getBaseElement(i)), valueCount[i]);
 				maxExtract = advancedMin(maxExtract, current);
 			}
 			
@@ -362,14 +367,14 @@ final class PocketImpl implements Pocket {
 			long[] valueCount = conversions0.getValue(type);
 			
 			if (valueCount == null) {
-				content.put(type, advancedSub(content.get(type), amount));
+				contentOld.put(type, advancedSub(contentOld.get(type), amount));
 				return amount;
 			}
 			for (int i = 0; i < valueCount.length; i++) {
 				ElementType.TConvertible convertible = conversions0.getBaseElement(i);
-				content.put(
+				contentOld.put(
 						convertible,
-						advancedSub(content.get(convertible), advancedMul(amount, valueCount[i]))
+						advancedSub(contentOld.get(convertible), advancedMul(amount, valueCount[i]))
 				);
 			}
 			return amount;
@@ -389,7 +394,7 @@ final class PocketImpl implements Pocket {
 	private final class SnapshotImpl implements Snapshot {
 		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
 		private final CaptureMap<ItemType,Long>.Snapshot itemsSnapshot = items.createSnapshot();
-		private final CaptureMap<ElementType,Long>.Snapshot contentSnapshot = content.createSnapshot();
+		private final CaptureMap<ElementType,Long>.Snapshot contentSnapshot = contentOld.createSnapshot();
 		private final CaptureMap<UUID,CraftingPattern>.Snapshot patternsSnapshot = patterns.createSnapshot();
 		private final CaptureMap<ItemType,Optional<UUID>>.Snapshot defaultPatternsSnapshot = defaultPatterns.createSnapshot();
 
@@ -459,9 +464,9 @@ final class PocketImpl implements Pocket {
 		}
 	}
 	
-	private final class PocketContent extends CaptureMap<ElementType,Long> {
-		public PocketContent() { }
-		public PocketContent(Map<? extends ElementType, ? extends Long> m) { super(m); }
+	private final class PocketContentOld extends CaptureMap<ElementType,Long> {
+		public PocketContentOld() { }
+		public PocketContentOld(Map<? extends ElementType, ? extends Long> m) { super(m); }
 
 		@Override
 		public Long validate(ElementType key, Long val) {

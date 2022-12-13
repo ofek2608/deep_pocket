@@ -1,11 +1,16 @@
 package com.ofek2608.deep_pocket.impl;
 
+import com.ofek2608.deep_pocket.api.Knowledge0;
 import com.ofek2608.deep_pocket.api.PocketContent;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 public final class PocketContentImpl implements PocketContent {
 	private ElementConversions conversions = ElementConversions.EMPTY;
@@ -102,6 +107,113 @@ public final class PocketContentImpl implements PocketContent {
 	@Override
 	public void remove(ElementType type) {
 		remove(getIndex(type));
+	}
+	
+	@Override
+	public void insert(ElementType type, long count) {
+		if (type.isEmpty())
+			return;
+		long[] valueCount = conversions.getValue(type);
+		if (valueCount == null) {
+			setCount(type, advancedSum(getCount(type), count));
+			return;
+		}
+		for (int i = 0; i < valueCount.length; i++) {
+			if (valueCount[i] != 0)
+				continue;
+			ElementType.TConvertible convertible = conversions.getBaseElement(i);
+			setCount(
+					convertible,
+					advancedSum(getCount(convertible), advancedMul(count, valueCount[i]))
+			);
+		}
+	}
+	
+	@Override
+	public void insert(ElementTypeStack stack) {
+		insert(stack.getType(), stack.getCount());
+	}
+	
+	@Override
+	public long extract(long[] baseElements, long count) {
+		count = advancedMin(count, getMaxExtract(baseElements));
+		if (count == 0)
+			return 0;
+		for (int i = 0; i < baseElements.length; i++) {
+			ElementType.TConvertible type = conversions.getBaseElement(i);
+			setCount(type, advancedSub(getCount(type), advancedMul(baseElements[i], count)));
+		}
+		return count;
+	}
+	
+	@Override
+	public long extract(long[] baseElements) {
+		return extract(baseElements, 1);
+	}
+	
+	@Override
+	public long extract(ElementType type, long count) {
+		if (type.isEmpty() || count == 0)
+			return 0;
+		
+		long[] valueCount = conversions.getValue(type);
+		if (valueCount != null)
+			return extract(valueCount, count);
+		
+		long currentCount = getCount(type);
+		count = advancedMin(count, currentCount);
+		setCount(type, advancedSub(currentCount, count));
+		return count;
+	}
+	
+	@Override
+	public long extract(ElementTypeStack stack) {
+		return extract(stack.getType(), stack.getCount());
+	}
+	
+	@Override
+	public long getMaxExtract(long[] baseElements) {
+		long maxExtract = -1;
+		for (int i = 0; i < baseElements.length; i++) {
+			if (baseElements[i] == 0)
+				continue;
+			long current = advancedDiv(getCount(conversions.getBaseElement(i)), baseElements[i]);
+			maxExtract = advancedMin(maxExtract, current);
+		}
+		return maxExtract;
+	}
+	
+	private long getMaxExtract0(@Nullable Knowledge0 knowledge, Map<ElementType, Long> counts) {
+		long[] baseElementsRequirement = conversions.convertMapToArray(counts);
+		long maxExtract = getMaxExtract(baseElementsRequirement);
+		for (var entry : counts.entrySet()) {
+			if (knowledge != null && !knowledge.contains(entry.getKey()))
+				return 0L;
+			long current = advancedDiv(getCount(entry.getKey()), entry.getValue());
+			maxExtract = advancedMin(maxExtract, current);
+		}
+		return maxExtract;
+	}
+	
+	@Override
+	public long getMaxExtract(@Nullable Knowledge0 knowledge, Map<ElementType, Long> counts) {
+		return getMaxExtract0(knowledge, new HashMap<>(counts));
+	}
+	
+	@Override
+	public long getMaxExtract(@Nullable Knowledge0 knowledge, ElementType... types) {
+		Map<ElementType, Long> map = new HashMap<>();
+		for (ElementType type : types)
+			map.put(type, advancedSum(map.getOrDefault(type, 0L), 1L));
+		return getMaxExtract0(knowledge, map);
+	}
+	
+	@Override
+	public long getMaxExtract(@Nullable Knowledge0 knowledge, ElementTypeStack... stacks) {
+		Map<ElementType, Long> map = new HashMap<>();
+		for (ElementTypeStack stack : stacks)
+			map.put(stack.getType(), advancedSum(map.getOrDefault(stack.getType(), 0L), stack.getCount()));
+		return getMaxExtract0(knowledge, map);
 	}
 	
 	@Override

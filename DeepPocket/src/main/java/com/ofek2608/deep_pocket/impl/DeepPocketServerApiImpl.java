@@ -657,7 +657,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			PacketDistributor.PacketTarget packetTarget = PacketDistributor.NMLIST.with(entry::getValue);
 			Pocket pocket = entry.getKey();
 			UUID pocketId = pocket.getPocketId();
-			DeepPocketPacketHandler.cbPocketSetElementCount(packetTarget, pocketId, pocket.getContent());
+			DeepPocketPacketHandler.cbPocketSetElementCount(packetTarget, pocketId, pocket.getContentOld());
 			CraftingPattern[] patterns = pocket.getPatternsMap().values().toArray(CraftingPattern[]::new);
 			if (patterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns, new UUID[0]);

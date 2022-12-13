@@ -33,7 +33,7 @@ class CBPocketSetElementCount {
 			DeepPocketClientApi api = DeepPocketClientApi.get();
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket != null)
-				counts.forEach(pocket.getContent()::put);
+				counts.forEach(pocket.getContentOld()::put);
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}
