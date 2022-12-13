@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.client.client_screens;
 
 import com.ofek2608.deep_pocket.api.struct.*;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -50,7 +50,7 @@ public final class ClientScreens {
 			minecraft.setScreen(new NumberSelectionScreen(title, color, initialValue, onSelect));
 	}
 
-	public static void selectRecipe(Pocket pocket, ItemType requiredOutput, Consumer<CraftingPattern> onSelect) {
+	public static void selectRecipe(Pocket pocket, ItemType requiredOutput, Consumer<CraftingPatternOld> onSelect) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)

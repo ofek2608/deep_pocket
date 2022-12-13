@@ -1,6 +1,9 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.PocketContent;
+import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 
@@ -17,7 +20,12 @@ class DeepPocketHelperImpl implements DeepPocketHelper {
 	public PocketContent createPocketContent() {
 		return new PocketContentImpl();
 	}
-
+	
+	@Override
+	public PocketPatterns createPocketPatterns() {
+		return new PocketPatternsImpl();
+	}
+	
 	@Override
 	public Knowledge createKnowledge(ItemConversions conversions) {
 		return new KnowledgeImpl(conversions);
@@ -41,7 +49,7 @@ class DeepPocketHelperImpl implements DeepPocketHelper {
 	@Override
 	public Stream<ItemType> getCraftableItems(Pocket pocket) {
 		return pocket.getPatternsMap().values().stream()
-						.map(CraftingPattern::getOutput)
+						.map(CraftingPatternOld::getOutput)
 						.flatMap(Stream::of)
 						.filter(typeAmount->!typeAmount.isEmpty())
 						.map(ItemTypeAmount::getItemType)

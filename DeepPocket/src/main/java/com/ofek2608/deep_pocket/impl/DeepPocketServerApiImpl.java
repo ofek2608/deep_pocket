@@ -3,6 +3,8 @@ package com.ofek2608.deep_pocket.impl;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.PocketContent;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
@@ -93,7 +95,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		Pocket pocket = helper.createPocket(conversions, conversions0, saved.getUUID("pocketId"), saved.getUUID("owner"), new PocketInfo(saved.getCompound("info")));
 
 		Map<ItemType,Long> items = pocket.getItemsMap();
-		Map<UUID,CraftingPattern> patterns = pocket.getPatternsMap();
+		Map<UUID, CraftingPatternOld> patterns = pocket.getPatternsMap();
 		Map<ItemType,Optional<UUID>> defaultPatterns = pocket.getDefaultPatternsMap();
 
 		for (Tag itemCount : saved.getList("itemCounts", 10)) {
@@ -105,7 +107,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		}
 		conversions.convertMap(items);
 		for (Tag savedPattern : saved.getList("patterns", 10)) {
-			CraftingPattern pattern = loadPattern((CompoundTag)savedPattern);
+			CraftingPatternOld pattern = loadPattern((CompoundTag)savedPattern);
 			if (pattern != null)
 				patterns.put(pattern.getPatternId(), pattern);
 		}
@@ -133,9 +135,9 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		return pocket;
 	}
 
-	private @Nullable CraftingPattern loadPattern(CompoundTag saved) {
+	private @Nullable CraftingPatternOld loadPattern(CompoundTag saved) {
 		try {
-			WorldCraftingPattern pattern = new WorldCraftingPattern(saved, server);
+			WorldCraftingPatternOld pattern = new WorldCraftingPatternOld(saved, server);
 			if (pattern.getLevel().getBlockEntity(pattern.getPos()) instanceof PatternSupportedBlockEntity entity && entity.containsPattern(pattern.getPatternId()))
 				return pattern;
 		} catch (Exception ignored) {}
@@ -235,7 +237,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		}
 		saved.put("itemCounts", itemCounts);
 		ListTag savedPatterns = new ListTag();
-		for (CraftingPattern pattern : pocket.getPatternsMap().values())
+		for (CraftingPatternOld pattern : pocket.getPatternsMap().values())
 			savedPatterns.add(pattern.save());
 		saved.put("patterns", savedPatterns);
 		saved.put("processes", savePManager(pocket.getProcesses()));
@@ -456,7 +458,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 		List<ItemType[]> recipeRequirements = new ArrayList<>();
 		for (RecipeRequest request : requests) {
 			UUID patternId = request.getPattern(0);
-			CraftingPattern pattern = pocket.getPattern(patternId);
+			CraftingPatternOld pattern = pocket.getPattern(patternId);
 			if (pattern == null)
 				return;
 			var inputCountMap = pattern.getInputCountMap();
@@ -636,7 +638,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 			DeepPocketPacketHandler.cbPocketContentUpdate(packetTarget, pocketId, contentSize, changedTypeIndexes, changedType, changedTypeCount, changedCountIndexes, changedCount);
 			
 			//Update patterns
-			CraftingPattern[] addedPatterns = snapshot.getAddedPatterns();
+			CraftingPatternOld[] addedPatterns = snapshot.getAddedPatterns();
 			UUID[] removedPatterns = snapshot.getRemovedPatterns();
 			if (addedPatterns.length > 0 || removedPatterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, addedPatterns, removedPatterns);
@@ -660,7 +662,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 							Stream.of(pocketSnapshot.getRemovedPatterns())
 			).toArray(UUID[]::new);
 			if (patternsToRemove.length > 0)
-				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, new CraftingPattern[0], patternsToRemove);
+				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, new CraftingPatternOld[0], patternsToRemove);
 			ItemType[] defaultPatternsToRemove = Stream.concat(
 							pocket.getDefaultPatternsMap().keySet().stream(),
 							Stream.of(pocketSnapshot.getRemovedDefaultPatterns())
@@ -686,7 +688,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper> 
 					new long[0]
 			);
 			
-			CraftingPattern[] patterns = pocket.getPatternsMap().values().toArray(CraftingPattern[]::new);
+			CraftingPatternOld[] patterns = pocket.getPatternsMap().values().toArray(CraftingPatternOld[]::new);
 			if (patterns.length > 0)
 				DeepPocketPacketHandler.cbUpdatePatterns(packetTarget, pocketId, patterns, new UUID[0]);
 			var defaultPatterns = pocket.getDefaultPatternsMap();

@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.Knowledge0;
-import com.ofek2608.deep_pocket.api.PocketContent;
+import com.ofek2608.deep_pocket.api.pocket.PocketContent;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
@@ -12,12 +12,14 @@ import java.util.*;
 
 import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
-public final class PocketContentImpl implements PocketContent {
+final class PocketContentImpl implements PocketContent {
 	private ElementConversions conversions = ElementConversions.EMPTY;
 	private final Map<ElementType,Integer> indexMap = new HashMap<>();
 	private final List<ElementType> types = new ArrayList<>();
 	private final List<Long> counts = new ArrayList<>();
 	private SnapshotImpl lastSnapshot = new SnapshotImpl();
+	
+	PocketContentImpl() {}
 	
 	@Override
 	public ElementConversions getConversions() {

@@ -6,7 +6,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
 import net.minecraft.ChatFormatting;
@@ -295,7 +295,7 @@ public class ProcessScreen extends AbstractContainerScreen<ProcessMenu> {
 				return ingredient.required;
 			if (crafting == null)
 				return 1L;
-			CraftingPattern pattern = pocket == null ? null : pocket.getPattern(crafting.recipeId);
+			CraftingPatternOld pattern = pocket == null ? null : pocket.getPattern(crafting.recipeId);
 			return (pattern == null ? 1L : pattern.getOutputCountMap().getOrDefault(type, 1L)) * crafting.leftToCraft;
 		}
 
@@ -306,7 +306,7 @@ public class ProcessScreen extends AbstractContainerScreen<ProcessMenu> {
 		public Optional<TooltipComponent> getIcon(@Nullable Pocket pocket) {
 			if (crafting == null || pocket == null)
 				return Optional.empty();
-			CraftingPattern pattern = pocket.getPattern(crafting.recipeId);
+			CraftingPatternOld pattern = pocket.getPattern(crafting.recipeId);
 			if (pattern == null)
 				return Optional.empty();
 			return Optional.of(new CraftingPatternTooltip(pattern.getInput(), pattern.getOutput()));

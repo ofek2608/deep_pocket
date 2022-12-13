@@ -5,11 +5,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
-import com.ofek2608.deep_pocket.utils.AdvancedLongMath;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -56,7 +55,7 @@ class RequestProcessScreen extends Screen {
 	private boolean errorDependencyLoop;
 	//focus fields
 	private boolean focusScroll;
-	private final Map<ItemType, Optional<CraftingPattern>> selectedPatterns = new HashMap<>();
+	private final Map<ItemType, Optional<CraftingPatternOld>> selectedPatterns = new HashMap<>();
 
 
 	RequestProcessScreen(@Nullable Screen backScreen, Pocket pocket, ElementType requestedType, long requestedAmount) {
@@ -105,11 +104,11 @@ class RequestProcessScreen extends Screen {
 			indexMap.put(requestedType, 0);
 			while (currentIndex < allPatterns.size()) {
 				DisplayedPattern display = allPatterns.get(currentIndex++);
-				Optional<CraftingPattern> selectedPatternOpt = getPatternFor(display.type);
+				Optional<CraftingPatternOld> selectedPatternOpt = getPatternFor(display.type);
 				if (selectedPatternOpt.isEmpty())
 					continue;
 				display.border = PatternBorder.LOOP;
-				CraftingPattern selectedPattern = selectedPatternOpt.get();
+				CraftingPatternOld selectedPattern = selectedPatternOpt.get();
 				display.pattern = selectedPattern;
 				for (ItemTypeAmount input : selectedPattern.getInput()) {
 					if (input.isEmpty())
@@ -132,7 +131,7 @@ class RequestProcessScreen extends Screen {
 			int[] leftToCraft = new int[patternCount];
 			// filling left to craft, craftingOrder, and dependentOn
 			for (int i = 0; i < patternCount; i++) {
-				CraftingPattern pattern = allPatterns.get(i).pattern;
+				CraftingPatternOld pattern = allPatterns.get(i).pattern;
 				if (pattern == null) {
 					leftToCraft[i] = 0;
 					craftingOrder.add(i);
@@ -206,14 +205,14 @@ class RequestProcessScreen extends Screen {
 		}
 	}
 
-	private Optional<CraftingPattern> getPatternFor(ItemType itemType) {
+	private Optional<CraftingPatternOld> getPatternFor(ItemType itemType) {
 		return selectedPatterns.computeIfAbsent(itemType, type -> {
 			//pocket default
 			if (pocket.getDefaultPatternsMap().containsKey(type)) {
 				Optional<UUID> defaultPatternId = pocket.getDefaultPattern(type);
 				if (defaultPatternId.isEmpty())
 					return Optional.empty();
-				CraftingPattern pattern = pocket.getPattern(defaultPatternId.get());
+				CraftingPatternOld pattern = pocket.getPattern(defaultPatternId.get());
 				if (pattern != null)
 					return Optional.of(pattern);
 			}
@@ -338,7 +337,7 @@ class RequestProcessScreen extends Screen {
 		return Component.literal(advancedToString(num, holdShift ? 19 : 6));
 	}
 
-	private static Optional<TooltipComponent> getPatternTooltip(@Nullable CraftingPattern pattern) {
+	private static Optional<TooltipComponent> getPatternTooltip(@Nullable CraftingPatternOld pattern) {
 		if (pattern == null)
 			return Optional.empty();
 		return Optional.of(new CraftingPatternTooltip(pattern.getInput(), pattern.getOutput()));
@@ -370,13 +369,13 @@ class RequestProcessScreen extends Screen {
 
 		Map<ItemType,Optional<UUID>> setDefaultPatterns = new HashMap<>();
 		for (var entry : selectedPatterns.entrySet())
-			setDefaultPatterns.put(entry.getKey(), entry.getValue().map(CraftingPattern::getPatternId));
+			setDefaultPatterns.put(entry.getKey(), entry.getValue().map(CraftingPatternOld::getPatternId));
 
 		DeepPocketPacketHandler.sbRequestProcess(requests.toArray(RecipeRequest[]::new), setDefaultPatterns);
 		onClose();
 	}
 
-	private UUID[] getSimilarPatterns(@Nullable CraftingPattern pattern) {
+	private UUID[] getSimilarPatterns(@Nullable CraftingPatternOld pattern) {
 		if (pattern == null)
 			return new UUID[0];
 		var inputMap = pattern.getInputCountMap();
@@ -384,7 +383,7 @@ class RequestProcessScreen extends Screen {
 		return pocket.getPatternsMap().values().stream()
 						.filter(other -> other.getInputCountMap().equals(inputMap))
 						.filter(other -> other.getOutputCountMap().equals(outputMap))
-						.map(CraftingPattern::getPatternId)
+						.map(CraftingPatternOld::getPatternId)
 						.toArray(UUID[]::new);
 	}
 
@@ -515,7 +514,7 @@ class RequestProcessScreen extends Screen {
 		private final ItemType type;
 		private long requiredAmount = 0, existingAmount = 0, craftingTimes = 0;
 		private PatternBorder border = PatternBorder.MISSING;
-		private @Nullable CraftingPattern pattern = null;
+		private @Nullable CraftingPatternOld pattern = null;
 
 		private DisplayedPattern(ItemType type) {
 			this.type = type;

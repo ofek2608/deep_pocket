@@ -2,7 +2,7 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayFilter;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.enums.SearchMode;

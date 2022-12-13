@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.api;
 
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.UnmodifiableView;

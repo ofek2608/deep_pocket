@@ -2,7 +2,7 @@ package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.api.struct.CrafterContext;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
+import com.ofek2608.deep_pocket.api.struct.WorldCraftingPatternOld;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,7 +12,7 @@ public interface PatternSupportedBlockEntity {
 	boolean containsPattern(UUID patternId);
 	boolean executePattern(CrafterContext ctx) throws IllegalArgumentException;
 
-	static long[] getRequirements(WorldCraftingPattern pattern, ProvidedResources resources) throws IllegalArgumentException {
+	static long[] getRequirements(WorldCraftingPatternOld pattern, ProvidedResources resources) throws IllegalArgumentException {
 		var inputCountMap = pattern.getInputCountMap();
 		Set<ItemType> left = new HashSet<>(inputCountMap.keySet());
 		ItemType[] types = resources.getTypes();

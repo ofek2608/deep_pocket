@@ -4,6 +4,9 @@ import com.ofek2608.collections.CaptureMap;
 import com.ofek2608.collections.CaptureReference;
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.PocketContent;
+import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.core.BlockPos;
@@ -27,6 +30,7 @@ final class PocketImpl implements Pocket {
 	@Nonnull private final CaptureReference<PocketInfo> pocketInfo;
 	@Nonnull private final PocketItems items;
 	@Nonnull private final PocketContent content;
+	@Nonnull private final PocketPatternsOld patternsOld;
 	@Nonnull private final PocketPatterns patterns;
 	@Nonnull private final PocketDefaultPatterns defaultPatterns;
 	@Nonnull private final PocketProcessManager processes;
@@ -39,7 +43,8 @@ final class PocketImpl implements Pocket {
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
 		this.items = new PocketItems();
 		this.content = helper.createPocketContent();
-		this.patterns = new PocketPatterns();
+		this.patternsOld = new PocketPatternsOld();
+		this.patterns = helper.createPocketPatterns();
 		this.defaultPatterns = new PocketDefaultPatterns();
 		this.processes = processes;
 	}
@@ -52,7 +57,8 @@ final class PocketImpl implements Pocket {
 		this.pocketInfo = new CaptureReference<>(copy.pocketInfo);
 		this.items = new PocketItems(copy.items);
 		this.content = copy.content.copy();
-		this.patterns = new PocketPatterns(copy.patterns);
+		this.patternsOld = new PocketPatternsOld(copy.patternsOld);
+		this.patterns = copy.patterns.copy();
 		this.defaultPatterns = new PocketDefaultPatterns(copy.defaultPatterns);
 		this.processes = copy.processes.recreate();
 	}
@@ -216,15 +222,20 @@ final class PocketImpl implements Pocket {
 			itemsMap.put(item, itemsMap.getOrDefault(item, 0L) + 1);
 		return getMaxExtractOld(knowledge, itemsMap);
 	}
-
+	
 	@Override
-	public Map<UUID, CraftingPattern> getPatternsMap() {
+	public PocketPatterns getPatterns() {
 		return patterns;
+	}
+	
+	@Override
+	public Map<UUID, CraftingPatternOld> getPatternsMap() {
+		return patternsOld;
 	}
 
 	@Override
-	public @Nullable CraftingPattern getPattern(UUID patternId) {
-		return patterns.get(patternId);
+	public @Nullable CraftingPatternOld getPattern(UUID patternId) {
+		return patternsOld.get(patternId);
 	}
 
 	@Override
@@ -232,14 +243,14 @@ final class PocketImpl implements Pocket {
 		UUID patternId;
 		do {
 			patternId = UUID.randomUUID();
-		} while (patterns.containsKey(patternId));
-		patterns.put(patternId, new WorldCraftingPattern(patternId, input, output, level, pos));
+		} while (patternsOld.containsKey(patternId));
+		patternsOld.put(patternId, new WorldCraftingPatternOld(patternId, input, output, level, pos));
 		return patternId;
 	}
 
 	@Override
 	public void removePattern(UUID patternId) {
-		patterns.remove(patternId);
+		patternsOld.remove(patternId);
 	}
 
 	@Override
@@ -328,7 +339,7 @@ final class PocketImpl implements Pocket {
 	private final class SnapshotImpl implements Snapshot {
 		private final CaptureReference<PocketInfo>.Snapshot pocketInfoSnapshot = pocketInfo.createSnapshot();
 		private final PocketContent.Snapshot contentSnapshot = content.createSnapshot();
-		private final CaptureMap<UUID,CraftingPattern>.Snapshot patternsSnapshot = patterns.createSnapshot();
+		private final CaptureMap<UUID, CraftingPatternOld>.Snapshot patternsSnapshot = patternsOld.createSnapshot();
 		private final CaptureMap<ItemType,Optional<UUID>>.Snapshot defaultPatternsSnapshot = defaultPatterns.createSnapshot();
 
 		@Override
@@ -347,8 +358,8 @@ final class PocketImpl implements Pocket {
 		}
 		
 		@Override
-		public CraftingPattern[] getAddedPatterns() {
-			return patternsSnapshot.getAddedValues().toArray(CraftingPattern[]::new);
+		public CraftingPatternOld[] getAddedPatterns() {
+			return patternsSnapshot.getAddedValues().toArray(CraftingPatternOld[]::new);
 		}
 
 		@Override
@@ -392,12 +403,12 @@ final class PocketImpl implements Pocket {
 		}
 	}
 
-	private static final class PocketPatterns extends CaptureMap<UUID,CraftingPattern> {
-		public PocketPatterns() { }
-		public PocketPatterns(Map<? extends UUID, ? extends CraftingPattern> m) { super(m); }
+	private static final class PocketPatternsOld extends CaptureMap<UUID, CraftingPatternOld> {
+		public PocketPatternsOld() { }
+		public PocketPatternsOld(Map<? extends UUID, ? extends CraftingPatternOld> m) { super(m); }
 
 		@Override
-		public CraftingPattern validate(UUID key, CraftingPattern val) throws IllegalArgumentException {
+		public CraftingPatternOld validate(UUID key, CraftingPatternOld val) throws IllegalArgumentException {
 			Objects.requireNonNull(key);
 			Objects.requireNonNull(val);
 			if (!val.getPatternId().equals(key))
@@ -418,5 +429,9 @@ final class PocketImpl implements Pocket {
 				throw new IllegalArgumentException();
 			return val;
 		}
+	}
+	
+	private static final class PatternLocations {
+	
 	}
 }

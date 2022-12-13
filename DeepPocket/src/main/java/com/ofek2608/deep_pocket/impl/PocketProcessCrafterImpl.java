@@ -2,10 +2,11 @@ package com.ofek2608.deep_pocket.impl;
 
 
 import com.ofek2608.deep_pocket.api.*;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.struct.CrafterContext;
-import com.ofek2608.deep_pocket.api.struct.WorldCraftingPattern;
+import com.ofek2608.deep_pocket.api.struct.WorldCraftingPatternOld;
 
 import java.util.UUID;
 
@@ -37,7 +38,7 @@ final class PocketProcessCrafterImpl implements PocketProcessCrafter {
 
 	@Override
 	public boolean executeCrafter(Pocket pocket) {
-		if (pocket.getPattern(patternId) instanceof WorldCraftingPattern pattern && (pattern.getLevel().getBlockEntity(pattern.getPos()) instanceof PatternSupportedBlockEntity blockEntity)) {
+		if (pocket.getPattern(patternId) instanceof WorldCraftingPatternOld pattern && (pattern.getLevel().getBlockEntity(pattern.getPos()) instanceof PatternSupportedBlockEntity blockEntity)) {
 			try {
 				if (!blockEntity.executePattern(new CrafterContext(pocket, pattern, this, parent, resources)))
 					return false;

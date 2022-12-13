@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import net.minecraft.core.BlockPos;

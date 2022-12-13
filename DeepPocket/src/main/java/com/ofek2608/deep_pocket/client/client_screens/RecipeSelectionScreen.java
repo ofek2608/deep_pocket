@@ -6,8 +6,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.Pocket;
-import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.CraftingPatternOld;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
@@ -34,7 +34,7 @@ class RecipeSelectionScreen extends Screen {
 	private final Player player;
 	private final Pocket pocket;
 	private final ItemType requiredOutput;
-	private final Consumer<CraftingPattern> onSelect;
+	private final Consumer<CraftingPatternOld> onSelect;
 
 	//Update Fields
 	private int leftPos;
@@ -44,10 +44,10 @@ class RecipeSelectionScreen extends Screen {
 	private int hoveredPattern;
 	private int pageCount;
 	private int pageIndex;
-	private final CraftingPattern[] visiblePatterns = new CraftingPattern[DISPLAY_PATTERN_COUNT];
+	private final CraftingPatternOld[] visiblePatterns = new CraftingPatternOld[DISPLAY_PATTERN_COUNT];
 
 
-	RecipeSelectionScreen(Player player, Pocket pocket, ItemType requiredOutput, Consumer<CraftingPattern> onSelect) {
+	RecipeSelectionScreen(Player player, Pocket pocket, ItemType requiredOutput, Consumer<CraftingPatternOld> onSelect) {
 		super(Component.empty());
 		this.player = player;
 		this.pocket = pocket;
@@ -79,7 +79,7 @@ class RecipeSelectionScreen extends Screen {
 		}
 
 		//find patterns of the page
-		List<CraftingPattern> patterns = pocket.getPatternsMap().values().stream().filter(this::filterOutput).filter(DeepPocketUtils.distinctByKey(CraftingPattern::getInputCountMap)).toList();
+		List<CraftingPatternOld> patterns = pocket.getPatternsMap().values().stream().filter(this::filterOutput).filter(DeepPocketUtils.distinctByKey(CraftingPatternOld::getInputCountMap)).toList();
 		pageCount = (patterns.size() + DISPLAY_PATTERN_COUNT - 1) / DISPLAY_PATTERN_COUNT;
 		if (pageCount == 0) pageCount = 1;
 		pageIndex = Math.max(Math.min(pageIndex, pageCount - 1), 0);
@@ -89,7 +89,7 @@ class RecipeSelectionScreen extends Screen {
 		}
 	}
 
-	private boolean filterOutput(CraftingPattern pattern) {
+	private boolean filterOutput(CraftingPatternOld pattern) {
 		for (ItemTypeAmount output : pattern.getOutput())
 			if (output.getItemType().equals(requiredOutput))
 				return true;
@@ -129,7 +129,7 @@ class RecipeSelectionScreen extends Screen {
 		for (int i = 0; i < DISPLAY_PATTERN_COUNT; i++) {
 			int y = topPos + 1 + Sprites.FRAME_TOP.h + 16 * i;
 
-			CraftingPattern pattern = visiblePatterns[i];
+			CraftingPatternOld pattern = visiblePatterns[i];
 			if (pattern == null)
 				continue;
 			var inputCounts = new ArrayList<>(pattern.getInputCountMap().entrySet());
@@ -180,7 +180,7 @@ class RecipeSelectionScreen extends Screen {
 		if (hoverPrevPage)
 			renderTooltip(stack, Component.literal("Previous Page"), mx, my);
 		if (0 <= hoveredPattern && hoveredPattern < visiblePatterns.length) {
-			CraftingPattern pattern = visiblePatterns[hoveredPattern];
+			CraftingPatternOld pattern = visiblePatterns[hoveredPattern];
 			if (pattern != null) {
 				ItemStack displayItemTooltip = CraftingPatternItem.createItem(pattern.getInput(), pattern.getOutput());
 				displayItemTooltip.setHoverName(Component.literal("Select").withStyle(Style.EMPTY.withItalic(false)));
@@ -216,7 +216,7 @@ class RecipeSelectionScreen extends Screen {
 			return true;
 		}
 		if (0 <= hoveredPattern && hoveredPattern < 8) {
-			CraftingPattern pattern = visiblePatterns[hoveredPattern];
+			CraftingPatternOld pattern = visiblePatterns[hoveredPattern];
 			if (pattern != null) {
 				DeepPocketUtils.playClickSound();
 				selectPattern(pattern);
@@ -242,7 +242,7 @@ class RecipeSelectionScreen extends Screen {
 		onSelect.accept(null);
 	}
 
-	private void selectPattern(CraftingPattern pattern) {
+	private void selectPattern(CraftingPatternOld pattern) {
 		onSelect.accept(pattern);
 	}
 

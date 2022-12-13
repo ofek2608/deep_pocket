@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.api.enums;
 
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
 import net.minecraft.core.Registry;

@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.DeepPocketHelper;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessUnit;
 import com.ofek2608.deep_pocket.api.struct.ItemType;

@@ -2,8 +2,8 @@ package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.struct.CraftingPatternOld;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -12,10 +12,10 @@ import java.util.function.Supplier;
 
 class CBUpdatePatterns {
 	private final UUID pocketId;
-	private final CraftingPattern[] addedPatterns;
+	private final CraftingPatternOld[] addedPatterns;
 	private final UUID[] removedPatterns;
 
-	CBUpdatePatterns(UUID pocketId, CraftingPattern[] addedPatterns, UUID[] removedPatterns) {
+	CBUpdatePatterns(UUID pocketId, CraftingPatternOld[] addedPatterns, UUID[] removedPatterns) {
 		this.pocketId = pocketId;
 		this.addedPatterns = addedPatterns;
 		this.removedPatterns = removedPatterns;
@@ -24,14 +24,14 @@ class CBUpdatePatterns {
 	CBUpdatePatterns(FriendlyByteBuf buf) {
 		this(
 						buf.readUUID(),
-						DeepPocketUtils.decodeArray(buf, CraftingPattern[]::new, CraftingPattern::decode),
+						DeepPocketUtils.decodeArray(buf, CraftingPatternOld[]::new, CraftingPatternOld::decode),
 						DeepPocketUtils.decodeArray(buf, UUID[]::new, FriendlyByteBuf::readUUID)
 		);
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
-		DeepPocketUtils.encodeArray(buf, addedPatterns, CraftingPattern::encode);
+		DeepPocketUtils.encodeArray(buf, addedPatterns, CraftingPatternOld::encode);
 		DeepPocketUtils.encodeArray(buf, removedPatterns, FriendlyByteBuf::writeUUID);
 	}
 
@@ -41,7 +41,7 @@ class CBUpdatePatterns {
 			Pocket pocket = api.getPocket(pocketId);
 			if (pocket == null)
 				return;
-			for (CraftingPattern pattern : addedPatterns)
+			for (CraftingPatternOld pattern : addedPatterns)
 				pocket.getPatternsMap().put(pattern.getPatternId(), pattern);
 			for (UUID patternId : removedPatterns)
 				pocket.removePattern(patternId);

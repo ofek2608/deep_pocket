@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 
 import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
-import com.ofek2608.deep_pocket.api.Pocket;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.struct.*;
@@ -338,7 +338,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 		@Override
 		public boolean executePattern(CrafterContext ctx) {
 			Pocket pocket = ctx.pocket;
-			WorldCraftingPattern pattern = ctx.pattern;
+			WorldCraftingPatternOld pattern = ctx.pattern;
 			ProvidedResources resources = ctx.resources;
 			PocketProcessRecipe pocketProcessRecipe = ctx.recipe;
 

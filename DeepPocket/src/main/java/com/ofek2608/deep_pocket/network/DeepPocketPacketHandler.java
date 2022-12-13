@@ -76,7 +76,7 @@ public final class DeepPocketPacketHandler {
 	public static void cbPocketClearElements(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearElements(pocketId)); }
 	public static void cbPocketContentUpdate(PacketDistributor.PacketTarget target, UUID pocketId, int newSize, int[] changedTypeIndexes, ElementType[] changedType, long[] changedTypeCount, int[] changedCountIndexes, long[] changedCount) { CHANNEL.send(target, new CBPocketContentUpdate(pocketId, newSize, changedTypeIndexes, changedType, changedTypeCount, changedCountIndexes, changedCount)); }
 
-	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, CraftingPattern[] addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
+	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, CraftingPatternOld[] addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
 	public static void cbUpdateDefaultPatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<ItemType,Optional<UUID>> addedDefaults, ItemType[] removedDefaults) { CHANNEL.send(target, new CBUpdateDefaultPatterns(pocketId, addedDefaults, removedDefaults)); }
 
 	public static void cbKnowledgeAdd(PacketDistributor.PacketTarget target, boolean clear, ItemType ... types) { CHANNEL.send(target, new CBKnowledgeAdd(clear, types)); }

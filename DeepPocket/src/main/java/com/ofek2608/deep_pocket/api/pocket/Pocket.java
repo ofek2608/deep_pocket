@@ -1,5 +1,8 @@
-package com.ofek2608.deep_pocket.api;
+package com.ofek2608.deep_pocket.api.pocket;
 
+import com.ofek2608.deep_pocket.api.Knowledge;
+import com.ofek2608.deep_pocket.api.Knowledge0;
+import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
@@ -40,8 +43,9 @@ public interface Pocket {
 	@Deprecated(forRemoval = true) long extract(@Nullable Knowledge knowledge, Map<ItemType,Long> counts, long overallCount);
 	@Deprecated(forRemoval = true) long extractItem(@Nullable Knowledge knowledge, ItemType type, long count);
 	@Deprecated(forRemoval = true) long getMaxExtractOld(@Nullable Knowledge knowledge, ItemType ... items);
-	Map<UUID,CraftingPattern> getPatternsMap();
-	@Nullable CraftingPattern getPattern(UUID patternId);
+	PocketPatterns getPatterns();
+	Map<UUID, CraftingPatternOld> getPatternsMap();
+	@Nullable CraftingPatternOld getPattern(UUID patternId);
 	UUID addPattern(ItemTypeAmount[] input, ItemTypeAmount[] output, ServerLevel level, BlockPos pos);
 	void removePattern(UUID patternId);
 	Map<ItemType,Optional<UUID>> getDefaultPatternsMap();
@@ -67,7 +71,7 @@ public interface Pocket {
 		Pocket getPocket();
 		boolean didChangedInfo();
 		public PocketContent.Snapshot getContentSnapshot();
-		CraftingPattern[] getAddedPatterns();
+		CraftingPatternOld[] getAddedPatterns();
 		@UnmodifiableView Map<ItemType,Optional<UUID>> getAddedDefaultPatterns();
 		ItemType[] getRemovedDefaultPatterns();
 		UUID[] getRemovedPatterns();
