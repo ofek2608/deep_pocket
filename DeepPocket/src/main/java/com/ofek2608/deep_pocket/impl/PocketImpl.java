@@ -7,7 +7,7 @@ import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketContent;
 import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
@@ -101,9 +101,12 @@ final class PocketImpl implements Pocket {
 	}
 
 	private void insertItem0(ItemType type, long count) {
-		long leftOver = processes.supplyItem(type, count);
-		if (leftOver != 0)
-			items.computeIfPresent(type, (t,current)->current < 0 || leftOver < 0 ? -1 : current + leftOver);
+//		long leftOver = processes.supplyItem(type, count);
+//		if (leftOver != 0)
+//			items.computeIfPresent(type, (t,current)->current < 0 || leftOver < 0 ? -1 : current + leftOver);
+		if (count == 0)
+			return;
+		items.computeIfPresent(type, (t,current)->current < 0 || count < 0 ? -1 : current + count);
 	}
 
 	@Override

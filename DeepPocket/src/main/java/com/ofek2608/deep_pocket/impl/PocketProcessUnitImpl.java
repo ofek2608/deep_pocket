@@ -2,11 +2,13 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessUnit;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessCrafter;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessManager;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessUnit;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
@@ -16,11 +18,11 @@ final class PocketProcessUnitImpl implements PocketProcessUnit {
 	private final PocketProcessManager parent;
 	private final int id;
 	private final ProvidedResources resources;
-	private final Map<ItemType,Integer> typeIndexes;
+	private final Map<ElementType,Integer> typeIndexes;
 	private final long[] leftToProvide;
 	private final List<PocketProcessRecipe> recipes;
 
-	PocketProcessUnitImpl(DeepPocketHelper helper, PocketProcessManager parent, int id, ItemType[] types) {
+	PocketProcessUnitImpl(DeepPocketHelper helper, PocketProcessManager parent, int id, RecipeRequest[] types) {
 		types = types.clone();
 		this.parent = parent;
 		this.id = id;
@@ -49,17 +51,17 @@ final class PocketProcessUnitImpl implements PocketProcessUnit {
 	}
 
 	@Override
-	public ItemType[] getTypes() {
+	public ElementType[] getTypes() {
 		return resources.getTypes();
 	}
 
 	@Override
-	public ItemType getType(int index) {
+	public ElementType getType(int index) {
 		return resources.getType(index);
 	}
 
 	@Override
-	public int getTypeIndex(ItemType type) {
+	public int getTypeIndex(ElementType type) {
 		return typeIndexes.get(type);
 	}
 
@@ -112,7 +114,7 @@ final class PocketProcessUnitImpl implements PocketProcessUnit {
 	}
 
 	@Override
-	public long supplyItem(ItemType item, long amount) {
+	public long supplyItem(ElementType item, long amount) {
 		if (amount == 0)
 			return 0;
 		int index = typeIndexes.getOrDefault(item, -1);

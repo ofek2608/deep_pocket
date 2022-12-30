@@ -4,7 +4,7 @@ import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketContent;
 import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessManager;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessManager;
 import com.ofek2608.deep_pocket.api.struct.*;
 
 import java.util.UUID;
@@ -31,7 +31,7 @@ class DeepPocketHelperImpl implements DeepPocketHelper {
 	}
 
 	@Override
-	public ProvidedResources createProvidedResources(ItemType[] types) {
+	public ProvidedResources createProvidedResources(ElementType[] types) {
 		return new ProvidedResourcesImpl(types);
 	}
 

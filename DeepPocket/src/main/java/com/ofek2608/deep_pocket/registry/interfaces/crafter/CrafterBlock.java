@@ -4,7 +4,7 @@ import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.struct.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;

@@ -1,8 +1,8 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.ProvidedResources;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
-import com.ofek2608.deep_pocket.api.struct.ItemTypeAmount;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -12,18 +12,18 @@ import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedSum;
 
 final class ProvidedResourcesImpl implements ProvidedResources {
 	private final @Nullable ProvidedResourcesImpl parent;
-	private final ItemType[] types;
+	private final ElementType[] types;
 	private final long[] provided;
 	private final int[] indexes;
 
-	ProvidedResourcesImpl(ItemType[] types) {
+	ProvidedResourcesImpl(ElementType[] types) {
 		this(null, types.clone(), new int[types.length]);
-		for (ItemType type : types)
+		for (ElementType type : types)
 			if (type.isEmpty())
 				throw new IllegalArgumentException("types");
 	}
 
-	private ProvidedResourcesImpl(@Nullable ProvidedResourcesImpl parent, ItemType[] types, int[] indexes) {
+	private ProvidedResourcesImpl(@Nullable ProvidedResourcesImpl parent, ElementType[] types, int[] indexes) {
 		this.parent = parent;
 		this.types = types;
 		this.provided = new long[types.length];
@@ -31,7 +31,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	}
 
 	@Override
-	public ItemType[] getTypes() {
+	public ElementType[] getTypes() {
 		return types.clone();
 	}
 
@@ -41,8 +41,8 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	}
 
 	@Override
-	public ItemType getType(int index) {
-		return index < 0 || types.length <= index ? ItemType.EMPTY : types[index];
+	public ElementType getType(int index) {
+		return index < 0 || types.length <= index ? ElementType.empty() : types[index];
 	}
 
 	@Override
@@ -51,22 +51,22 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	}
 
 	@Override
-	public void provide(int index, long amount) {
+	public void provide(int index, long count) {
 		if (index < 0 || types.length <= index)
 			return;
-		provided[index] = advancedSum(provided[index], amount);
+		provided[index] = advancedSum(provided[index], count);
 	}
 
 	@Override
-	public long take(int index, long amount) {
+	public long take(int index, long count) {
 		if (index < 0 || types.length <= index)
 			return 0;
 		long current = provided[index];
 		if (current < 0)
-			return amount < 0 ? -1 : amount;
-		if (0 <= amount && amount <= current) {
-			provided[index] = current - amount;
-			return amount;
+			return count < 0 ? -1 : count;
+		if (0 <= count && count <= current) {
+			provided[index] = current - count;
+			return count;
 		}
 		provided[index] = 0;
 		return current;
@@ -76,44 +76,44 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	public long getMaxRequestFromParents(int index) {
 		if (index < 0 || types.length <= index)
 			return 0;
-		long amount = 0;
+		long count = 0;
 		ProvidedResourcesImpl parent = this.parent;
 		while (parent != null) {
 			index = this.indexes[index];
-			amount = advancedSum(amount, parent.getProvided(index));
+			count = advancedSum(count, parent.getProvided(index));
 			parent = parent.parent;
 		}
-		return amount;
+		return count;
 	}
 
 	@Override
-	public long requestFromParent(int index, long amount) {
+	public long requestFromParent(int index, long count) {
 		if (index < 0 || types.length <= index)
 			return 0;
 		long totalTaken = 0;
 		ProvidedResourcesImpl parent = this.parent;
 		while (parent != null) {
 			index = this.indexes[index];
-			long taken = parent.take(index, amount);
+			long taken = parent.take(index, count);
 			totalTaken = advancedSum(totalTaken, taken);
-			amount = taken < 0 ? 0 : amount < 0 ? -1 : amount - taken;
+			count = taken < 0 ? 0 : count < 0 ? -1 : count - taken;
 			parent = parent.parent;
 		}
 		return totalTaken;
 	}
 
-	private long getMaxRequestMultiplier(long[] amounts, long maxMultiplier) {
+	private long getMaxRequestMultiplier(long[] counts, long maxMultiplier) {
 		if (maxMultiplier < 0)
 			maxMultiplier = -1;
 		for (int i = 0; i < types.length; i++) {
 			long maxRequest = getMaxRequestFromParents(i);
 			if (maxRequest < 0)
 				continue;
-			if (amounts[i] < 0)
+			if (counts[i] < 0)
 				return 0;
-			if (amounts[i] == 0)
+			if (counts[i] == 0)
 				continue;
-			long limit = maxRequest / amounts[i];
+			long limit = maxRequest / counts[i];
 			if (maxMultiplier < 0 || limit < maxMultiplier)
 				maxMultiplier = maxRequest;
 		}
@@ -121,34 +121,34 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	}
 
 	@Override
-	public long requestFromParent(long[] amounts, long maxMultiplier) {
-		maxMultiplier = getMaxRequestMultiplier(amounts, maxMultiplier);
+	public long requestFromParent(long[] counts, long maxMultiplier) {
+		maxMultiplier = getMaxRequestMultiplier(counts, maxMultiplier);
 		if (maxMultiplier == 0)
 			return 0;
 
 		for (int i = 0; i < types.length; i++) {
-			if (amounts[i] == 0)
+			if (counts[i] == 0)
 				continue;
-			long amount = amounts[i] < 0 || maxMultiplier < 0 ? -1 : amounts[i] * maxMultiplier;
-			requestFromParent(i, amount);
-			provided[i] = advancedSum(provided[i], amount);
+			long count = counts[i] < 0 || maxMultiplier < 0 ? -1 : counts[i] * maxMultiplier;
+			requestFromParent(i, count);
+			provided[i] = advancedSum(provided[i], count);
 		}
 		return maxMultiplier;
 	}
 
 	@Override
-	public void returnToParent(int index, long amount) {
+	public void returnToParent(int index, long count) {
 		if (parent == null || index < 0 || types.length <= index)
 			return;
 		long current = provided[index];
 		if (current < 0) {
-			parent.provide(index, amount);
+			parent.provide(index, count);
 			return;
 		}
-		if (amount < 0 || current <= amount)
-			amount = current;
-		parent.provide(index, amount);
-		provided[index] = current - amount;
+		if (count < 0 || current <= count)
+			count = current;
+		parent.provide(index, count);
+		provided[index] = current - count;
 	}
 
 	@Override
@@ -162,7 +162,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 		indexes = indexes.clone();
 
 		int len = indexes.length;
-		ItemType[] types = new ItemType[len];
+		ElementType[] types = new ElementType[len];
 		for (int i = 0; i < len; i++)
 			types[i] = this.types[indexes[i]];
 
@@ -184,11 +184,11 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 		for (Tag savedElement : saved) {
 			if (!(savedElement instanceof CompoundTag savedElementCompound))
 				continue;
-			ItemTypeAmount typeAmount = new ItemTypeAmount(savedElementCompound);
-			ItemType type = typeAmount.getItemType();
+			ElementTypeStack stack = ElementTypeStack.load(savedElementCompound);
+			ElementType type = stack.getType();
 			for (int i = 0; i < types.length; i++) {
 				if (types[i].equals(type)) {
-					provide(i, typeAmount.getAmount());
+					provide(i, stack.getCount());
 					break;
 				}
 			}
@@ -199,7 +199,7 @@ final class ProvidedResourcesImpl implements ProvidedResources {
 	public ListTag save() {
 		ListTag saved = new ListTag();
 		for (int i = 0; i < types.length; i++)
-			saved.add(new ItemTypeAmount(types[i], provided[i]).save());
+			saved.add(ElementTypeStack.save(ElementTypeStack.of(types[i], provided[i])));
 		return saved;
 	}
 }

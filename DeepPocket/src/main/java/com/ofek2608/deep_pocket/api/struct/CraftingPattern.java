@@ -3,12 +3,11 @@ package com.ofek2608.deep_pocket.api.struct;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
-import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedSum;
 
 public final class CraftingPattern {
 	private final ElementTypeStack[] input;
@@ -56,15 +55,15 @@ public final class CraftingPattern {
 		return output.clone();
 	}
 
-	public @UnmodifiableView ElementTypeStack[] getInputCountMap() {
+	public ElementTypeStack[] getInputCountMap() {//TODO rename
 		return getCountMap(input);
 	}
 
-	public @UnmodifiableView ElementTypeStack[] getOutputCountMap() {
+	public ElementTypeStack[] getOutputCountMap() {//TODO rename
 		return getCountMap(output);
 	}
 
-	private static @UnmodifiableView ElementTypeStack[] getCountMap(ElementTypeStack[] arr) {
+	private static ElementTypeStack[] getCountMap(ElementTypeStack[] arr) {
 		HashMap<ElementType,Long> result = new HashMap<>();
 		for (ElementTypeStack stack : arr) {
 			if (stack.isEmpty())

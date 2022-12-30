@@ -2,8 +2,8 @@ package com.ofek2608.deep_pocket.api.struct;
 
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessCrafter;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessRecipe;
 
 public final class CrafterContext {
 	public final Pocket pocket;

@@ -1,12 +1,13 @@
 package com.ofek2608.deep_pocket.api;
 
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import net.minecraft.nbt.ListTag;
 
 public interface ProvidedResources {
 	int getTypeCount();
-	ItemType[] getTypes();
-	ItemType getType(int index);
+	ElementType[] getTypes();
+	ElementType getType(int index);
 	long getProvided(int index);
 	void provide(int index, long amount);
 	long take(int index, long amount);

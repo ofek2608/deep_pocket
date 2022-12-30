@@ -2,9 +2,9 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessUnit;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessCrafter;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessUnit;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.UnmodifiableView;

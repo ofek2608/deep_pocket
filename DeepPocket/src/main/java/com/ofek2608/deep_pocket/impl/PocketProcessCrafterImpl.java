@@ -3,8 +3,8 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessCrafter;
-import com.ofek2608.deep_pocket.api.pocket_process.PocketProcessRecipe;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessCrafter;
+import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.struct.CrafterContext;
 import com.ofek2608.deep_pocket.api.struct.WorldCraftingPatternOld;
 
