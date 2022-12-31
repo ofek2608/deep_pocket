@@ -96,10 +96,11 @@ public class ProcessScreen extends AbstractContainerScreen<ProcessMenu> {
 			allTypes.add(ret);
 			return ret;
 		};
+		//FIXME
 		for (ProcessUnitClientData.CraftingItem craftingItem : data.craftingItems)
 			typeDisplayMap.computeIfAbsent(craftingItem.item, newDisplayedType).crafting = craftingItem;
-		for (ProcessUnitClientData.IngredientItem ingredientItem : data.ingredientItems)
-			typeDisplayMap.computeIfAbsent(ingredientItem.item, newDisplayedType).ingredient = ingredientItem;
+//		for (ProcessUnitClientData.IngredientItem ingredientItem : data.ingredientItems)
+//			typeDisplayMap.computeIfAbsent(ingredientItem.type, newDisplayedType).ingredient = ingredientItem;
 	}
 
 	@Override

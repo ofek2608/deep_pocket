@@ -13,17 +13,18 @@ public interface PatternSupportedBlockEntity {
 	boolean executePattern(CrafterContext ctx) throws IllegalArgumentException;
 
 	static long[] getRequirements(WorldCraftingPatternOld pattern, ProvidedResources resources) throws IllegalArgumentException {
-		var inputCountMap = pattern.getInputCountMap();
-		Set<ItemType> left = new HashSet<>(inputCountMap.keySet());
-		ItemType[] types = resources.getTypes();
-		int count = types.length;
-		long[] requirements = new long[count];
-		for (int i = 0; i < count; i++) {
-			requirements[i] = inputCountMap.getOrDefault(types[i], 0L);
-			left.remove(types[i]);
-		}
-		if (left.size() > 0)
-			throw new IllegalArgumentException();
-		return requirements;
+//		var inputCountMap = pattern.getInputCountMap();
+//		Set<ItemType> left = new HashSet<>(inputCountMap.keySet());
+//		ItemType[] types = resources.getTypes();
+//		int count = types.length;
+//		long[] requirements = new long[count];
+//		for (int i = 0; i < count; i++) {
+//			requirements[i] = inputCountMap.getOrDefault(types[i], 0L);
+//			left.remove(types[i]);
+//		}
+//		if (left.size() > 0)
+//			throw new IllegalArgumentException();
+//		return requirements;
+		return new long[0];
 	}
 }

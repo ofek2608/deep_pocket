@@ -120,7 +120,7 @@ final class PocketImpl implements Pocket {
 	public void insertAll(ProvidedResources resources) {
 		int typeCount = resources.getTypeCount();
 		for (int i = 0; i < typeCount; i++)
-			insertItem(resources.getType(i), resources.take(i, -1));
+			insertElement(resources.getType(i), resources.take(i, -1));
 	}
 
 	private long getMaxExtract0(Map<ItemType,Long> counts) {

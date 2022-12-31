@@ -420,12 +420,14 @@ public class CrafterBlock extends Block implements EntityBlock {
 				if (provided == 0)
 					continue;
 				containItems = true;
-				resources.take(i, insertItemToHandler(resources.getType(i), provided, handler));
+				ElementType type = resources.getType(i);
+				if (type instanceof ElementType.TItem item)
+					resources.take(i, insertItemToHandler(item, provided, handler));
 			}
 			return containItems;
 		}
 
-		private long insertItemToHandler(ItemType type, long provided, IItemHandler handler) {
+		private long insertItemToHandler(ElementType.TItem type, long provided, IItemHandler handler) {
 			long taken = 0;
 			for (int slotIndex = 0; slotIndex < handler.getSlots(); slotIndex++) {
 				int slotLimit = handler.getSlotLimit(slotIndex);

@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.impl;
 
-import com.ofek2608.deep_pocket.api.*;
+import com.ofek2608.deep_pocket.api.DeepPocketHelper;
+import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessCrafter;
 import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessManager;
@@ -27,10 +28,10 @@ final class PocketProcessUnitImpl implements PocketProcessUnit {
 		this.parent = parent;
 		this.id = id;
 		int len = types.length;
-		this.resources = helper.createProvidedResources(types);
+		this.resources = helper.createProvidedResources(Stream.of(types).map(RecipeRequest::getResult).toArray(ElementType[]::new));//FIXME
 		this.typeIndexes = new HashMap<>();
 		for (int i = 0; i < len; i++)
-			this.typeIndexes.put(types[i], i);
+			this.typeIndexes.put(types[i].getResult(), i);
 		this.leftToProvide = new long[len];
 		this.recipes = new ArrayList<>();
 	}

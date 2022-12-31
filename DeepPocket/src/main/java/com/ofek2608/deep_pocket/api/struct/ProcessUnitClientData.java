@@ -66,24 +66,24 @@ public final class ProcessUnitClientData {
 	}
 
 	public static final class IngredientItem {
-		public final ItemType item;
+		public final ElementType type;
 		public final long required;
 
-		public IngredientItem(ItemType item, long required) {
-			this.item = item;
+		public IngredientItem(ElementType type, long required) {
+			this.type = type;
 			this.required = required;
 		}
 
 
 		public static void encode(FriendlyByteBuf buf, IngredientItem data) {
-			ItemType.encode(buf, data.item);
+			ElementType.encode(buf, data.type);
 			buf.writeLong(data.required);
 		}
 
 		public static IngredientItem decode(FriendlyByteBuf buf) {
 			return new IngredientItem(
-							ItemType.decode(buf),
-							buf.readLong()
+					ElementType.decode(buf),
+					buf.readLong()
 			);
 		}
 	}
