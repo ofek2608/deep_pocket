@@ -5,9 +5,11 @@ import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 
 import javax.annotation.Nullable;
 import java.util.*;
+import java.util.function.IntUnaryOperator;
 
 public final class ServerPocket extends PocketBase {
 	private ElementConversions conversions;
@@ -185,11 +187,11 @@ public final class ServerPocket extends PocketBase {
 		ListTag savedAvailablePatterns = new ListTag();
 		pocket.availablePatternsById.forEach((patternId, pattern) -> {
 			CompoundTag savedPattern = CraftingPattern.save(pattern.pattern);
-			ListTag savedPatternLocations = new ListTag();
+			ListTag savedPatternPositions = new ListTag();
 			for (LevelBlockPos position : pattern.positions) {
-				savedPatternLocations.add(LevelBlockPos.save(position));
+				savedPatternPositions.add(LevelBlockPos.save(position));
 			}
-			savedPattern.put("positions", savedPatternLocations);
+			savedPattern.put("positions", savedPatternPositions);
 			savedPattern.putUUID("patternId", patternId);
 			savedAvailablePatterns.add(savedPattern);
 		});
@@ -212,11 +214,11 @@ public final class ServerPocket extends PocketBase {
 		return saved;
 	}
 	
-	public static ServerPocket load(CompoundTag tag, boolean allowPublicPockets, ElementConversions conversions) {
+	public static ServerPocket load(CompoundTag saved, boolean allowPublicPockets, ElementConversions conversions, IntUnaryOperator elementIdGetter) {
 		ServerPocket pocket = new ServerPocket(
-				tag.getUUID("pocketId"),
-				tag.getUUID("owner"),
-				PocketInfo.load(tag.getCompound("info")),
+				saved.getUUID("pocketId"),
+				saved.getUUID("owner"),
+				PocketInfo.load(saved.getCompound("info")),
 				conversions
 		);
 		// disable public pocket if the settings had changed
@@ -226,13 +228,52 @@ public final class ServerPocket extends PocketBase {
 			pocket.setInfo(info);
 		}
 		// load element count
-		// TODO load
+		CompoundTag savedElements = saved.getCompound("elements");
+		savedElements.getAllKeys().forEach(key -> {
+			int elementIndex;
+			try {
+				elementIndex = Integer.parseInt(key);
+			} catch (NumberFormatException e) {
+				return;
+			}
+			elementIndex = elementIdGetter.applyAsInt(elementIndex);
+			pocket.setCount(elementIndex, savedElements.getLong(key));
+		});
 		// load available patterns
-		// TODO load
+		ListTag savedAvailablePatterns = saved.getList("availablePatterns", Tag.TAG_COMPOUND);
+		for (int i = 0; i < savedAvailablePatterns.size(); i++) {
+			CompoundTag savedAvailablePattern = savedAvailablePatterns.getCompound(i);
+			ServerCraftingPattern craftingPattern = new ServerCraftingPattern(
+					savedAvailablePattern.getUUID("patternId"),
+					CraftingPattern.load(savedAvailablePattern)
+			);
+			ListTag savedPatternPositions = saved.getList("positions", Tag.TAG_COMPOUND);
+			for (int j = 0; j < savedPatternPositions.size(); j++) {
+				craftingPattern.positions.add(LevelBlockPos.load(savedPatternPositions.getCompound(j)));
+			}
+			pocket.availablePatternsById.put(craftingPattern.id, craftingPattern);
+			pocket.availablePatternsByPattern.put(craftingPattern.pattern, craftingPattern);
+		}
 		// load default patterns
-		// TODO load
+		CompoundTag savedDefaultPatterns = saved.getCompound("defaultPatterns");
+		savedDefaultPatterns.getAllKeys().forEach(key -> {
+			int elementIndex;
+			try {
+				elementIndex = Integer.parseInt(key);
+			} catch (NumberFormatException e) {
+				return;
+			}
+			elementIndex = elementIdGetter.applyAsInt(elementIndex);
+			pocket.setDefaultPattern(elementIndex, savedElements.getUUID(key));
+		});
 		// load crafting processes
-		// TODO load
+		ListTag savedCraftingProcesses = saved.getList("craftingProcesses", Tag.TAG_LIST);
+		for (int i = 0; i < savedCraftingProcesses.size(); i++) {
+			pocket.craftingProcesses.add(CraftingProcess.load(
+					pocket.nextCraftingProcessId++,
+					savedCraftingProcesses.getList(i)
+			));
+		}
 		return pocket;
 	}
 }

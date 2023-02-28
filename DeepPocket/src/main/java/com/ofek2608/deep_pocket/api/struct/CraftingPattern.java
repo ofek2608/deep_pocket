@@ -18,7 +18,7 @@ public final class CraftingPattern {
 		this.output = output.clone();
 	}
 	
-	public CraftingPattern load(CompoundTag saved) {
+	public static CraftingPattern load(CompoundTag saved) {
 		return new CraftingPattern(
 				DeepPocketUtils.loadArray(saved.getList("input", 10), ElementTypeStack[]::new, ElementTypeStack::load),
 				DeepPocketUtils.loadArray(saved.getList("output", 10), ElementTypeStack[]::new, ElementTypeStack::load)
