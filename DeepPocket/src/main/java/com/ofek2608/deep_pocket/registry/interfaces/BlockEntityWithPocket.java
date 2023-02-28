@@ -3,7 +3,6 @@ package com.ofek2608.deep_pocket.registry.interfaces;
 import com.ofek2608.deep_pocket.api.DeepPocketApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.PocketBase;
 import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
@@ -78,7 +77,7 @@ public class BlockEntityWithPocket extends BlockEntity {
 		if (api == null)
 			return false;
 		PocketBase pocket = api.getPocket(pocketId);
-		return pocket == null || pocket.getSecurityMode().canAccess(player, pocket.getOwner());
+		return pocket == null || pocket.canAccess(player);
 	}
 
 	@Override
@@ -126,7 +125,7 @@ public class BlockEntityWithPocket extends BlockEntity {
 			return 0xFFFFFF;
 		if (!(level.getBlockEntity(pos) instanceof BlockEntityWithPocket entity))
 			return 0xFFFFFF;
-		Pocket pocket = entity.getClientPocket();
+		ClientPocket pocket = entity.getClientPocket();
 		if (pocket == null)
 			return 0xFFFFFF;
 		return pocket.getColor();

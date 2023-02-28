@@ -5,10 +5,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -38,7 +38,7 @@ class PocketSelectionScreen extends Screen {
 	private int topPos;
 	private int pageCount;
 	private int pageIndex;
-	private final Pocket[] visiblePockets = new Pocket[8];
+	private final ClientPocket[] visiblePockets = new ClientPocket[8];
 	private boolean hoverSearch;
 	private int hoveredPocket;
 	private boolean hoverPrevPage;
@@ -61,7 +61,7 @@ class PocketSelectionScreen extends Screen {
 		mx -= leftPos;
 		my -= topPos;
 
-		List<Pocket> pockets = DeepPocketClientApi.get().getPockets().filter(this::filterAccess).filter(this::filterSearch).sorted(this::comparePockets).toList();
+		List<ClientPocket> pockets = DeepPocketClientApi.get().getPockets().filter(this::filterAccess).filter(this::filterSearch).sorted(this::comparePockets).toList();
 		pageCount = (pockets.size() + 7) / 8;
 		if (pageCount == 0) pageCount = 1;
 		pageIndex = Math.max(Math.min(pageIndex, pageCount - 1), 0);
@@ -88,15 +88,15 @@ class PocketSelectionScreen extends Screen {
 		}
 	}
 
-	private boolean filterAccess(Pocket pocket) {
+	private boolean filterAccess(ClientPocket pocket) {
 		return pocket.canAccess(player);
 	}
 
-	private boolean filterSearch(Pocket pocket) {
+	private boolean filterSearch(ClientPocket pocket) {
 		return pocket.getName().toLowerCase().contains(search.toString().toLowerCase());
 	}
 
-	private int comparePockets(Pocket p0, Pocket p1) {
+	private int comparePockets(ClientPocket p0, ClientPocket p1) {
 		UUID id0 = p0.getOwner();
 		UUID id1 = p1.getOwner();
 		boolean me0 = id0.equals(playerId);
@@ -128,7 +128,7 @@ class PocketSelectionScreen extends Screen {
 			RenderSystem.setShaderTexture(0, TEXTURE);
 
 			int y = topPos + 19 + 22 * i;
-			Pocket pocket = visiblePockets[i];
+			ClientPocket pocket = visiblePockets[i];
 			DeepPocketUtils.setRenderShaderColor(pocket == null ? 0x000000 : pocket.getColor());
 			Sprites.POCKET_OUTLINE.blit(poseStack, leftPos, y);
 			DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
@@ -204,7 +204,7 @@ class PocketSelectionScreen extends Screen {
 			return true;
 		}
 		if (0 <= hoveredPocket && hoveredPocket < 8) {
-			Pocket pocket = visiblePockets[hoveredPocket];
+			ClientPocket pocket = visiblePockets[hoveredPocket];
 			if (pocket != null) {
 				DeepPocketUtils.playClickSound();
 				selectPocket(pocket.getPocketId());

@@ -1,12 +1,9 @@
 package com.ofek2608.deep_pocket.api.struct;
 
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
-import com.ofek2608.deep_pocket.api.struct.client.ClientPocketData;
+import net.minecraft.world.entity.player.Player;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.UUID;
 
 public class PocketBase {
@@ -50,5 +47,9 @@ public class PocketBase {
 	
 	public PocketSecurityMode getSecurityMode() {
 		return info.securityMode;
+	}
+	
+	public boolean canAccess(Player player) {
+		return getSecurityMode().canAccess(player, getOwner());
 	}
 }

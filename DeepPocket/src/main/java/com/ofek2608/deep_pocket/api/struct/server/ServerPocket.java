@@ -5,8 +5,6 @@ import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -39,10 +37,6 @@ public final class ServerPocket extends PocketBase {
 	
 	public boolean didChangeInfo() {
 		return changedInfo;
-	}
-	
-	public boolean canAccess(ServerPlayer player) {
-		return getSecurityMode().canAccess(player, getOwner());
 	}
 	
 	public ElementConversions getConversions() {

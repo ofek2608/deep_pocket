@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.api.struct;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -43,7 +43,7 @@ public final class SignalSettings {
 			return false;
 		DeepPocketServerApi api = DeepPocketServerApi.get();
 		if (api == null) return false;
-		Pocket pocket = api.getPocket(pocketId);
+		ServerPocket pocket = api.getPocket(pocketId);
 		if (pocket == null) return false;
 		long firstNum = pocket.getMaxExtractOld(first);
 		long secondNum = secondItem == null ? secondCount : pocket.getMaxExtractOld(secondItem);
