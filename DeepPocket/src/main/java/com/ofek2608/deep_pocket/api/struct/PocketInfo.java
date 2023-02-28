@@ -59,4 +59,15 @@ public final class PocketInfo {
 	public static PocketInfo decode(FriendlyByteBuf buf) {
 		return new PocketInfo(buf.readUtf(MAX_NAME_LENGTH), ElementType.decode(buf), buf.readInt(), buf.readEnum(PocketSecurityMode.class));
 	}
+	
+	public void setFrom(PocketInfo that) {
+		this.name = that.name;
+		this.icon = that.icon;
+		this.color = that.color;
+		this.securityMode = that.securityMode;
+	}
+	
+	public PocketInfo copy() {
+		return new PocketInfo(this);
+	}
 }
