@@ -1,40 +1,70 @@
 package com.ofek2608.deep_pocket.api.struct.server;
 
+import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.Util;
-import net.minecraft.network.FriendlyByteBuf;
-import org.jetbrains.annotations.ApiStatus;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 import java.util.*;
 
 public final class ServerPocket extends PocketBase {
-	private final Map<Integer,Long> elementCount = new HashMap<>();
+	private ElementConversions conversions;
+	private final Map<Integer,Long> elementsCount = new HashMap<>();
 	private final Map<CraftingPattern, ServerCraftingPattern> availablePatternsByPattern = new HashMap<>();
 	private final Map<UUID, ServerCraftingPattern> availablePatternsById = new HashMap<>();
 	private final Map<Integer, UUID> defaultPattern = new HashMap<>();
 	private final List<CraftingProcess> craftingProcesses = new ArrayList<>();
 	private int nextCraftingProcessId = 1;
 	
+	private boolean changedInfo = false;
 	private final Set<Integer> updatedElementCount = new HashSet<>();
 	private final Set<UUID> updatedAvailablePatterns = new HashSet<>();
 	private final Set<Integer> updatedDefaultPatterns = new HashSet<>();
 	private int lastSentCraftingProcessId = 0;
 	
-	public ServerPocket(UUID pocketId, UUID owner, PocketInfo info) {
+	public ServerPocket(UUID pocketId, UUID owner, PocketInfo info, ElementConversions conversions) {
 		super(pocketId, owner, info);
+		this.conversions = conversions;
+	}
+	
+	@Override
+	public void setInfo(PocketInfo info) {
+		super.setInfo(info);
+		changedInfo = true;
+	}
+	
+	public boolean didChangeInfo() {
+		return changedInfo;
+	}
+	
+	public boolean canAccess(ServerPlayer player) {
+		return getSecurityMode().canAccess(player, getOwner());
+	}
+	
+	public ElementConversions getConversions() {
+		return conversions;
+	}
+	
+	public void setConversions(ElementConversions conversions) {
+		//TODO convert elementCount
+		//TODO add elements to updatedElementCount
+		this.conversions = conversions;
 	}
 	
 	public long getCount(int elementIndex) {
-		return elementCount.getOrDefault(elementIndex, 0L);
+		return elementsCount.getOrDefault(elementIndex, 0L);
 	}
 	
 	public void setCount(int elementIndex, long count) {
 		updatedElementCount.add(elementIndex);
 		if (count == 0) {
-			elementCount.remove(elementIndex);
+			elementsCount.remove(elementIndex);
 		} else {
-			elementCount.put(elementIndex, count < 0 ? -1 : count);
+			elementsCount.put(elementIndex, count < 0 ? -1 : count);
 		}
 	}
 	
@@ -77,125 +107,138 @@ public final class ServerPocket extends PocketBase {
 		craftingProcesses.add(CraftingProcess.create(nextCraftingProcessId++, entries));
 	}
 	
-	@ApiStatus.Internal
 	public void tick() {
 	
 	}
 	
-	@ApiStatus.Internal
-	public void writeUpdate(FriendlyByteBuf buf) {
-		writeUpdateCount(buf);
-		writeUpdateAvailablePatterns(buf);
-		writeUpdateDefaultPatterns(buf);
-		writeUpdateActiveCraftingProcesses(buf);
+	public PocketUpdate createUpdate() {
+		PocketUpdate update = new PocketUpdate();
+		// Element Counts
+		for (Integer elementId : updatedElementCount) {
+			update.updatedElementCount.add(new PocketUpdate.ElementCount(elementId, elementsCount.get(elementId)));
+		}
+		// Available Patterns
+		for (UUID patternId : updatedAvailablePatterns) {
+			ServerCraftingPattern pattern = availablePatternsById.get(patternId);
+			if (pattern == null) {
+				update.removedPatterns.add(patternId);
+			} else {
+				update.addedPatterns.add(new PocketUpdate.AddedPattern(patternId, pattern.pattern));
+			}
+		}
+		// Default Patterns
+		for (int patternId : updatedDefaultPatterns) {
+			update.changedDefaultPatterns.add(new PocketUpdate.DefaultPattern(patternId, defaultPattern.getOrDefault(patternId, Util.NIL_UUID)));
+		}
+		// Crafting Processes
+		for (CraftingProcess process : craftingProcesses) {
+			if (process.getId() <= lastSentCraftingProcessId) {
+				update.craftingProcessUpdates.add(process.createUpdate());
+			} else {
+				update.craftingProcessSetups.add(process.createSetup());
+			}
+		}
+		
+		return update;
 	}
 	
-	@ApiStatus.Internal
-	public void writeSetup(FriendlyByteBuf buf) {
-		writeSetupCount(buf);
-		writeSetupAvailablePatterns(buf);
-		writeSetupDefaultPatterns(buf);
-		writeSetupActiveCraftingProcesses(buf);
+	public PocketUpdate createSetup() {
+		PocketUpdate update = new PocketUpdate();
+		// Element Counts
+		elementsCount.forEach((elementId, count) -> {
+			update.updatedElementCount.add(new PocketUpdate.ElementCount(elementId, count));
+		});
+		// Available Patterns
+		availablePatternsById.forEach((patternId, pattern) -> {
+			update.addedPatterns.add(new PocketUpdate.AddedPattern(patternId, pattern.pattern));
+		});
+		// Default Patterns
+		defaultPattern.forEach((elementId, patternId) -> {
+			update.changedDefaultPatterns.add(new PocketUpdate.DefaultPattern(elementId, patternId));
+		});
+		// Crafting Processes
+		for (CraftingProcess process : craftingProcesses) {
+			update.craftingProcessSetups.add(process.createSetup());
+		}
+		
+		return update;
 	}
 	
-	@ApiStatus.Internal
 	public void clearUpdates() {
+		changedInfo = false;
 		updatedElementCount.clear();
 		updatedAvailablePatterns.clear();
 		updatedDefaultPatterns.clear();
 		lastSentCraftingProcessId = nextCraftingProcessId - 1;
 	}
 	
-	private void writeUpdateCount(FriendlyByteBuf buf) {
-		buf.writeVarInt(updatedElementCount.size());
-		for (Integer elementId : updatedElementCount) {
-			buf.writeVarInt(elementId);
-			buf.writeVarLong(elementCount.get(elementId) + 1);
-		}
-	}
 	
-	private void writeUpdateAvailablePatterns(FriendlyByteBuf buf) {
-		List<UUID> removedCraftingPatternsId = new ArrayList<>();
-		List<UUID> addedCraftingPatternsId = new ArrayList<>();
-		List<CraftingPattern> addedCraftingPatterns = new ArrayList<>();
-		for (UUID patternId : updatedAvailablePatterns) {
-			ServerCraftingPattern pattern = availablePatternsById.get(patternId);
-			if (pattern == null) {
-				removedCraftingPatternsId.add(patternId);
-			} else {
-				addedCraftingPatternsId.add(patternId);
-				addedCraftingPatterns.add(pattern.pattern);
+	
+	public static CompoundTag save(ServerPocket pocket) {
+		CompoundTag saved = new CompoundTag();
+		saved.putUUID("pocketId", pocket.getPocketId());
+		saved.putUUID("owner", pocket.getOwner());
+		saved.put("info", PocketInfo.save(pocket.getInfo()));
+		
+		// save element count
+		CompoundTag savedElementsCounts = new CompoundTag();
+		pocket.elementsCount.forEach((elementId, elementCount) ->
+				savedElementsCounts.putLong("" + elementCount, elementCount)
+		);
+		saved.put("elements", savedElementsCounts);
+		
+		// save available patterns
+		ListTag savedAvailablePatterns = new ListTag();
+		pocket.availablePatternsById.forEach((patternId, pattern) -> {
+			CompoundTag savedPattern = CraftingPattern.save(pattern.pattern);
+			ListTag savedPatternLocations = new ListTag();
+			for (LevelBlockPos position : pattern.positions) {
+				savedPatternLocations.add(LevelBlockPos.save(position));
 			}
-		}
-		buf.writeVarInt(removedCraftingPatternsId.size());
-		for (UUID patternId : removedCraftingPatternsId) {
-			buf.writeUUID(patternId);
-		}
-		buf.writeVarInt(addedCraftingPatternsId.size());
-		for (int i = 0; i < addedCraftingPatternsId.size(); i++) {
-			buf.writeUUID(addedCraftingPatternsId.get(i));
-			CraftingPattern.encode(buf, addedCraftingPatterns.get(i));
-		}
-	}
-	
-	private void writeUpdateDefaultPatterns(FriendlyByteBuf buf) {
-		buf.writeVarInt(updatedDefaultPatterns.size());
-		for (int patternId : updatedDefaultPatterns) {
-			buf.writeVarInt(patternId);
-			buf.writeUUID(defaultPattern.getOrDefault(patternId, Util.NIL_UUID));
-		}
-	}
-	
-	private void writeUpdateActiveCraftingProcesses(FriendlyByteBuf buf) {
-		for (CraftingProcess process : craftingProcesses) {
-			buf.writeVarInt(process.getId());
-			if (process.getId() <= lastSentCraftingProcessId) {
-				process.sendUpdate(buf);
-			} else {
-				CraftingProcess.serialize(buf, process);
-			}
-		}
-		//process id 0 marks the end
-		buf.writeVarInt(0);
-	}
-	
-	
-	
-	
-	
-	private void writeSetupCount(FriendlyByteBuf buf) {
-		buf.writeVarInt(elementCount.size());
-		elementCount.forEach((elementId, count) -> {
-			buf.writeVarInt(elementId);
-			buf.writeVarLong(count + 1);
+			savedPattern.put("positions", savedPatternLocations);
+			savedPattern.putUUID("patternId", patternId);
+			savedAvailablePatterns.add(savedPattern);
 		});
-	}
-	
-	private void writeSetupAvailablePatterns(FriendlyByteBuf buf) {
-		//0 removed patterns
-		buf.writeVarInt(0);
-		//add all patterns
-		buf.writeVarInt(availablePatternsById.size());
-		availablePatternsById.forEach((patternId, pattern) -> {
-			buf.writeUUID(patternId);
-			CraftingPattern.encode(buf, pattern.pattern);
-		});
-	}
-	
-	private void writeSetupDefaultPatterns(FriendlyByteBuf buf) {
-		buf.writeVarInt(defaultPattern.size());
-		defaultPattern.forEach((elementId, patternId) -> {
-			buf.writeVarInt(elementId);
-			buf.writeUUID(patternId);
-		});
-	}
-	
-	private void writeSetupActiveCraftingProcesses(FriendlyByteBuf buf) {
-		for (CraftingProcess process : craftingProcesses) {
-			buf.writeVarInt(process.getId());
-			CraftingProcess.serialize(buf, process);
+		saved.put("availablePatterns", savedAvailablePatterns);
+		
+		// save default patterns
+		CompoundTag savedDefaultPatterns = new CompoundTag();
+		pocket.defaultPattern.forEach((elementId, patternId) ->
+				savedDefaultPatterns.putUUID("" + elementId, patternId)
+		);
+		saved.put("defaultPatterns", savedDefaultPatterns);
+		
+		// save crafting processes
+		ListTag savedCraftingProcesses = new ListTag();
+		for (CraftingProcess craftingProcess : pocket.craftingProcesses) {
+			savedCraftingProcesses.add(CraftingProcess.save(craftingProcess));
 		}
-		//process id 0 marks the end
-		buf.writeVarInt(0);
+		saved.put("craftingProcesses", savedCraftingProcesses);
+		
+		return saved;
+	}
+	
+	public static ServerPocket load(CompoundTag tag, boolean allowPublicPockets, ElementConversions conversions) {
+		ServerPocket pocket = new ServerPocket(
+				tag.getUUID("pocketId"),
+				tag.getUUID("owner"),
+				PocketInfo.load(tag.getCompound("info")),
+				conversions
+		);
+		// disable public pocket if the settings had changed
+		if (!allowPublicPockets && pocket.getSecurityMode() == PocketSecurityMode.PUBLIC) {
+			PocketInfo info = pocket.getInfo();
+			info.securityMode = PocketSecurityMode.TEAM;
+			pocket.setInfo(info);
+		}
+		// load element count
+		// TODO load
+		// load available patterns
+		// TODO load
+		// load default patterns
+		// TODO load
+		// load crafting processes
+		// TODO load
+		return pocket;
 	}
 }

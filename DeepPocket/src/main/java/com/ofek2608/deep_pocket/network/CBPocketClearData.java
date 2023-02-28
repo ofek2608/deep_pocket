@@ -1,8 +1,6 @@
 package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
@@ -10,30 +8,27 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-class CBPocketInfo {
+class CBPocketClearData {
 	private final UUID pocketId;
-	private final PocketInfo info;
 
-	CBPocketInfo(UUID pocketId, PocketInfo info) {
+	CBPocketClearData(UUID pocketId) {
 		this.pocketId = pocketId;
-		this.info = info;
 	}
 
-	CBPocketInfo(FriendlyByteBuf buf) {
-		this(buf.readUUID(), PocketInfo.decode(buf));
+	CBPocketClearData(FriendlyByteBuf buf) {
+		this(buf.readUUID());
 	}
 
 	void encode(FriendlyByteBuf buf) {
 		buf.writeUUID(pocketId);
-		PocketInfo.encode(buf, info);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
 		ctxSupplier.get().enqueueWork(()->{
-			DeepPocketClientApi api = DeepPocketClientApi.get();
-			ClientPocket pocket = api.getPocket(pocketId);
-			if (pocket != null)
-				pocket.setInfo(info);
+			ClientPocket pocket = DeepPocketClientApi.get().getPocket(pocketId);
+			if (pocket != null) {
+				pocket.clearData();
+			}
 		});
 		ctxSupplier.get().setPacketHandled(true);
 	}

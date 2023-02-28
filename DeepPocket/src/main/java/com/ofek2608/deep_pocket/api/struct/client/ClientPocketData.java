@@ -2,8 +2,7 @@ package com.ofek2608.deep_pocket.api.struct.client;
 
 import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
 import com.ofek2608.deep_pocket.api.struct.CraftingProcess;
-import net.minecraft.network.FriendlyByteBuf;
-import org.jetbrains.annotations.ApiStatus;
+import com.ofek2608.deep_pocket.api.struct.PocketUpdate;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.*;
@@ -33,60 +32,37 @@ public final class ClientPocketData {
 	
 	
 	
-	@ApiStatus.Internal
-	public void readUpdate(FriendlyByteBuf buf) {
-		readUpdateCount(buf);
-		readUpdateAvailablePatterns(buf);
-		readUpdateDefaultPatterns(buf);
-		readUpdateActiveCraftingProcesses(buf);
-	}
-	
-	private void readUpdateCount(FriendlyByteBuf buf) {
-		int updatedCountLength = buf.readVarInt();
-		for (int i = 0; i < updatedCountLength; i++) {
-			int elementId = buf.readVarInt();
-			long elementCount = buf.readVarLong() - 1;
-			if (elementCount < 0) {
-				elementCount = -1;
-			}
-			if (elementCount == 0) {
-				counts.remove(elementId);
+	public void applyUpdate(PocketUpdate update) {
+		// Element Counts
+		for (PocketUpdate.ElementCount upd : update.updatedElementCount) {
+			if (upd.elementCount() == 0) {
+				counts.remove(upd.elementId());
 			} else {
-				counts.put(elementId, elementCount);
+				counts.put(upd.elementId(), upd.elementCount() < 0 ? -1 : upd.elementCount());
 			}
 		}
-	}
-	
-	private void readUpdateAvailablePatterns(FriendlyByteBuf buf) {
-		int removedLength = buf.readInt();
-		for (int i = 0; i < removedLength; i++) {
-			availablePatterns.remove(buf.readUUID());
+		// Available Patterns
+		for (UUID removedPattern : update.removedPatterns) {
+			availablePatterns.remove(removedPattern);
 		}
-		int addLength = buf.readVarInt();
-		for (int i = 0; i < addLength; i++) {
-			availablePatterns.put(buf.readUUID(), CraftingPattern.decode(buf));
+		for (PocketUpdate.AddedPattern addedPattern : update.addedPatterns) {
+			availablePatterns.put(addedPattern.patternId(), addedPattern.pattern());
 		}
-	}
-	
-	private void readUpdateDefaultPatterns(FriendlyByteBuf buf) {
-		int addedDefaultPatternsLength = buf.readVarInt();
-		for (int i = 0; i < addedDefaultPatternsLength; i++) {
-			defaultPattern.put(buf.readVarInt(), buf.readUUID());
+		// Default Patterns
+		for (PocketUpdate.DefaultPattern changedDefaultPattern : update.changedDefaultPatterns) {
+			defaultPattern.put(changedDefaultPattern.elementId(), changedDefaultPattern.patternId());
 		}
-	}
-	
-	private void readUpdateActiveCraftingProcesses(FriendlyByteBuf buf) {
-		int nextProcessId = buf.readVarInt();
-		
-		//Iterate over all the already existing processes, and override finished processes
+		// Crafting Processes
+		//Update existing processes
 		int putIndex = 0;
-		for (int i = 0; i < activeCraftingProcesses.size(); i++) {
-			CraftingProcess process = activeCraftingProcesses.get(i);
-			if (nextProcessId == process.getId()) {
-				activeCraftingProcesses.set(putIndex++, process);
-				process.readUpdate(buf);
-				nextProcessId = buf.readVarInt();
-			}
+		int takeIndex = 0;
+		for (PocketUpdate.CraftingProcessUpdate craftingProcessUpdate : update.craftingProcessUpdates) {
+			CraftingProcess process;
+			do {
+				process = activeCraftingProcesses.get(takeIndex++);
+			} while (process.getId() != craftingProcessUpdate.processId());
+			activeCraftingProcesses.set(putIndex++, process);
+			process.applyUpdate(craftingProcessUpdate);
 		}
 		
 		//Remove remaining processes after overriding
@@ -96,10 +72,8 @@ public final class ClientPocketData {
 		}
 		
 		//Add all the new processes
-		//process id 0 marks the end
-		while (nextProcessId != 0) {
-			activeCraftingProcesses.add(CraftingProcess.deserialize(nextProcessId, buf));
-			nextProcessId = buf.readVarInt();
+		for (PocketUpdate.CraftingProcessSetup craftingProcessSetup : update.craftingProcessSetups) {
+			activeCraftingProcesses.add(new CraftingProcess(craftingProcessSetup));
 		}
 	}
 }

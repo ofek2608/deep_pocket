@@ -1,7 +1,6 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.*;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import org.jetbrains.annotations.UnmodifiableView;
 
@@ -13,10 +12,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements DeepPocketApi {
+abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper, Pocket extends PocketBase> implements DeepPocketApi<Pocket> {
 	protected final Helper helper;
 	protected @Nonnull ElementConversions conversions = ElementConversions.EMPTY;
-	protected final Map<UUID, Pocket.Snapshot> pocketSnapshots = new HashMap<>();
+	protected final Map<UUID, Pocket> pockets = new HashMap<>();
 	protected final Map<UUID, String> playerNameCache = new HashMap<>();
 
 	protected DeepPocketApiImpl(Helper helper) {
@@ -35,32 +34,25 @@ abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements Dee
 	
 	@Override
 	public Stream<Pocket> getPockets() {
-		return pocketSnapshots.values().stream().map(Pocket.Snapshot::getPocket);
+		return pockets.values().stream();
 	}
 
 	public @Nullable Pocket getPocket(UUID pocketId) {
-		Pocket.Snapshot snapshot = pocketSnapshots.get(pocketId);
-		return snapshot == null ? null : snapshot.getPocket();
+		return pockets.get(pocketId);
 	}
-
-	public @Nullable Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
-		if (pocketSnapshots.containsKey(pocketId))
-			return null;
-		Pocket newPocket = helper.createPocket(conversions, pocketId, owner, info);
-		pocketSnapshots.put(pocketId, newPocket.createSnapshot());
-		return newPocket;
-	}
+	
+	public abstract @Nullable Pocket createPocket(UUID pocketId, UUID owner, PocketInfo info);
 
 	@Override
 	public boolean destroyPocket(UUID pocketId) {
-		return pocketSnapshots.remove(pocketId) != null;
+		return pockets.remove(pocketId) != null;
 	}
 
 	@Override
 	public void clearPockets() {
-		if (pocketSnapshots.isEmpty())
+		if (pockets.isEmpty())
 			return;
-		pocketSnapshots.clear();
+		pockets.clear();
 	}
 
 	@Override
@@ -71,6 +63,10 @@ abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper> implements Dee
 		return !name.equals(oldName);
 	}
 
+	public boolean hasCachedPlayerName(UUID id) {
+		return playerNameCache.containsKey(id);
+	}
+	
 	@Override
 	public String getCachedPlayerName(UUID id) {
 		String result = playerNameCache.get(id);

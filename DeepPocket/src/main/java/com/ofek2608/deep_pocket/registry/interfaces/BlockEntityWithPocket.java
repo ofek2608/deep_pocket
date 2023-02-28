@@ -4,6 +4,9 @@ import com.ofek2608.deep_pocket.api.DeepPocketApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.PocketBase;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.integration.DeepPocketCurios;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -11,6 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -30,12 +34,12 @@ public class BlockEntityWithPocket extends BlockEntity {
 		super(type, pos, state);
 	}
 
-	public @Nullable Pocket getServerPocket() {
+	public @Nullable ServerPocket getServerPocket() {
 		DeepPocketServerApi api = DeepPocketServerApi.get();
 		return api == null ? null : api.getPocket(pocketId);
 	}
 
-	public @Nullable Pocket getClientPocket() {
+	public @Nullable ClientPocket getClientPocket() {
 		return DeepPocketClientApi.get().getPocket(pocketId);
 	}
 
@@ -51,13 +55,13 @@ public class BlockEntityWithPocket extends BlockEntity {
 
 	public void setPocketSafely(Player player, @Nullable UUID pocketId) {
 		if (pocketId == null) return;
-		if (player.level.isClientSide) return;
+		if (!(player instanceof ServerPlayer serverPlayer)) return;
 		DeepPocketServerApi api = DeepPocketServerApi.get();
 		if (api == null) return;
 
-		Pocket pocket = api.getPocket(pocketId);
+		ServerPocket pocket = api.getPocket(pocketId);
 		if (pocket == null) return;
-		if (!pocket.canAccess(player)) return;
+		if (!pocket.canAccess(serverPlayer)) return;
 		if (!canAccess(player)) return;
 		setPocket(pocketId);
 	}
@@ -70,11 +74,11 @@ public class BlockEntityWithPocket extends BlockEntity {
 	public boolean canAccess(Player player) {
 		if (level == null)
 			return false;
-		DeepPocketApi api = DeepPocketApi.get(level);
+		DeepPocketApi<?> api = DeepPocketApi.get(level);
 		if (api == null)
 			return false;
-		Pocket pocket = api.getPocket(pocketId);
-		return pocket == null || pocket.canAccess(player);
+		PocketBase pocket = api.getPocket(pocketId);
+		return pocket == null || pocket.getSecurityMode().canAccess(player, pocket.getOwner());
 	}
 
 	@Override

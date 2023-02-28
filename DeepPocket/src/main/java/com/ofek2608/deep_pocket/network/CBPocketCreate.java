@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket.network;
 
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -30,7 +31,15 @@ class CBPocketCreate {
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
-		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().createPocket(pocketId, owner, info));
+		ctxSupplier.get().enqueueWork(() -> {
+			DeepPocketClientApi api = DeepPocketClientApi.get();
+			ClientPocket pocket = api.getPocket(pocketId);
+			if (pocket == null) {
+				api.createPocket(pocketId, owner, info);
+			} else {
+				pocket.setInfo(info);
+			}
+		});
 		ctxSupplier.get().setPacketHandled(true);
 	}
 }

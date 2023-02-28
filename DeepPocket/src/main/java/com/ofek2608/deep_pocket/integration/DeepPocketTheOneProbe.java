@@ -1,8 +1,8 @@
 package com.ofek2608.deep_pocket.integration;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocketFilter;
 import com.ofek2608.deep_pocket.registry.interfaces.SignalBlock;
@@ -75,7 +75,7 @@ public final class DeepPocketTheOneProbe {
 
 		private void addPocketInfo(IProbeInfo line, BlockEntityWithPocket entity) {
 			addVerticalAlignedText(line, "Pocket: ");
-			Pocket pocket = entity.getClientPocket();
+			ClientPocket pocket = entity.getClientPocket();
 			if (pocket == null)
 				addVerticalAlignedText(line, "None");
 			else

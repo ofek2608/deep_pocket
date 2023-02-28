@@ -5,9 +5,15 @@ import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.PocketInfo;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import net.minecraftforge.common.MinecraftForge;
 
-final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHelper> implements DeepPocketClientApi {
+import javax.annotation.Nullable;
+import java.util.UUID;
+
+final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHelper, ClientPocket> implements DeepPocketClientApi {
 	private Knowledge knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 	private boolean permitPublicPocket;
 
@@ -29,5 +35,13 @@ final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHe
 	@Override
 	public Knowledge getKnowledge() {
 		return knowledge;
+	}
+	
+	public @Nullable ClientPocket createPocket(UUID pocketId, UUID owner, PocketInfo info) {
+		if (pockets.containsKey(pocketId))
+			return null;
+		ClientPocket newPocket = new ClientPocket(pocketId, owner, info);
+		pockets.put(pocketId, newPocket);
+		return newPocket;
 	}
 }

@@ -3,6 +3,7 @@ package com.ofek2608.deep_pocket.registry.interfaces;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -82,15 +83,23 @@ public class ActiveExporter extends Block implements EntityBlock {
 
 		public void tick(Level level, BlockPos pos, BlockState state) {
 			Direction facing = state.getValue(FACING);
+			
 			BlockEntity targetEntity = level.getBlockEntity(pos.relative(facing));
-			if (targetEntity == null) return;
+			if (targetEntity == null)
+				return;
+			
 			IItemHandler itemHandler = targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite()).resolve().orElse(null);
-			if (itemHandler == null) return;
+			if (itemHandler == null)
+				return;
+			
 			DeepPocketServerApi api = DeepPocketServerApi.get();
-			Pocket pocket = getServerPocket();
-			if (api == null || pocket == null) return;
+			ServerPocket pocket = getServerPocket();
+			if (api == null || pocket == null)
+				return;
+			
 			ItemType filter = getFilter();
-			if (filter.isEmpty()) return;
+			if (filter.isEmpty())
+				return;
 
 			int slotCount = itemHandler.getSlots();
 			for (int i = 0; i < slotCount; i++) {

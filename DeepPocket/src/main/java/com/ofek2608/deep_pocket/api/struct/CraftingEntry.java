@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.api.struct;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
 
@@ -24,23 +24,55 @@ public final class CraftingEntry {
 		this.requiredAmount = copy.requiredAmount;
 		this.inStorage = copy.inStorage;
 		this.currentlyCrafting = copy.currentlyCrafting;
-		
 	}
 	
-	public static void serialize(FriendlyByteBuf buf, CraftingEntry entry) {
-		buf.writeVarInt(entry.elementId);
-		buf.writeUUID(entry.patternId);
-		entry.sendUpdate(buf);
+	public CraftingEntry(PocketUpdate.CraftingEntrySetup setup) {
+		this(setup.elementId(), setup.patternId());
+		applyUpdate(setup.update());
 	}
 	
-	public static CraftingEntry deserialize(FriendlyByteBuf buf) {
-		CraftingEntry entry = new CraftingEntry(
-				buf.readVarInt(),
-				buf.readUUID()
+	public PocketUpdate.CraftingEntryUpdate createUpdate() {
+		return new PocketUpdate.CraftingEntryUpdate(
+				this.requiredAmount,
+				this.inStorage,
+				this.currentlyCrafting
 		);
-		entry.readUpdate(buf);
+	}
+	
+	public PocketUpdate.CraftingEntrySetup createSetup() {
+		return new PocketUpdate.CraftingEntrySetup(
+				this.elementId,
+				this.patternId,
+				createUpdate()
+		);
+	}
+	
+	public void applyUpdate(PocketUpdate.CraftingEntryUpdate update) {
+		setRequiredAmount(update.requiredAmount());
+		setInStorage(update.inStorage());
+		setCurrentlyCrafting(update.currentlyCrafting());
+	}
+	
+	public static CompoundTag save(CraftingEntry entry) {
+		CompoundTag saved = new CompoundTag();
+		saved.putInt("elementId", entry.elementId);
+		saved.putUUID("patternId", entry.patternId);
+		saved.putLong("requiredAmount", entry.requiredAmount);
+		saved.putLong("inStorage", entry.inStorage);
+		saved.putLong("currentlyCrafting", entry.currentlyCrafting);
+		return saved;
+	}
+	
+	public static CraftingEntry load(CompoundTag saved) {
+		CraftingEntry entry = new CraftingEntry(saved.getInt("elementId"), saved.getUUID("patternId"));
+		entry.setRequiredAmount(saved.getLong("requiredAmount"));
+		entry.setInStorage(saved.getLong("inStorage"));
+		entry.setCurrentlyCrafting(saved.getLong("currentlyCrafting"));
 		return entry;
 	}
+	
+	
+	
 	
 	public int getElementId() {
 		return elementId;
@@ -58,6 +90,10 @@ public final class CraftingEntry {
 		return inStorage;
 	}
 	
+	public long getCurrentlyCrafting() {
+		return currentlyCrafting;
+	}
+	
 	public void setRequiredAmount(long requiredAmount) {
 		this.requiredAmount = requiredAmount < 0 ? -1 : requiredAmount;
 	}
@@ -71,17 +107,6 @@ public final class CraftingEntry {
 	}
 	
 	
-	public void sendUpdate(FriendlyByteBuf buf) {
-		buf.writeVarLong(this.requiredAmount + 1);
-		buf.writeVarLong(this.inStorage + 1);
-		buf.writeVarLong(this.currentlyCrafting + 1);
-	}
-	
-	public void readUpdate(FriendlyByteBuf buf) {
-		setRequiredAmount(buf.readVarLong() - 1);
-		setInStorage(buf.readVarLong() - 1);
-		setCurrentlyCrafting(buf.readVarLong() - 1);
-	}
 	
 	public CraftingEntry copy() {
 		return new CraftingEntry(this);

@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.api;
 
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.UnmodifiableView;
@@ -10,9 +9,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-public interface DeepPocketApi {
-	static @Nullable DeepPocketApi get(boolean isClientSide) { return isClientSide ? DeepPocketClientApi.get() : DeepPocketServerApi.get(); }
-	static @Nullable DeepPocketApi get(Level level) { return get(level.isClientSide); }
+public interface DeepPocketApi<Pocket extends PocketBase> {
+	static @Nullable DeepPocketApi<?> get(boolean isClientSide) { return isClientSide ? DeepPocketClientApi.get() : DeepPocketServerApi.get(); }
+	static @Nullable DeepPocketApi<?> get(Level level) { return get(level.isClientSide); }
 
 	DeepPocketHelper getHelper();
 	
@@ -27,6 +26,7 @@ public interface DeepPocketApi {
 	void clearPockets();
 
 	boolean cachePlayerName(UUID id, String name);
+	public boolean hasCachedPlayerName(UUID id);
 	String getCachedPlayerName(UUID id);
 	@UnmodifiableView Map<UUID, String> getPlayerNameCache();
 }

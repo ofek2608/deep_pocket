@@ -25,16 +25,18 @@ public final class DeepPocketPacketHandler {
 		Optional<NetworkDirection> serverbound = Optional.of(NetworkDirection.PLAY_TO_SERVER);
 
 		CHANNEL.registerMessage(++pid, CBPermitPublicPocket.class, CBPermitPublicPocket::encode, CBPermitPublicPocket::new, CBPermitPublicPocket::handle, clientbound);
-
 		CHANNEL.registerMessage(++pid, CBConversions.class, CBConversions::encode, CBConversions::new, CBConversions::handle, clientbound);
+		
 		CHANNEL.registerMessage(++pid, CBSetPlayersName.class, CBSetPlayersName::encode, CBSetPlayersName::new, CBSetPlayersName::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBPocketCreate.class, CBPocketCreate::encode, CBPocketCreate::new, CBPocketCreate::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketDestroy.class, CBPocketDestroy::encode, CBPocketDestroy::new, CBPocketDestroy::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBClearPockets.class, CBClearPockets::encode, CBClearPockets::new, CBClearPockets::handle, clientbound);
-
+		
 		CHANNEL.registerMessage(++pid, CBPocketInfo.class, CBPocketInfo::encode, CBPocketInfo::new, CBPocketInfo::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBPocketUpdate.class, CBPocketUpdate::encode, CBPocketUpdate::new, CBPocketUpdate::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketClearElements.class, CBPocketClearElements::encode, CBPocketClearElements::new, CBPocketClearElements::handle, clientbound);
+		CHANNEL.registerMessage(++pid, CBPocketClearData.class, CBPocketClearData::encode, CBPocketClearData::new, CBPocketClearData::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBPocketContentUpdate.class, CBPocketContentUpdate::encode, CBPocketContentUpdate::new, CBPocketContentUpdate::handle, clientbound);
 
 		CHANNEL.registerMessage(++pid, CBUpdatePatterns.class, CBUpdatePatterns::encode, CBUpdatePatterns::new, CBUpdatePatterns::handle, clientbound);
@@ -64,16 +66,18 @@ public final class DeepPocketPacketHandler {
 	}
 
 	public static void cbPermitPublicPocket(PacketDistributor.PacketTarget target, boolean value) { CHANNEL.send(target, new CBPermitPublicPocket(value)); }
-
 	public static void cbConversions(PacketDistributor.PacketTarget target, ElementConversions conversions) { CHANNEL.send(target, new CBConversions(conversions)); }
+	
 	public static void cbSetPlayersName(PacketDistributor.PacketTarget target, Map<UUID,String> names) { CHANNEL.send(target, new CBSetPlayersName(names)); }
-
+	
 	public static void cbCreatePocket(PacketDistributor.PacketTarget target, UUID pocketId, UUID owner, PocketInfo info) { CHANNEL.send(target, new CBPocketCreate(pocketId, owner, info)); }
 	public static void cbDestroyPocket(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketDestroy(pocketId)); }
 	public static void cbClearPockets(PacketDistributor.PacketTarget target) { CHANNEL.send(target, new CBClearPockets()); }
 
 	public static void cbPocketInfo(PacketDistributor.PacketTarget target, UUID pocketId, PocketInfo info) { CHANNEL.send(target, new CBPocketInfo(pocketId, info)); }
+	public static void cbPocketUpdate(PacketDistributor.PacketTarget target, UUID pocketId, PocketUpdate update) { CHANNEL.send(target, new CBPocketUpdate(pocketId, update)); }
 	public static void cbPocketClearElements(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearElements(pocketId)); }
+	public static void cbPocketClearData(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBPocketClearData(pocketId)); }
 	public static void cbPocketContentUpdate(PacketDistributor.PacketTarget target, UUID pocketId, int newSize, int[] changedTypeIndexes, ElementType[] changedType, long[] changedTypeCount, int[] changedCountIndexes, long[] changedCount) { CHANNEL.send(target, new CBPocketContentUpdate(pocketId, newSize, changedTypeIndexes, changedType, changedTypeCount, changedCountIndexes, changedCount)); }
 
 	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<UUID,CraftingPattern> addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }

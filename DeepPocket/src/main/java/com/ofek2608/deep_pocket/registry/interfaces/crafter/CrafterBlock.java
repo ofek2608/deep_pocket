@@ -3,9 +3,10 @@ package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 import com.ofek2608.deep_pocket.api.PatternSupportedBlockEntity;
 import com.ofek2608.deep_pocket.api.ProvidedResources;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.pocket_process.old.PocketProcessRecipe;
 import com.ofek2608.deep_pocket.api.struct.*;
+import com.ofek2608.deep_pocket.api.struct.server.ServerCraftingPattern;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.ProtoMenu;
@@ -92,7 +93,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 			return InteractionResult.SUCCESS;
 		if (!(level.getBlockEntity(pos) instanceof Ent ent))
 			return InteractionResult.CONSUME;
-		Pocket pocket = ent.getServerPocket();
+		ServerPocket pocket = ent.getServerPocket();
 		MenuProvider menuprovider = new SimpleMenuProvider(
 						(id,inv,p)->{
 							CrafterMenu menu = new CrafterMenu(id, inv, ent.itemHandler, pos);
@@ -143,13 +144,15 @@ public class CrafterBlock extends Block implements EntityBlock {
 				super.setPocket(pocketId);
 				return;
 			}
-			Pocket oldPocket = getServerPocket();
+			ServerPocket oldPocket = getServerPocket();
 			if (oldPocket != null) {
-				PocketPatterns pocketPatterns = oldPocket.getPatterns();
 				LevelBlockPos pos = getLevelPos(serverLevel);
-				for (UUID pattern : patterns)
-					if (pattern != null)
-						pocketPatterns.remove(pattern, pos);
+				for (UUID pattern : patterns) {
+					ServerCraftingPattern serverCraftingPattern;
+					if (pattern != null && (serverCraftingPattern = oldPocket.getAvailablePattern(pattern)) != null) {
+						serverCraftingPattern.positions.remove(pos);
+					}
+				}
 			}
 			Arrays.fill(patterns, null);
 
@@ -162,19 +165,24 @@ public class CrafterBlock extends Block implements EntityBlock {
 		private void updatePattern(int slot) {
 			if (!(level instanceof ServerLevel serverLevel))
 				return;
-			Pocket pocket = getServerPocket();
+			ServerPocket pocket = getServerPocket();
 			if (pocket == null)
 				return;
 			ItemStack stack = items.get(slot);
 			if (stack.isEmpty()) {
 				UUID patternId = patterns[slot];
 				if (patternId != null) {
-					pocket.getPatterns().remove(patternId, getLevelPos(serverLevel));
+					ServerCraftingPattern serverCraftingPattern = pocket.getAvailablePattern(patternId);
+					if (serverCraftingPattern != null) {
+						serverCraftingPattern.positions.remove(getLevelPos(serverLevel));
+					}
 					patterns[slot] = null;
 				}
 				return;
 			}
-			patterns[slot] = pocket.getPatterns().add(CraftingPatternItem.retrieve(stack), getLevelPos(serverLevel));
+			ServerCraftingPattern serverCraftingPattern = pocket.getAvailablePatternOrCreate(CraftingPatternItem.retrieve(stack));
+			serverCraftingPattern.positions.add(getLevelPos(serverLevel));
+			patterns[slot] = serverCraftingPattern.id;
 		}
 
 		@Override
@@ -343,6 +351,7 @@ public class CrafterBlock extends Block implements EntityBlock {
 
 		@Override
 		public boolean executePattern(CrafterContext ctx) {
+			//FIXME
 			Pocket pocket = ctx.pocket;
 			WorldCraftingPatternOld pattern = ctx.pattern;
 			ProvidedResources resources = ctx.resources;

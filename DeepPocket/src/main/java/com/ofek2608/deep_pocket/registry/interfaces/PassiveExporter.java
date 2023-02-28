@@ -2,7 +2,9 @@ package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -60,10 +62,12 @@ public class PassiveExporter extends Block implements EntityBlock {
 			public @NotNull ItemStack getStackInSlot(int slot) {
 				if (slot != 0) return ItemStack.EMPTY;
 				DeepPocketServerApi api = DeepPocketServerApi.get();
-				Pocket pocket = getServerPocket();
-				if (api == null || pocket == null) return ItemStack.EMPTY;
-				long maxExtract = pocket.getMaxExtractOld(getFilter());
-				return getFilter().create(maxExtract < 0 || Integer.MAX_VALUE <= maxExtract ? Integer.MAX_VALUE : (int)maxExtract);
+				ServerPocket pocket = getServerPocket();
+				if (api == null || pocket == null || !(getFilter() instanceof ElementType.TItem filter)) {
+					return ItemStack.EMPTY;
+				}
+				long maxExtract = pocket.getMaxExtract(filter);
+				return filter.create(maxExtract < 0 || Integer.MAX_VALUE <= maxExtract ? Integer.MAX_VALUE : (int)maxExtract);
 			}
 
 			@Override
@@ -75,15 +79,15 @@ public class PassiveExporter extends Block implements EntityBlock {
 			public @NotNull ItemStack extractItem(int slot, int amount, boolean simulate) {
 				if (slot != 0 || amount <= 0) return ItemStack.EMPTY;
 				DeepPocketServerApi api = DeepPocketServerApi.get();
-				Pocket pocket = getServerPocket();
+				ServerPocket pocket = getServerPocket();
 				if (api == null || pocket == null) return ItemStack.EMPTY;
-				ItemType filter = getFilter();
-				if (filter.isEmpty()) return ItemStack.EMPTY;
+				ElementType filter = getFilter();
+				if (!(filter instanceof ElementType.TItem filterItem)) return ItemStack.EMPTY;
 
 				if (!simulate)
-					return filter.create((int)pocket.extractItem(filter, amount));
+					return filterItem.create((int)pocket.extractItem(filter, amount));
 				long maxExtract = pocket.getMaxExtractOld(filter);
-				return filter.create(maxExtract < 0 || amount <= maxExtract ? amount : (int)maxExtract);
+				return filterItem.create(maxExtract < 0 || amount <= maxExtract ? amount : (int)maxExtract);
 			}
 
 			@Override

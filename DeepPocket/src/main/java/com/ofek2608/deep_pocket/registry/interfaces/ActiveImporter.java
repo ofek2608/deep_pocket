@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -75,7 +76,7 @@ public class ActiveImporter extends Block implements EntityBlock {
 			if (targetEntity == null) return;
 			IItemHandler itemHandler = targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite()).resolve().orElse(null);
 			if (itemHandler == null) return;
-			Pocket pocket = getServerPocket();
+			ServerPocket pocket = getServerPocket();
 			if (pocket == null) return;
 
 			int slots = itemHandler.getSlots();

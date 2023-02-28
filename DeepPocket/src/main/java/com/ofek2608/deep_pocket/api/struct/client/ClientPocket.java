@@ -15,6 +15,14 @@ public final class ClientPocket extends PocketBase {
 		super(pocketId, owner, info);
 	}
 	
+	public boolean isDataEmpty() {
+		return data == null;
+	}
+	
+	public boolean isDataPresent() {
+		return data != null;
+	}
+	
 	public ClientPocketData getData() throws NoSuchElementException {
 		if (data == null)
 			throw new NoSuchElementException("No value present");
@@ -27,6 +35,13 @@ public final class ClientPocket extends PocketBase {
 	
 	public ClientPocketData createData() {
 		return data = new ClientPocketData();
+	}
+	
+	public ClientPocketData getOrCreateData() {
+		if (isDataEmpty()) {
+			createData();
+		}
+		return data;
 	}
 	
 	public void clearData() {
