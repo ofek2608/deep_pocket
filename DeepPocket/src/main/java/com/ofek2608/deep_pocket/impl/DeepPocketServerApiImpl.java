@@ -593,9 +593,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		//======
 
 		for (ServerPlayer player : onlinePLayers) {
-			if (!hasCachedPlayerName(player.getUUID())) {
-				cachePlayerName(player.getUUID(), player.getGameProfile().getName());
-			}
+			cachePlayerName(player.getUUID(), player.getGameProfile().getName());
 		}
 
 		this.pockets.values().forEach(ServerPocket::clearUpdates);

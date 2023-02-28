@@ -26,7 +26,7 @@ public interface DeepPocketApi<Pocket extends PocketBase> {
 	void clearPockets();
 
 	boolean cachePlayerName(UUID id, String name);
-	public boolean hasCachedPlayerName(UUID id);
+	boolean hasCachedPlayerName(UUID id);
 	String getCachedPlayerName(UUID id);
 	@UnmodifiableView Map<UUID, String> getPlayerNameCache();
 }
