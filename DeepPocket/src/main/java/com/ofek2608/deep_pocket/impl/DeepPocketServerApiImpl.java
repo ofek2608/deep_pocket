@@ -175,8 +175,10 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 	@Override
 	public boolean destroyPocket(UUID pocketId) {
 		boolean changed = super.destroyPocket(pocketId);
-		if (changed)
+		if (changed) {
 			DeepPocketPacketHandler.cbDestroyPocket(PacketDistributor.ALL.noArg(), pocketId);
+			viewedPockets.values().forEach(viewed -> viewed.remove(pocketId));
+		}
 		return changed;
 	}
 
