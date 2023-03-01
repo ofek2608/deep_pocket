@@ -343,17 +343,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		for (ServerPocket pocket : pockets) {
 			pocket.tick();
 		}
-
-		//==================
-		// Adding knowledge
-		//==================
-
-		for (ServerPlayer player : onlinePLayers) {
-			Knowledge knowledge = getKnowledge(player.getUUID());
-			for (ItemStack item : player.getInventory().items)
-				knowledge.add(elementIndices.getIndex(ElementType.item(item)));
-			knowledge.add(elementIndices.getIndex(ElementType.item(player.containerMenu.getCarried())));
-		}
 		
 		//================
 		// Players Update
@@ -381,6 +370,28 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 			DeepPocketPacketHandler.cbPermitPublicPocket(newPlayersTarget, DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get());
 			DeepPocketPacketHandler.cbConversions(newPlayersTarget, conversions);
 			DeepPocketPacketHandler.cbSetPlayersName(newPlayersTarget, getPlayerNameCache());
+			DeepPocketPacketHandler.cbKnowledgeClear(newPlayersTarget);
+		}
+
+		//==================
+		// Adding knowledge
+		//==================
+
+		for (ServerPlayer player : onlinePLayers) {
+			Knowledge.Snapshot snapshot = knowledge.get(player.getUUID());
+			Knowledge knowledge = snapshot.getKnowledge();
+			for (ItemStack item : player.getInventory().items)
+				knowledge.add(elementIndices.getIndex(ElementType.item(item)));
+			knowledge.add(elementIndices.getIndex(ElementType.item(player.containerMenu.getCarried())));
+			
+			int[] added = snapshot.getAdded();
+			int[] removed = snapshot.getRemoved();
+			if (added.length > 0) {
+				DeepPocketPacketHandler.cbKnowledgeAdd(PacketDistributor.PLAYER.with(()->player), added);
+			}
+			if (removed.length > 0) {
+				DeepPocketPacketHandler.cbKnowledgeRem(PacketDistributor.PLAYER.with(()->player), removed);
+			}
 		}
 		
 		

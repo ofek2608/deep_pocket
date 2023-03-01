@@ -8,22 +8,22 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 class CBKnowledgeRem {
-	private final ElementType[] types;
+	private final int[] elementIds;
 
-	CBKnowledgeRem(ElementType... types) {
-		this.types = types;
+	CBKnowledgeRem(int ... elementIds) {
+		this.elementIds = elementIds;
 	}
 
 	CBKnowledgeRem(FriendlyByteBuf buf) {
-		this(DPPacketUtils.decodeElementTypeArray(buf));
+		this(buf.readVarIntArray());
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		DPPacketUtils.encodeElementTypeArray(buf, types);
+		buf.writeVarIntArray(elementIds);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
-		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().getKnowledge().remove(types));
+		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().getKnowledge().remove(elementIds));
 		ctxSupplier.get().setPacketHandled(true);
 	}
 }

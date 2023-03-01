@@ -9,33 +9,22 @@ import net.minecraftforge.network.NetworkEvent;
 import java.util.function.Supplier;
 
 class CBKnowledgeAdd {
-	private final boolean clear;
-	private final ElementType[] types;
+	private final int[] elementIds;
 
-	CBKnowledgeAdd(boolean clear, ElementType ... types) {
-		this.clear = clear;
-		this.types = types;
+	CBKnowledgeAdd(int ... elementIds) {
+		this.elementIds = elementIds;
 	}
 
 	CBKnowledgeAdd(FriendlyByteBuf buf) {
-		this(
-						buf.readBoolean(),
-						DPPacketUtils.decodeElementTypeArray(buf)
-		);
+		this(buf.readVarIntArray());
 	}
 
 	void encode(FriendlyByteBuf buf) {
-		buf.writeBoolean(clear);
-		DPPacketUtils.encodeElementTypeArray(buf, types);
+		buf.writeVarIntArray(elementIds);
 	}
 
 	void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
-		ctxSupplier.get().enqueueWork(() -> {
-			Knowledge knowledge = DeepPocketClientApi.get().getKnowledge();
-			if (clear)
-				knowledge.asSet().clear();
-			knowledge.add(types);
-		});
+		ctxSupplier.get().enqueueWork(() -> DeepPocketClientApi.get().getKnowledge().add(elementIds));
 		ctxSupplier.get().setPacketHandled(true);
 	}
 }

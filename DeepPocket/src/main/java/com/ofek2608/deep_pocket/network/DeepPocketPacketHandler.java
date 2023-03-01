@@ -42,6 +42,7 @@ public final class DeepPocketPacketHandler {
 		CHANNEL.registerMessage(++pid, CBUpdatePatterns.class, CBUpdatePatterns::encode, CBUpdatePatterns::new, CBUpdatePatterns::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBUpdateDefaultPatterns.class, CBUpdateDefaultPatterns::encode, CBUpdateDefaultPatterns::new, CBUpdateDefaultPatterns::handle, clientbound);
 
+		CHANNEL.registerMessage(++pid, CBKnowledgeClear.class, CBKnowledgeClear::encode, CBKnowledgeClear::new, CBKnowledgeClear::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBKnowledgeAdd.class, CBKnowledgeAdd::encode, CBKnowledgeAdd::new, CBKnowledgeAdd::handle, clientbound);
 		CHANNEL.registerMessage(++pid, CBKnowledgeRem.class, CBKnowledgeRem::encode, CBKnowledgeRem::new, CBKnowledgeRem::handle, clientbound);
 
@@ -83,8 +84,9 @@ public final class DeepPocketPacketHandler {
 	public static void cbUpdatePatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<UUID,CraftingPattern> addedPatterns, UUID[] removedPatterns) { CHANNEL.send(target, new CBUpdatePatterns(pocketId, addedPatterns, removedPatterns)); }
 	public static void cbUpdateDefaultPatterns(PacketDistributor.PacketTarget target, UUID pocketId, Map<ElementType,Optional<UUID>> addedDefaults, ElementType[] removedDefaults) { CHANNEL.send(target, new CBUpdateDefaultPatterns(pocketId, addedDefaults, removedDefaults)); }
 
-	public static void cbKnowledgeAdd(PacketDistributor.PacketTarget target, boolean clear, ElementType ... types) { CHANNEL.send(target, new CBKnowledgeAdd(clear, types)); }
-	public static void cbKnowledgeRem(PacketDistributor.PacketTarget target, ElementType ... types) { CHANNEL.send(target, new CBKnowledgeRem(types)); }
+	public static void cbKnowledgeClear(PacketDistributor.PacketTarget target) { CHANNEL.send(target, new CBKnowledgeClear()); }
+	public static void cbKnowledgeAdd(PacketDistributor.PacketTarget target, int ... elementIds) { CHANNEL.send(target, new CBKnowledgeAdd(elementIds)); }
+	public static void cbKnowledgeRem(PacketDistributor.PacketTarget target, int ... elementIds) { CHANNEL.send(target, new CBKnowledgeRem(elementIds)); }
 
 	public static void cbSetViewedPocket(PacketDistributor.PacketTarget target, UUID pocketId) { CHANNEL.send(target, new CBSetViewedPocket(pocketId)); }
 	public static void cbSetViewedProcessData(PacketDistributor.PacketTarget target, ProcessUnitClientData data) { CHANNEL.send(target, new CBSetViewedProcessData(data)); }
