@@ -100,59 +100,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		if (errors)
 			LOGGER.warn("There was error while trying to load Deep Pocket's saved data");
 	}
-
-//	private ServerPocket loadPocket(boolean allowPublicPocket, CompoundTag saved) {
-//		ServerPocket pocket = new ServerPocket(saved.getUUID("pocketId"), saved.getUUID("owner"), PocketInfo.load(saved.getCompound("info")), conversions);
-//
-//		Map<ItemType,Long> items = pocket.getItemsMap();
-//		Map<UUID, CraftingPatternOld> patterns = pocket.getPatternsMap();
-//		Map<ItemType,Optional<UUID>> defaultPatterns = pocket.getDefaultPatternsMap();
-//
-//		for (Tag itemCount : saved.getList("itemCounts", 10)) {
-//			ItemType type = ItemType.load(((CompoundTag) itemCount).getCompound("item"));
-//			long count = ((CompoundTag)itemCount).getLong("count");
-//			if (count == 0)
-//				continue;
-//			items.put(type, count < 0 ? -1 : count);
-//		}
-//		conversions.convertMap(items);
-//		for (Tag savedPattern : saved.getList("patterns", 10)) {
-//			CraftingPatternOld pattern = loadPattern((CompoundTag)savedPattern);
-//			if (pattern != null)
-//				patterns.put(pattern.getPatternId(), pattern);
-//		}
-//		for (Tag savedDefaultPattern : saved.getList("defaultPatterns", 10)) {
-//			ItemType type = ItemType.load(((CompoundTag) savedDefaultPattern).getCompound("item"));
-//			Optional<UUID> patternId;
-//			try {
-//				patternId = Optional.of(((CompoundTag) savedDefaultPattern).getUUID("pattern"));
-//			} catch (Exception e) {
-//				patternId = Optional.empty();
-//			}
-//			defaultPatterns.put(type, patternId);
-//		}
-//
-//		loadPManager(pocket.getProcesses(), saved.getList("processes", 10));
-//
-//		if (!allowPublicPocket) {
-//			PocketInfo info = pocket.getInfo();
-//			if (info.securityMode == PocketSecurityMode.PUBLIC) {
-//				info.securityMode = PocketSecurityMode.TEAM;
-//				pocket.setInfo(info);
-//			}
-//		}
-//
-//		return pocket;
-//	}
-
-//	private @Nullable CraftingPatternOld loadPattern(CompoundTag saved) {
-//		try {
-//			WorldCraftingPatternOld pattern = new WorldCraftingPatternOld(saved, server);
-//			if (pattern.getLevel().getBlockEntity(pattern.getPos()) instanceof PatternSupportedBlockEntity entity && entity.containsPattern(pattern.getPatternId()))
-//				return pattern;
-//		} catch (Exception ignored) {}
-//		return null;
-//	}
 	
 	
 	@Override
@@ -170,52 +117,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		);
 		return knowledge;
 	}
-
-//	private void loadPManager(PocketProcessManager manager, ListTag saved) {
-//		for (Tag tag : saved)
-//			if (tag instanceof CompoundTag savedUnit)
-//				loadPUnit(manager, savedUnit);
-//	}
-//
-//	private void loadPUnit(PocketProcessManager manager, CompoundTag saved) {
-//		ItemType[] types = loadTypeArray(saved.getList("types", 10));
-//		PocketProcessUnit unit = manager.addUnit(types);
-//		unit.getResources().load(saved.getList("resources", 10));
-//		long[] leftToProvide = saved.getLongArray("leftToProvide");
-//		int leftToProvideLen = Math.min(leftToProvide.length, types.length);
-//		for (int i = 0; i < leftToProvideLen; i++)
-//			unit.setLeftToProvide(i, leftToProvide[i]);
-//		for (Tag tag : saved.getList("recipes", 10))
-//			if (tag instanceof CompoundTag savedRecipes)
-//				loadPRecipe(unit, savedRecipes);
-//	}
-//
-//	private void loadPRecipe(PocketProcessUnit unit, CompoundTag saved) {
-//		ItemType result = ItemType.load(saved.getCompound("result"));
-//		ItemType[] types = loadTypeArray(saved.getList("types", 10));
-//		PocketProcessRecipe recipe = unit.addRecipe(result, types);
-//		recipe.getResources().load(saved.getList("resources", 10));
-//		recipe.setLeftToCraft(saved.getLong("leftToCraft"));
-//		for (Tag tag : saved.getList("crafters", 10))
-//			if (tag instanceof CompoundTag savedCrafter)
-//				loadPCrafter(recipe, savedCrafter);
-//	}
-//
-//	private void loadPCrafter(PocketProcessRecipe recipe, CompoundTag saved) {
-//		try {
-//			PocketProcessCrafter crafter = recipe.addCrafter(saved.getUUID("patternId"));
-//			crafter.getResources().load(saved.getList("resources", 10));
-//		} catch (Exception ignored) {}
-//	}
-//
-//	private ItemType[] loadTypeArray(ListTag saved) {
-//		return saved.stream()
-//						.map(tag->tag instanceof CompoundTag compound ? compound : null)
-//						.filter(Objects::nonNull)
-//						.map(ItemType::load)
-//						.filter(type->!type.isEmpty())
-//						.toArray(ItemType[]::new);
-//	}
 
 
 
@@ -244,37 +145,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		return tag;
 	}
 
-//	private static CompoundTag savePocket(ServerPocket pocket) {
-//		CompoundTag saved = new CompoundTag();
-//		saved.putUUID("pocketId", pocket.getPocketId());
-//		saved.putUUID("owner", pocket.getOwner());
-//		saved.put("info", PocketInfo.save(pocket.getInfo()));
-//		ListTag itemCounts = new ListTag();
-//		for (var entry : pocket.getItemsMap().entrySet()) {
-//			CompoundTag itemCount = new CompoundTag();
-//			itemCount.put("item", entry.getKey().save());
-//			itemCount.putDouble("count", entry.getValue());
-//			itemCounts.add(itemCount);
-//		}
-//		saved.put("itemCounts", itemCounts);
-//		ListTag savedPatterns = new ListTag();
-//		for (CraftingPatternOld pattern : pocket.getPatternsMap().values())
-//			savedPatterns.add(pattern.save());
-//		saved.put("patterns", savedPatterns);
-//		saved.put("processes", savePManager(pocket.getProcesses()));
-//		ListTag savedDefaultPatterns = new ListTag();
-//		for (var entry : pocket.getDefaultPatternsMap().entrySet()) {
-//			CompoundTag savedDefaultPattern = new CompoundTag();
-//			savedDefaultPattern.put("item", entry.getKey().save());
-//			if (entry.getValue().isPresent())
-//				savedDefaultPattern.putUUID("pattern", entry.getValue().get());
-//			savedDefaultPatterns.add(savedDefaultPattern);
-//		}
-//		saved.put("defaultPatterns", savedDefaultPatterns);
-//		saved.put("crafters", savePManager(pocket.getProcesses()));
-//		return saved;
-//	}
-
 	private static CompoundTag saveKnowledge(UUID playerId, Knowledge knowledge) {
 		CompoundTag saved = new CompoundTag();
 		saved.putUUID("player", playerId);
@@ -285,52 +155,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		saved.put("elements", savedElements);
 		return saved;
 	}
-
-//	private static ListTag savePManager(PocketProcessManager manager) {
-//		ListTag saved = new ListTag();
-//		for (PocketProcessUnit unit : manager.getUnits())
-//			saved.add(savePUnit(unit));
-//		return saved;
-//	}
-//
-//	private static CompoundTag savePUnit(PocketProcessUnit unit) {
-//		CompoundTag saved = new CompoundTag();
-//		saved.put("types", saveTypeArray(unit.getTypes()));
-//		saved.put("resources", unit.getResources().save());
-//		saved.putLongArray("leftToProvide", IntStream.range(0, unit.getTypeCount()).mapToLong(unit::getLeftToProvide).toArray());
-//		ListTag savedRecipes = new ListTag();
-//		for (PocketProcessRecipe recipe : unit.getRecipes())
-//			savedRecipes.add(savePRecipe(recipe));
-//		saved.put("recipes", savedRecipes);
-//		return saved;
-//	}
-//
-//	private static CompoundTag savePRecipe(PocketProcessRecipe recipe) {
-//		CompoundTag saved = new CompoundTag();
-//		saved.put("result", recipe.getResult().save());
-//		saved.put("types", saveTypeArray(recipe.getResources().getTypes()));
-//		saved.put("resources", recipe.getResources().save());
-//		saved.putLong("leftToCraft", recipe.getLeftToCraft());
-//		ListTag savedCrafters = new ListTag();
-//		for (PocketProcessCrafter crafter : recipe.getCrafters())
-//			savedCrafters.add(savePCrafter(crafter));
-//		saved.put("crafters", savedCrafters);
-//		return saved;
-//	}
-//
-//	private static CompoundTag savePCrafter(PocketProcessCrafter crafter) {
-//		CompoundTag saved = new CompoundTag();
-//		saved.putUUID("patternId", crafter.getPatternId());
-//		saved.put("resources", crafter.getResources().save());
-//		return saved;
-//	}
-//
-//	private static ListTag saveTypeArray(ItemType[] types) {
-//		ListTag saved = new ListTag();
-//		for (ItemType item : types)
-//			saved.add(item.save());
-//		return saved;
-//	}
 
 
 

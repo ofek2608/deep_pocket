@@ -5,7 +5,6 @@ import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
 import com.ofek2608.deep_pocket.api.struct.ElementConversions;
-import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.client.ClientElementIndices;
 import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
