@@ -4,10 +4,11 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -21,6 +22,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 class SignalSettingsScreen extends Screen {
+	private static final DeepPocketClientHelper HELPER = DeepPocketClientHelper.get();
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/signal.png");
 	private static final int VIEW_WIDTH = 186;
 	private static final int VIEW_HEIGHT = 26;
@@ -94,10 +96,10 @@ class SignalSettingsScreen extends Screen {
 		if (twoItemsMode)
 			(hoverSecond ? Sprites.ITEM_H : Sprites.ITEM_N).blit(stack, leftPos + offsetX + 40, topPos + 5);
 		(hoverMode ? Sprites.MODE_H : Sprites.MODE_N).blit(stack, leftPos + 165, topPos + 5);
-
-		itemRenderer.renderGuiItem(settings.first.create(), leftPos + offsetX, topPos + 5);
+		
+		HELPER.renderElementType(stack, leftPos + offsetX, topPos + 5, settings.first, itemRenderer, font);
 		if (twoItemsMode && settings.secondItem != null)
-			itemRenderer.renderGuiItem(settings.secondItem.create(), leftPos + offsetX + 40, topPos + 5);
+			HELPER.renderElementType(stack, leftPos + offsetX + 40, topPos + 5, settings.secondItem, itemRenderer, font);
 		if (!twoItemsMode) {
 			boolean displayMark = focusNumber && ("" + settings.secondCount).length() < 19;
 			font.draw(stack, (settings.secondCount == 0 ? "" : "" + settings.secondCount) + (displayMark ? DeepPocketUtils.getTimedTextEditSuffix() : ""), leftPos + 46, topPos + 9, 0xDDDDDD);
@@ -145,13 +147,13 @@ class SignalSettingsScreen extends Screen {
 	}
 
 	private void onSelectFirst(ItemStack newIcon) {
-		settings.first = newIcon.isEmpty() ? ItemType.EMPTY : new ItemType(newIcon);
+		settings.first = newIcon.isEmpty() ? ElementType.empty() : ElementType.item(newIcon);
 		Minecraft.getInstance().setScreen(this);
 		updateOnServer();
 	}
 
 	private void onSelectSecond(ItemStack newIcon) {
-		settings.secondItem = newIcon.isEmpty() ? ItemType.EMPTY : new ItemType(newIcon);
+		settings.secondItem = newIcon.isEmpty() ? ElementType.empty() : ElementType.item(newIcon);
 		Minecraft.getInstance().setScreen(this);
 		updateOnServer();
 	}
@@ -162,7 +164,7 @@ class SignalSettingsScreen extends Screen {
 
 	private void updateOnServer() {
 		DeepPocketPacketHandler.sbPocketSignalSettings(pos, twoItemsMode ?
-						new SignalSettings(settings.first, settings.bigger, settings.secondItem == null ? ItemType.EMPTY : settings.secondItem) :
+						new SignalSettings(settings.first, settings.bigger, settings.secondItem == null ? ElementType.empty() : settings.secondItem) :
 						new SignalSettings(settings.first, settings.bigger, settings.secondCount)
 		);
 	}

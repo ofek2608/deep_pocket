@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
+import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
@@ -71,18 +71,25 @@ public class ActiveImporter extends Block implements EntityBlock {
 		}
 
 		public void tick(Level level, BlockPos pos, BlockState state) {
+			DeepPocketServerApi api = DeepPocketServerApi.get();
+			if (api == null)
+				return;
+			
 			Direction facing = state.getValue(FACING);
 			BlockEntity targetEntity = level.getBlockEntity(pos.relative(facing));
-			if (targetEntity == null) return;
+			if (targetEntity == null)
+				return;
 			IItemHandler itemHandler = targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite()).resolve().orElse(null);
-			if (itemHandler == null) return;
+			if (itemHandler == null)
+				return;
 			ServerPocket pocket = getServerPocket();
-			if (pocket == null) return;
+			if (pocket == null)
+				return;
 
 			int slots = itemHandler.getSlots();
 			for (int slot = 0; slot < slots; slot++) {
 				ItemStack stack = itemHandler.extractItem(slot, itemHandler.getSlotLimit(slot), false);
-				pocket.insertElement(ElementType.item(stack), stack.getCount());
+				pocket.insertElement(api.getElementIndices().getIndexOrCreate(ElementType.item(stack)), stack.getCount());
 			}
 		}
 	}

@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket.api.struct.server;
 
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
 import com.ofek2608.deep_pocket.api.struct.*;
 import net.minecraft.Util;
@@ -10,6 +11,8 @@ import net.minecraft.nbt.Tag;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.IntUnaryOperator;
+
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 public final class ServerPocket extends PocketBase {
 	private final ElementConversions conversions;
@@ -45,18 +48,6 @@ public final class ServerPocket extends PocketBase {
 		return conversions;
 	}
 	
-	public long getCount(int elementIndex) {
-		return elementsCount.getOrDefault(elementIndex, 0L);
-	}
-	
-	public void setCount(int elementIndex, long count) {
-		updatedElementCount.add(elementIndex);
-		if (count == 0) {
-			elementsCount.remove(elementIndex);
-		} else {
-			elementsCount.put(elementIndex, count < 0 ? -1 : count);
-		}
-	}
 	
 	public @Nullable ServerCraftingPattern getAvailablePattern(CraftingPattern pattern) {
 		return availablePatternsByPattern.get(pattern);
@@ -98,8 +89,152 @@ public final class ServerPocket extends PocketBase {
 	}
 	
 	public void tick() {
-	
+		//TODO
 	}
+	
+	//=====================
+	// Content interaction
+	//=====================
+	
+	public long getElementCount(int elementId) {
+		return elementsCount.getOrDefault(elementId, 0L);
+	}
+	
+	public void setElementCount(int elementId, long count) {
+		updatedElementCount.add(elementId);
+		if (count == 0) {
+			elementsCount.remove(elementId);
+		} else {
+			elementsCount.put(elementId, count < 0 ? -1 : count);
+		}
+	}
+	
+	public void clearElement(int elementId) {
+		setElementCount(elementId, 0);
+	}
+	
+	public void insertBaseElements(long[] counts, long multiplier) {
+		for (int i = 0; i < counts.length; i++) {
+			if (counts[i] != 0)
+				continue;
+			int elementId = conversions.getBaseElement(i);
+			setElementCount(
+					elementId,
+					advancedSum(getElementCount(elementId), advancedMul(multiplier, counts[i]))
+			);
+		}
+	}
+	
+	public void insertElement(int elementId, long count) {
+		if (elementId == 0)
+			return;
+		long[] valueCount = conversions.getValue(elementId);
+		if (valueCount == null) {
+			setElementCount(elementId, advancedSum(getElementCount(elementId), count));
+		} else {
+			insertBaseElements(valueCount, count);
+		}
+	}
+	
+	public void insertElement(ElementIdStack stack) {
+		insertElement(stack.elementId(), stack.count());
+	}
+	
+	public long extractBaseElement(long[] counts, long maxMultiplier) {
+		maxMultiplier = advancedMin(maxMultiplier, getMaxExtract(counts));
+		if (maxMultiplier == 0)
+			return 0;
+		for (int i = 0; i < counts.length; i++) {
+			int elementId = conversions.getBaseElement(i);
+			setElementCount(elementId, advancedSub(getElementCount(elementId), advancedMul(counts[i], maxMultiplier)));
+		}
+		return maxMultiplier;
+	}
+	
+	public boolean extractBaseElement(long[] baseElements) {
+		return extractBaseElement(baseElements, 1) == 1;
+	}
+	
+	public long extractElement(int elementId, long count) {
+		if (elementId == 0 || count == 0)
+			return 0;
+		
+		long[] valueCount = conversions.getValue(elementId);
+		if (valueCount != null)
+			return extractBaseElement(valueCount, count);
+		
+		long currentCount = getElementCount(elementId);
+		count = advancedMin(count, currentCount);
+		setElementCount(elementId, advancedSub(currentCount, count));
+		return count;
+	}
+	
+	public long extractElement(ElementIdStack stack) {
+		return extractElement(stack.elementId(), stack.count());
+	}
+	
+	public boolean extractElement(int elementId) {
+		return extractElement(elementId, 1) == 1;
+	}
+	
+	public long getMaxExtract(long[] baseElements) {
+		long maxExtract = -1;
+		for (int i = 0; i < baseElements.length; i++) {
+			if (baseElements[i] == 0)
+				continue;
+			long current = advancedDiv(getElementCount(conversions.getBaseElement(i)), baseElements[i]);
+			maxExtract = advancedMin(maxExtract, current);
+		}
+		return maxExtract;
+	}
+	
+	private long getMaxExtract0(@Nullable Knowledge knowledge, Map<Integer, Long> counts) {
+		long[] baseElementsRequirement = conversions.convertMapToArray(counts);
+		long maxExtract = getMaxExtract(baseElementsRequirement);
+		for (var entry : counts.entrySet()) {
+			if (knowledge != null && !knowledge.contains(entry.getKey()))
+				return 0L;
+			long current = advancedDiv(getElementCount(entry.getKey()), entry.getValue());
+			maxExtract = advancedMin(maxExtract, current);
+		}
+		return maxExtract;
+	}
+	
+	public long getMaxExtract(@Nullable Knowledge knowledge, Map<Integer,Long> counts) {
+		return getMaxExtract0(knowledge, new HashMap<>(counts));
+	}
+	
+	public long getMaxExtract(@Nullable Knowledge knowledge, int ... elementIds) {
+		Map<Integer, Long> map = new HashMap<>();
+		for (int elementId : elementIds)
+			map.put(elementId, advancedSum(map.getOrDefault(elementId, 0L), 1L));
+		return getMaxExtract0(knowledge, map);
+	}
+	
+	public long getMaxExtract(@Nullable Knowledge knowledge, ElementIdStack ... stacks) {
+		Map<Integer, Long> map = new HashMap<>();
+		for (ElementIdStack stack : stacks)
+			map.put(stack.elementId(), advancedSum(map.getOrDefault(stack.elementId(), 0L), stack.count()));
+		return getMaxExtract0(knowledge, map);
+	}
+	
+	public void clearElement() {
+		updatedElementCount.addAll(elementsCount.keySet());
+		elementsCount.clear();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	//=========================
+	// Serialization to Client
+	//=========================
 	
 	public PocketUpdate createUpdate() {
 		PocketUpdate update = new PocketUpdate();
@@ -163,6 +298,11 @@ public final class ServerPocket extends PocketBase {
 	}
 	
 	
+	
+	
+	//====================
+	// JSON Serialization
+	//====================
 	
 	public static CompoundTag save(ServerPocket pocket) {
 		CompoundTag saved = new CompoundTag();
@@ -231,7 +371,7 @@ public final class ServerPocket extends PocketBase {
 				return;
 			}
 			elementIndex = elementIdGetter.applyAsInt(elementIndex);
-			pocket.setCount(elementIndex, savedElements.getLong(key));
+			pocket.setElementCount(elementIndex, savedElements.getLong(key));
 		});
 		// load available patterns
 		ListTag savedAvailablePatterns = saved.getList("availablePatterns", Tag.TAG_COMPOUND);

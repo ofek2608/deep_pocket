@@ -1,9 +1,7 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
@@ -66,7 +64,7 @@ public class PassiveExporter extends Block implements EntityBlock {
 				if (api == null || pocket == null || !(getFilter() instanceof ElementType.TItem filter)) {
 					return ItemStack.EMPTY;
 				}
-				long maxExtract = pocket.getMaxExtract(filter);
+				long maxExtract = pocket.getMaxExtract(null, api.getElementIndices().getIndex(filter));
 				return filter.create(maxExtract < 0 || Integer.MAX_VALUE <= maxExtract ? Integer.MAX_VALUE : (int)maxExtract);
 			}
 
@@ -83,10 +81,12 @@ public class PassiveExporter extends Block implements EntityBlock {
 				if (api == null || pocket == null) return ItemStack.EMPTY;
 				ElementType filter = getFilter();
 				if (!(filter instanceof ElementType.TItem filterItem)) return ItemStack.EMPTY;
+				
+				int filterId = api.getElementIndices().getIndex(filter);
 
 				if (!simulate)
-					return filterItem.create((int)pocket.extractItem(filter, amount));
-				long maxExtract = pocket.getMaxExtractOld(filter);
+					return filterItem.create((int)pocket.extractElement(filterId, amount));
+				long maxExtract = pocket.getMaxExtract(null, filterId);
 				return filterItem.create(maxExtract < 0 || amount <= maxExtract ? amount : (int)maxExtract);
 			}
 
@@ -97,7 +97,7 @@ public class PassiveExporter extends Block implements EntityBlock {
 
 			@Override
 			public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-				return slot == 0 && new ItemType(stack).equals(getFilter());
+				return slot == 0 && ElementType.item(stack).equals(getFilter());
 			}
 		});
 

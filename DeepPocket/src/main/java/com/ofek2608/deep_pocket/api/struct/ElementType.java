@@ -392,7 +392,7 @@ public sealed abstract class ElementType {
 		
 		@Override
 		public Component getDisplayName() {
-			return Component.empty();
+			return Component.empty();//TODO add translation
 		}
 	}
 	

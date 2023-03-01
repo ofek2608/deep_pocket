@@ -1,8 +1,7 @@
 package com.ofek2608.deep_pocket.registry.interfaces;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
-import com.ofek2608.deep_pocket.api.struct.ItemType;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import net.minecraft.core.BlockPos;
@@ -88,19 +87,24 @@ public class ActiveExporter extends Block implements EntityBlock {
 			if (targetEntity == null)
 				return;
 			
-			IItemHandler itemHandler = targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite()).resolve().orElse(null);
-			if (itemHandler == null)
-				return;
-			
 			DeepPocketServerApi api = DeepPocketServerApi.get();
 			ServerPocket pocket = getServerPocket();
 			if (api == null || pocket == null)
 				return;
 			
-			ItemType filter = getFilter();
-			if (filter.isEmpty())
+			ElementType filter = getFilter();
+			int filterId = api.getElementIndices().getIndex(filter);
+			
+			if (filter instanceof ElementType.TItem filterItem) {
+				exportItem(pocket, filterItem, filterId, targetEntity, facing);
+			}
+		}
+		
+		private static void exportItem(ServerPocket pocket, ElementType.TItem filter, int filterId, BlockEntity targetEntity, Direction facing) {
+			IItemHandler itemHandler = targetEntity.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite()).resolve().orElse(null);
+			if (itemHandler == null)
 				return;
-
+			
 			int slotCount = itemHandler.getSlots();
 			for (int i = 0; i < slotCount; i++) {
 				int transferCount = itemHandler.getSlotLimit(i);
@@ -109,13 +113,13 @@ public class ActiveExporter extends Block implements EntityBlock {
 				transferCount -= itemHandler.insertItem(i, filter.create(transferCount), true).getCount();
 				if (transferCount <= 0)
 					continue;
-				transferCount = (int)pocket.extractItem(filter, transferCount);
+				transferCount = (int)pocket.extractElement(filterId, transferCount);
 				if (transferCount <= 0)
 					return;
 				int leftOver = itemHandler.insertItem(i, filter.create(transferCount), false).getCount();
 				if (leftOver <= 0)
 					continue;
-				pocket.insertItem(filter, leftOver);
+				pocket.insertElement(filterId, leftOver);
 			}
 		}
 	}

@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.api.struct;
 
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.struct.server.ServerElementIndices;
 import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
@@ -10,20 +11,20 @@ import javax.annotation.Nullable;
 import java.util.UUID;
 
 public final class SignalSettings {
-	public @Nonnull ItemType first;
+	public @Nonnull ElementType first;
 	public boolean bigger;
-	public @Nullable ItemType secondItem;
+	public @Nullable ElementType secondItem;
 	public long secondCount;
 
 	public SignalSettings() {
-		this(ItemType.EMPTY, false, 0L);
+		this(ElementType.empty(), false, 0L);
 	}
 
-	public SignalSettings(ItemType first, boolean bigger, ItemType second) {
+	public SignalSettings(ElementType first, boolean bigger, ElementType second) {
 		this(first, bigger, second, 0);
 	}
 
-	public SignalSettings(ItemType first, boolean bigger, long second) {
+	public SignalSettings(ElementType first, boolean bigger, long second) {
 		this(first, bigger, null, second);
 	}
 
@@ -31,7 +32,7 @@ public final class SignalSettings {
 		this(copy.first, copy.bigger, copy.secondItem, copy.secondCount);
 	}
 
-	private SignalSettings(ItemType first, boolean bigger, @Nullable ItemType secondItem, long secondCount) {
+	private SignalSettings(ElementType first, boolean bigger, @Nullable ElementType secondItem, long secondCount) {
 		this.first = first;
 		this.bigger = bigger;
 		this.secondItem = secondItem;
@@ -45,8 +46,9 @@ public final class SignalSettings {
 		if (api == null) return false;
 		ServerPocket pocket = api.getPocket(pocketId);
 		if (pocket == null) return false;
-		long firstNum = pocket.getMaxExtractOld(first);
-		long secondNum = secondItem == null ? secondCount : pocket.getMaxExtractOld(secondItem);
+		ServerElementIndices elementIndices = api.getElementIndices();
+		long firstNum = pocket.getMaxExtract(null, elementIndices.getIndex(first));
+		long secondNum = secondItem == null ? secondCount : pocket.getMaxExtract(null, elementIndices.getIndex(secondItem));
 		if (bigger) {
 			long temp = firstNum;
 			firstNum = secondNum;
@@ -59,20 +61,20 @@ public final class SignalSettings {
 	}
 
 	public void load(CompoundTag tag) {
-		first = tag.contains("first", 10) ? ItemType.load(tag.getCompound("first")) : ItemType.EMPTY;
+		first = tag.contains("first", 10) ? ElementType.load(tag.getCompound("first")) : ElementType.empty();
 		bigger = tag.getBoolean("bigger");
-		secondItem = tag.contains("second", 10) ? ItemType.load(tag.getCompound("second")) : null;
+		secondItem = tag.contains("second", 10) ? ElementType.load(tag.getCompound("second")) : null;
 		secondCount = tag.contains("second", 99) ? tag.getLong("second") : 0;
 	}
 
 	public CompoundTag save() {
 		CompoundTag tag = new CompoundTag();
-		tag.put("first", first.save());
+		tag.put("first", ElementType.save(first));
 		tag.putBoolean("bigger", bigger);
 		if (secondItem == null)
 			tag.putLong("second", secondCount);
 		else
-			tag.put("second", secondItem.save());
+			tag.put("second", ElementType.save(secondItem));
 		return tag;
 	}
 
@@ -80,18 +82,18 @@ public final class SignalSettings {
 	public static void encode(FriendlyByteBuf buf, SignalSettings settings) {
 		boolean hasSecondItem = settings.secondItem != null;
 		buf.writeBoolean(hasSecondItem);
-		ItemType.encode(buf, settings.first);
+		ElementType.encode(buf, settings.first);
 		buf.writeBoolean(settings.bigger);
 		if (hasSecondItem)
-			ItemType.encode(buf, settings.secondItem);
+			ElementType.encode(buf, settings.secondItem);
 		else
 			buf.writeLong(settings.secondCount);
 	}
 
 	public static SignalSettings decode(FriendlyByteBuf buf) {
 		return buf.readBoolean() ?
-						new SignalSettings(ItemType.decode(buf), buf.readBoolean(), ItemType.decode(buf)) :
-						new SignalSettings(ItemType.decode(buf), buf.readBoolean(), buf.readLong());
+						new SignalSettings(ElementType.decode(buf), buf.readBoolean(), ElementType.decode(buf)) :
+						new SignalSettings(ElementType.decode(buf), buf.readBoolean(), buf.readLong());
 	}
 
 }

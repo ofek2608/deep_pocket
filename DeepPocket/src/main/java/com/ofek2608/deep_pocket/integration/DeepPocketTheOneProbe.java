@@ -1,6 +1,7 @@
 package com.ofek2608.deep_pocket.integration;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.SignalSettings;
 import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocket;
@@ -8,11 +9,11 @@ import com.ofek2608.deep_pocket.registry.interfaces.BlockEntityWithPocketFilter;
 import com.ofek2608.deep_pocket.registry.interfaces.SignalBlock;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import mcjty.theoneprobe.api.*;
+import mcjty.theoneprobe.config.Config;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -79,23 +80,23 @@ public final class DeepPocketTheOneProbe {
 			if (pocket == null)
 				addVerticalAlignedText(line, "None");
 			else
-				addItemText(line, PocketItem.createStack(entity.getPocketId()));
+				addElementText(line, ElementType.item(PocketItem.createStack(entity.getPocketId())));
 		}
 
 		private void addFilterInfo(IProbeInfo line, BlockEntityWithPocketFilter entity) {
 			addVerticalAlignedText(line, "Filter: ");
-			addItemText(line, entity.getFilter().create());
+			addElementText(line, entity.getFilter());
 		}
 
 		private void addSignalSettingsInfo(IProbeInfo line, SignalBlock.Ent entity) {
 			SignalSettings settings = entity.getSettings();
 			addVerticalAlignedText(line, "Filter: ");
-			addItemText(line, settings.first.create());
+			addElementText(line, settings.first);
 			addVerticalAlignedText(line, settings.bigger ? ">" : "<");
 			if (settings.secondItem == null)
 				addVerticalAlignedText(line, "" + settings.secondCount);
 			else
-				addItemText(line, settings.secondItem.create());
+				addElementText(line, settings.secondItem);
 		}
 
 		private void addSignalOutputInfo(IProbeInfo line, SignalBlock.Ent entity) {
@@ -103,13 +104,23 @@ public final class DeepPocketTheOneProbe {
 			line.text(entity.getOutput() ? Component.literal("true").withStyle(ChatFormatting.GREEN) : Component.literal("false").withStyle(ChatFormatting.RED));
 		}
 
-		private void addItemText(IProbeInfo line, ItemStack item) {
-			if (item.isEmpty()) {
-				addVerticalAlignedText(line, "None");
+		private void addElementText(IProbeInfo line, ElementType element) {
+			if (element instanceof ElementType.TItem item) {
+				line.item(item.create());
+			} else if (element instanceof ElementType.TFluid fluid) {
+				line.tankSimple(1, fluid.create());
+			} else if (element instanceof ElementType.TConvertible convertible) {
+				ResourceLocation texture = new ResourceLocation("minecraft:block/stone.png");
+				//TODO fix texture to use convertible
+				line.icon(texture, 0, 0, 256, 256);
+				addVerticalAlignedText(line, element.getDisplayName());
+			} else if (element instanceof ElementType.TEnergy) {
+				line.progress(1, 1, line.defaultProgressStyle().suffix("FE").filledColor(Config.rfbarFilledColor).alternateFilledColor(Config.rfbarAlternateFilledColor).borderColor(Config.rfbarBorderColor).numberFormat(Config.rfFormat.get()));
 			} else {
-				line.item(item);
-				addVerticalAlignedText(line, item.getHoverName());
+				addVerticalAlignedText(line, "None");
 			}
+			
+			addVerticalAlignedText(line, element.getDisplayName());
 		}
 
 		private void addVerticalAlignedText(IProbeInfo line, String text) {
