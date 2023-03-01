@@ -21,7 +21,7 @@ public interface Pocket {
 	ElementType getIcon();
 	int getColor();
 	PocketSecurityMode getSecurityMode();
-	void setConversions(ElementConversions conversions);
+	void setConversions(ElementConversionsOld conversions);
 
 	boolean canAccess(Player player);
 	PocketContent getContent();

@@ -66,7 +66,7 @@ public final class DeepPocketPacketHandler {
 	}
 
 	public static void cbPermitPublicPocket(PacketDistributor.PacketTarget target, boolean value) { CHANNEL.send(target, new CBPermitPublicPocket(value)); }
-	public static void cbConversions(PacketDistributor.PacketTarget target, ElementConversions conversions) { CHANNEL.send(target, new CBConversions(conversions)); }
+	public static void cbConversions(PacketDistributor.PacketTarget target, ElementConversionsOld conversions) { CHANNEL.send(target, new CBConversions(conversions)); }
 	
 	public static void cbSetPlayersName(PacketDistributor.PacketTarget target, Map<UUID,String> names) { CHANNEL.send(target, new CBSetPlayersName(names)); }
 	

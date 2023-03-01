@@ -29,7 +29,7 @@ final class PocketImpl implements Pocket {
 	@Nonnull private final PocketPatterns patterns;
 	@Nonnull private final PocketProcessManager processes;
 
-	PocketImpl(DeepPocketHelper helper, ElementConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
+	PocketImpl(DeepPocketHelper helper, ElementConversionsOld conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo, PocketProcessManager processes) {
 		this.pocketId = pocketId;
 		this.owner = owner;
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
@@ -61,7 +61,7 @@ final class PocketImpl implements Pocket {
 	@Override public PocketSecurityMode getSecurityMode() { return pocketInfo.get().securityMode; }
 	
 	@Override
-	public void setConversions(ElementConversions conversions) {
+	public void setConversions(ElementConversionsOld conversions) {
 		content.setConversions(conversions);
 	}
 	

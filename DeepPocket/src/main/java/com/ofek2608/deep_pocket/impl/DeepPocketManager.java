@@ -7,7 +7,7 @@ import com.ofek2608.deep_pocket.api.DeepPocketHelper;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.events.DeepPocketBuildConversionsEvent;
 import com.ofek2608.deep_pocket.api.events.DeepPocketServerStartedEvent;
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
@@ -56,9 +56,9 @@ public final class DeepPocketManager {
 		public static void event(ServerStartedEvent event) {
 			MinecraftServer server = event.getServer();
 			DeepPocketHelper helper = getHelper();
-			ElementConversions.Builder conversionsBuilder = new ElementConversions.Builder();
+			ElementConversionsOld.Builder conversionsBuilder = new ElementConversionsOld.Builder();
 			MinecraftForge.EVENT_BUS.post(new DeepPocketBuildConversionsEvent(server, conversionsBuilder));
-			ElementConversions conversions = conversionsBuilder.build();
+			ElementConversionsOld conversions = conversionsBuilder.build();
 			var dataStorage = server.overworld().getDataStorage();
 			DeepPocketSavedData savedData = dataStorage.computeIfAbsent(
 							tag->new DeepPocketSavedData(helper, server, conversions, tag),
@@ -108,11 +108,11 @@ public final class DeepPocketManager {
 	private static final class DeepPocketSavedData extends SavedData {
 		private final DeepPocketServerApiImpl api;
 
-		private DeepPocketSavedData(DeepPocketHelper helper, MinecraftServer server, ElementConversions conversions) {
+		private DeepPocketSavedData(DeepPocketHelper helper, MinecraftServer server, ElementConversionsOld conversions) {
 			this.api = new DeepPocketServerApiImpl(helper, server, conversions);
 		}
 
-		private DeepPocketSavedData(DeepPocketHelper helper, MinecraftServer server, ElementConversions conversions, CompoundTag tag) {
+		private DeepPocketSavedData(DeepPocketHelper helper, MinecraftServer server, ElementConversionsOld conversions, CompoundTag tag) {
 			this.api = new DeepPocketServerApiImpl(helper, server, conversions, tag);
 		}
 

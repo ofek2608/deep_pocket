@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.api.events;
 
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -9,20 +9,20 @@ import net.minecraftforge.event.server.ServerLifecycleEvent;
 import net.minecraftforge.fluids.FluidStack;
 
 public class DeepPocketBuildConversionsEvent extends ServerLifecycleEvent {
-	private final ElementConversions.Builder builder;
+	private final ElementConversionsOld.Builder builder;
 
-	public DeepPocketBuildConversionsEvent(MinecraftServer server, ElementConversions.Builder builder) {
+	public DeepPocketBuildConversionsEvent(MinecraftServer server, ElementConversionsOld.Builder builder) {
 		super(server);
 		this.builder = builder;
 	}
 
-	public ElementConversions.Builder getBuilder() {
+	public ElementConversionsOld.Builder getBuilder() {
 		return builder;
 	}
 
-	public ElementConversions.ElementValueBuilder item(ItemStack stack) { return builder.item(stack); }
-	public ElementConversions.ElementValueBuilder item(Item item) { return builder.item(item); }
-	public ElementConversions.ElementValueBuilder fluid(FluidStack stack) { return builder.fluid(stack); }
-	public ElementConversions.ElementValueBuilder fluid(Fluid fluid) { return builder.fluid(fluid); }
-	public ElementConversions.ElementValueBuilder energy() { return builder.energy(); }
+	public ElementConversionsOld.ElementValueBuilder item(ItemStack stack) { return builder.item(stack); }
+	public ElementConversionsOld.ElementValueBuilder item(Item item) { return builder.item(item); }
+	public ElementConversionsOld.ElementValueBuilder fluid(FluidStack stack) { return builder.fluid(stack); }
+	public ElementConversionsOld.ElementValueBuilder fluid(Fluid fluid) { return builder.fluid(fluid); }
+	public ElementConversionsOld.ElementValueBuilder energy() { return builder.energy(); }
 }

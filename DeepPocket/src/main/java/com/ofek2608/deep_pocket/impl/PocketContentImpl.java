@@ -2,7 +2,7 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.pocket.PocketContent;
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import org.jetbrains.annotations.Nullable;
@@ -13,23 +13,23 @@ import java.util.*;
 import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
 
 final class PocketContentImpl implements PocketContent {
-	private ElementConversions conversions;
+	private ElementConversionsOld conversions;
 	private final Map<ElementType,Integer> indexMap = new HashMap<>();
 	private final List<ElementType> types = new ArrayList<>();
 	private final List<Long> counts = new ArrayList<>();
 	private SnapshotImpl lastSnapshot = new SnapshotImpl();
 	
-	PocketContentImpl(ElementConversions conversions) {
+	PocketContentImpl(ElementConversionsOld conversions) {
 		this.conversions = conversions;
 	}
 	
 	@Override
-	public ElementConversions getConversions() {
+	public ElementConversionsOld getConversions() {
 		return conversions;
 	}
 	
 	@Override
-	public void setConversions(ElementConversions conversions) {
+	public void setConversions(ElementConversionsOld conversions) {
 		this.conversions = conversions;
 		for (int i = 0; i < types.size(); i++)
 			if (conversions.hasValue(types.get(i)))

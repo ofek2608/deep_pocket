@@ -2,30 +2,25 @@ package com.ofek2608.deep_pocket.api.struct;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.material.Fluid;
-import net.minecraftforge.fluids.FluidStack;
 import org.jetbrains.annotations.UnmodifiableView;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.*;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
-import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.*;
-import static com.ofek2608.deep_pocket.api.struct.ElementType.TConvertible;
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedMul;
+import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedSum;
 
 @Immutable
 public final class ElementConversions {
 	private static final Logger LOGGER = LogUtils.getLogger();
-	public static final ElementConversions EMPTY = new ElementConversions(new TConvertible[0], Collections.emptyMap());
-	private final TConvertible[] baseElements;
-	private final Map<ElementType,long[]> values;
+	public static final ElementConversions EMPTY = new ElementConversions(new int[0], Collections.emptyMap());
+	private final int[] baseElements;
+	private final Map<Integer,long[]> values;
 
-	private ElementConversions(TConvertible[] baseElements, Map<ElementType,long[]> values) {
+	private ElementConversions(int[] baseElements, Map<Integer,long[]> values) {
 		this.baseElements = baseElements;
 		this.values = values;
 	}
@@ -34,34 +29,39 @@ public final class ElementConversions {
 	public static void encode(FriendlyByteBuf buf, ElementConversions conversions) {
 		// Write base elements keys
 		buf.writeVarInt(conversions.baseElements.length);
-		for (ElementType baseElement : conversions.baseElements)
-			buf.writeResourceLocation(baseElement.getKey());
+		for (int baseElement : conversions.baseElements)
+			buf.writeVarInt(baseElement);
 		// Write converted elements
+		buf.writeVarInt(conversions.values.size());
 		for (var entry : conversions.values.entrySet()) {
-			ElementType.encode(buf, entry.getKey());
+			buf.writeVarInt(entry.getKey());
 			for (long baseElementCost : entry.getValue())
 				buf.writeVarLong(baseElementCost);
 		}
-		// Write ElementType.empty() to mark the end
-		ElementType.encode(buf, ElementType.empty());
 	}
 
 	public static ElementConversions decode(FriendlyByteBuf buf) {
 		// Read base elements keys
 		int baseElementCount = buf.readVarInt();
-		TConvertible[] baseElements = new TConvertible[baseElementCount];
-		for (int i = 0; i < baseElementCount; i++)
-			baseElements[i] = ElementType.convertible(buf.readResourceLocation());
+		int[] baseElements = new int[baseElementCount];
+		Set<Integer> baseElementsSet = new HashSet<>();
+		for (int i = 0; i < baseElementCount; i++) {
+			int baseElement = buf.readVarInt();
+			baseElements[i] = baseElement;
+			baseElementsSet.add(baseElement);
+		}
 		// Read converted elements
-		Map<ElementType,long[]> values = new HashMap<>();
-		ElementType readElementType;
-		while (!(readElementType = ElementType.decode(buf)).isEmpty()) {
-			if (readElementType instanceof TConvertible)
+		int convertibleCount = buf.readVarInt();
+		Map<Integer,long[]> values = new HashMap<>();
+		for (int i = 0; i < convertibleCount; i++) {
+			int elementIndex = buf.readVarInt();
+			if (baseElementsSet.contains(elementIndex)) {
 				throw new IllegalArgumentException("ElementConversions-TConvertible has a value.");
+			}
 			long[] value = new long[baseElementCount];
-			for (int i = 0; i < baseElementCount; i++)
-				value[i] = buf.readVarLong();
-			values.put(readElementType, value);
+			for (int j = 0; j < baseElementCount; j++)
+				value[j] = buf.readVarLong();
+			values.put(elementIndex, value);
 		}
 		return new ElementConversions(baseElements, values);
 	}
@@ -70,29 +70,29 @@ public final class ElementConversions {
 		return baseElements.length;
 	}
 
-	public TConvertible getBaseElement(int baseElementIndex) {
+	public int getBaseElement(int baseElementIndex) {
 		return baseElements[baseElementIndex];
 	}
 
-	public TConvertible[] getBaseElements() {
+	public int[] getBaseElements() {
 		return baseElements.clone();
 	}
 
-	public @UnmodifiableView Set<ElementType> getKeys() {
+	public @UnmodifiableView Set<Integer> getKeys() {
 		return Collections.unmodifiableSet(values.keySet());
 	}
 
-	public boolean hasValue(ElementType type) {
-		return values.containsKey(type);
+	public boolean hasValue(int elementId) {
+		return values.containsKey(elementId);
 	}
 
-	public @Nullable long[] getValue(ElementType type) {
-		long[] value = values.get(type);
+	public @Nullable long[] getValue(int elementId) {
+		long[] value = values.get(elementId);
 		return value == null ? null : value.clone();
 	}
 
-	public @Nullable long[] getValue(ElementType type, long count) {
-		long[] value = values.get(type);
+	public @Nullable long[] getValue(int elementId, long count) {
+		long[] value = values.get(elementId);
 		if (value == null)
 			return null;
 		value = value.clone();
@@ -101,12 +101,8 @@ public final class ElementConversions {
 		return value;
 	}
 
-	public void convertMap(Map<ElementType,Long> counts) {
+	public void convertMap(Map<Integer,Long> counts) {
 		for (var entry : new ArrayList<>(counts.entrySet())) {
-			if (entry.getKey().isEmpty()) {
-				counts.remove(entry.getKey());
-				continue;
-			}
 			long[] value = getValue(entry.getKey(), entry.getValue());
 			if (value == null)
 				continue;
@@ -115,21 +111,20 @@ public final class ElementConversions {
 				long v = value[i];
 				if (v == 0)
 					continue;
-				ElementType baseElement = baseElements[i];
-				counts.put(baseElement, advancedSum(v, counts.getOrDefault(baseElement, 0L)));
+				int baseElement = baseElements[i];
+				long newCount = advancedSum(v, counts.getOrDefault(baseElement, 0L));
+				if (newCount != 0) {
+					counts.put(baseElement, newCount);
+				}
 			}
 		}
 	}
 	
-	public long[] convertMapToArray(Map<ElementType,Long> counts) {
+	public long[] convertMapToArray(Map<Integer,Long> counts) {
 		long[] result = new long[baseElements.length];
 		var iterator = counts.entrySet().iterator();
 		while (iterator.hasNext()) {
 			var entry = iterator.next();
-			if (entry.getKey().isEmpty()) {
-				iterator.remove();
-				continue;
-			}
 			long[] elementValue = values.get(entry.getKey());
 			if (elementValue == null)
 				continue;
@@ -157,42 +152,29 @@ public final class ElementConversions {
 
 
 	public static final class Builder {
-		public final Map<ElementType,ElementValueBuilder> values = new HashMap<>();
+		public final Map<Integer,ElementValueBuilder> values = new HashMap<>();
 
-		public ElementValueBuilder element(ElementType element) {
-			if (element.isEmpty() || element instanceof TConvertible)
-				throw new IllegalArgumentException("element can't be TEmpty or TConvertible");
-			return values.computeIfAbsent(element, p->new ElementValueBuilder());
+		public ElementValueBuilder element(int elementId) {
+			return values.computeIfAbsent(elementId, p->new ElementValueBuilder());
 		}
 
-		public ElementValueBuilder item(ItemStack stack) { return element(ElementType.item(stack)); }
-		public ElementValueBuilder item(Item item) { return element(ElementType.item(item)); }
-		public ElementValueBuilder fluid(FluidStack stack) { return element(ElementType.fluid(stack)); }
-		public ElementValueBuilder fluid(Fluid fluid) { return element(ElementType.fluid(fluid)); }
-		public ElementValueBuilder energy() { return element(ElementType.energy()); }
-
 		public ElementConversions build() {
-			TConvertible[] baseElements = values.values()
+			int[] baseElements = values.values()
 					.stream()
 					.map(builder->builder.amounts)
 					.map(Map::keySet)
 					.flatMap(Set::stream)
+					.mapToInt(Integer::valueOf)
 					.unordered()
 					.distinct()
-					.map(ElementType::convertible)
-					.toArray(TConvertible[]::new);
+					.toArray();
 			
-			Map<ElementType, long[]> resultValues = new HashMap<>();
+			Map<Integer, long[]> resultValues = new HashMap<>();
 			for (var entry : values.entrySet()) {
-				ElementType element = entry.getKey();
-				if (element.isEmpty() || element instanceof TConvertible) {
-					LOGGER.warn("Tried to build a value to " + element);
-					continue;
-				}
+				int element = entry.getKey();
 				resultValues.put(
 						element,
-						Stream.of(baseElements)
-								.map(TConvertible::getKey)
+						IntStream.of(baseElements)
 								.mapToLong(entry.getValue()::getAmount)
 								.toArray()
 				);
@@ -202,23 +184,23 @@ public final class ElementConversions {
 	}
 
 	public static final class ElementValueBuilder {
-		public final Map<ResourceLocation,Long> amounts = new HashMap<>();
+		public final Map<Integer,Long> amounts = new HashMap<>();
 		
 		public ElementValueBuilder clear() {
 			amounts.clear();
 			return this;
 		}
 
-		public ElementValueBuilder set(ResourceLocation convertible, long amount) {
+		public ElementValueBuilder set(int convertible, long amount) {
 			amounts.put(convertible, amount);
 			return this;
 		}
 
-		public ElementValueBuilder add(ResourceLocation convertible, long amount) {
+		public ElementValueBuilder add(int convertible, long amount) {
 			return set(convertible, advancedSum(amount, getAmount(convertible)));
 		}
 		
-		public long getAmount(ResourceLocation convertible) {
+		public long getAmount(int convertible) {
 			return amounts.getOrDefault(convertible, 0L);
 		}
 	}

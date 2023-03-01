@@ -6,7 +6,7 @@ import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
@@ -191,7 +191,7 @@ public final class DeepPocketJEI {
 
 		@Override
 		public void setRecipe(IRecipeLayoutBuilder builder, ElementType recipe, IFocusGroup focuses) {
-			ElementConversions conversions = DeepPocketClientApi.get().getConversions();
+			ElementConversionsOld conversions = DeepPocketClientApi.get().getConversions();
 			long[] value = conversions.getValue(recipe);
 			if (value == null) {
 				LOGGER.warn("Jei displays empty recipe");

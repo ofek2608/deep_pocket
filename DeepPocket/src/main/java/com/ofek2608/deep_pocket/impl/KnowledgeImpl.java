@@ -2,7 +2,7 @@ package com.ofek2608.deep_pocket.impl;
 
 import com.ofek2608.collections.CaptureSet;
 import com.ofek2608.deep_pocket.api.Knowledge;
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 
 import java.util.Arrays;
@@ -12,7 +12,7 @@ import java.util.Set;
 final class KnowledgeImpl implements Knowledge {
 	private final ElementSet elements;
 
-	KnowledgeImpl(ElementConversions conversions) {
+	KnowledgeImpl(ElementConversionsOld conversions) {
 		this.elements = new ElementSet(conversions);
 	}
 
@@ -56,9 +56,9 @@ final class KnowledgeImpl implements Knowledge {
 
 
 	private static final class ElementSet extends CaptureSet<ElementType> {
-		private final ElementConversions conversions;
+		private final ElementConversionsOld conversions;
 
-		private ElementSet(ElementConversions conversions) {
+		private ElementSet(ElementConversionsOld conversions) {
 			this.conversions = conversions;
 		}
 

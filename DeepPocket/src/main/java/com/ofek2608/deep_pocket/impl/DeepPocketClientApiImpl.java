@@ -4,10 +4,9 @@ import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
-import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nullable;
@@ -22,7 +21,7 @@ final class DeepPocketClientApiImpl extends DeepPocketApiImpl<DeepPocketClientHe
 	}
 
 	@Override
-	public void setConversions(ElementConversions conversions) {
+	public void setConversions(ElementConversionsOld conversions) {
 		this.conversions = conversions;
 		this.knowledge = DeepPocketManager.getHelper().createKnowledge(conversions);
 		MinecraftForge.EVENT_BUS.post(new DeepPocketConversionsUpdatedEvent(this, conversions));

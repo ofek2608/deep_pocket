@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.api.pocket;
 
 import com.ofek2608.deep_pocket.api.Knowledge;
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
 import org.jetbrains.annotations.ApiStatus;
@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Set;
 
 public interface PocketContent {
-	ElementConversions getConversions();
-	void setConversions(ElementConversions conversions);
+	ElementConversionsOld getConversions();
+	void setConversions(ElementConversionsOld conversions);
 	
 	int getIndex(ElementType type);
 	ElementType getType(int index);

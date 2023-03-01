@@ -5,7 +5,7 @@ import com.ofek2608.deep_pocket.api.DeepPocketHelper;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
-import com.ofek2608.deep_pocket.api.struct.ElementConversions;
+import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
@@ -45,13 +45,13 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
 	private final Map<UUID, Knowledge.Snapshot> knowledge = new HashMap<>();
 
-	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversions conversions) {
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversionsOld conversions) {
 		super(helper);
 		this.server = server;
 		this.conversions = conversions;
 	}
 
-	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversions conversions, CompoundTag tag) {
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversionsOld conversions, CompoundTag tag) {
 		this(helper, server, conversions);
 		boolean errors = false;
 		// Loading: Pockets

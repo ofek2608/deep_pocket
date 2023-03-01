@@ -11,12 +11,12 @@ import java.util.UUID;
 
 class DeepPocketHelperImpl implements DeepPocketHelper {
 	@Override
-	public Pocket createPocket(ElementConversions conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
+	public Pocket createPocket(ElementConversionsOld conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
 		return new PocketImpl(this, conversions, pocketId, owner, pocketInfo, createProcessManager());
 	}
 	
 	@Override
-	public PocketContent createPocketContent(ElementConversions conversions) {
+	public PocketContent createPocketContent(ElementConversionsOld conversions) {
 		return new PocketContentImpl(conversions);
 	}
 	
@@ -26,7 +26,7 @@ class DeepPocketHelperImpl implements DeepPocketHelper {
 	}
 	
 	@Override
-	public Knowledge createKnowledge(ElementConversions conversions) {
+	public Knowledge createKnowledge(ElementConversionsOld conversions) {
 		return new KnowledgeImpl(conversions);
 	}
 

@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.function.IntUnaryOperator;
 
 public final class ServerPocket extends PocketBase {
-	private ElementConversions conversions;
+	private final ElementConversionsOld conversions;
 	private final Map<Integer,Long> elementsCount = new HashMap<>();
 	private final Map<CraftingPattern, ServerCraftingPattern> availablePatternsByPattern = new HashMap<>();
 	private final Map<UUID, ServerCraftingPattern> availablePatternsById = new HashMap<>();
@@ -26,7 +26,7 @@ public final class ServerPocket extends PocketBase {
 	private final Set<Integer> updatedDefaultPatterns = new HashSet<>();
 	private int lastSentCraftingProcessId = 0;
 	
-	public ServerPocket(UUID pocketId, UUID owner, PocketInfo info, ElementConversions conversions) {
+	public ServerPocket(UUID pocketId, UUID owner, PocketInfo info, ElementConversionsOld conversions) {
 		super(pocketId, owner, info);
 		this.conversions = conversions;
 	}
@@ -41,14 +41,8 @@ public final class ServerPocket extends PocketBase {
 		return changedInfo;
 	}
 	
-	public ElementConversions getConversions() {
+	public ElementConversionsOld getConversions() {
 		return conversions;
-	}
-	
-	public void setConversions(ElementConversions conversions) {
-		//TODO convert elementCount
-		//TODO add elements to updatedElementCount
-		this.conversions = conversions;
 	}
 	
 	public long getCount(int elementIndex) {
@@ -214,7 +208,7 @@ public final class ServerPocket extends PocketBase {
 		return saved;
 	}
 	
-	public static ServerPocket load(CompoundTag saved, boolean allowPublicPockets, ElementConversions conversions, IntUnaryOperator elementIdGetter) {
+	public static ServerPocket load(CompoundTag saved, boolean allowPublicPockets, ElementConversionsOld conversions, IntUnaryOperator elementIdGetter) {
 		ServerPocket pocket = new ServerPocket(
 				saved.getUUID("pocketId"),
 				saved.getUUID("owner"),
