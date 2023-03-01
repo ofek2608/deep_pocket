@@ -34,9 +34,9 @@ final class PocketImpl implements Pocket {
 		this.owner = owner;
 		this.pocketInfo = new CaptureReference<>(pocketInfo);
 		this.items = new PocketItems();
-		this.content = helper.createPocketContent(conversions);
+		this.content = new PocketContentImpl(conversions);
 		this.patternsOld = new PocketPatternsOld();
-		this.patterns = helper.createPocketPatterns();
+		this.patterns = new PocketPatternsImpl();
 		this.processes = processes;
 	}
 

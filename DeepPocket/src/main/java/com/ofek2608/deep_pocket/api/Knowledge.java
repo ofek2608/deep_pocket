@@ -1,14 +1,12 @@
 package com.ofek2608.deep_pocket.api;
 
-import com.ofek2608.deep_pocket.api.struct.ElementType;
-
 import java.util.Set;
 
 public interface Knowledge {
-	boolean contains(ElementType type);
-	void add(ElementType ... types);
-	void remove(ElementType ... types);
-	Set<ElementType> asSet();
+	boolean contains(int type);
+	void add(int ... types);
+	void remove(int ... types);
+	Set<Integer> asSet();
 	Snapshot createSnapshot();
 	Knowledge copy();
 
@@ -18,7 +16,7 @@ public interface Knowledge {
 
 	interface Snapshot {
 		Knowledge getKnowledge();
-		ElementType[] getRemoved();
-		ElementType[] getAdded();
+		int[] getRemoved();
+		int[] getAdded();
 	}
 }

@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
+import com.ofek2608.deep_pocket.api.struct.server.ServerElementIndices;
 import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.impl.DeepPocketManager;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,7 +14,9 @@ import java.util.UUID;
 
 public interface DeepPocketServerApi extends DeepPocketApi<ServerPocket> {
 	static @Nullable DeepPocketServerApi get() { return DeepPocketManager.getServerApi(); }
-
+	
+	ServerElementIndices getElementIndices();
+	
 	@UnmodifiableView Set<UUID> getViewedPockets(ServerPlayer player);
 	Knowledge getKnowledge(UUID playerId);
 

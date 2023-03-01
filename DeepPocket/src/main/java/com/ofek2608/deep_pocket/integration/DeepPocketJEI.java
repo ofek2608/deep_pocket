@@ -6,8 +6,9 @@ import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.events.DeepPocketConversionsUpdatedEvent;
-import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
+import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.client.ClientElementIndices;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketScreen;
@@ -79,7 +80,7 @@ public final class DeepPocketJEI {
 		@SubscribeEvent
 		public static void event(DeepPocketConversionsUpdatedEvent event) {
 			if (hasMod())
-				JEIPlugin.setConversionsKeys(event.getConversions().getKeys());
+				JEIPlugin.setConversionsKeys(event.getConversions().getKeys(), event.getApi().getElementIndices());
 		}
 	}
 
@@ -129,23 +130,27 @@ public final class DeepPocketJEI {
 			JEIPlugin.runtime = runtime;
 			existingRecipes.clear();
 			displayedRecipes.clear();
-			setConversionsKeys(DeepPocketClientApi.get().getConversions().getKeys());
+			DeepPocketClientApi api = DeepPocketClientApi.get();
+			setConversionsKeys(api.getConversions().getKeys(), api.getElementIndices());
 		}
 
-		public static void setConversionsKeys(Set<ElementType> keys) {
+		public static void setConversionsKeys(Set<Integer> keys, ClientElementIndices indices) {
 			if (runtime == null)
 				return;
 			IRecipeManager manager = runtime.getRecipeManager();
 			//Add new recipes
-			manager.addRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, keys.stream().filter(type->!existingRecipes.contains(type)).toList());
+			manager.addRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, keys.stream().map(indices::getType).filter(type->!existingRecipes.contains(type)).toList());
 			//UnHide recipe that had been added
-			manager.unhideRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, keys.stream().filter(existingRecipes::contains).toList());
+			manager.unhideRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, keys.stream().map(indices::getType).filter(existingRecipes::contains).toList());
 			//Hide recipes that were before and shouldn't exist
-			manager.hideRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, displayedRecipes.stream().filter(type->!keys.contains(type)).toList());
-
-			existingRecipes.addAll(keys);
+			manager.hideRecipes(ElementConversionRecipeCategory.RECIPE_TYPE, displayedRecipes.stream().filter(type->!keys.contains(indices.getIndex(type))).toList());
+			
 			displayedRecipes.clear();
-			displayedRecipes.addAll(keys);
+			for (Integer key : keys) {
+				ElementType type = indices.getType(key);
+				existingRecipes.add(type);
+				displayedRecipes.add(type);
+			}
 		}
 	}
 
@@ -191,8 +196,10 @@ public final class DeepPocketJEI {
 
 		@Override
 		public void setRecipe(IRecipeLayoutBuilder builder, ElementType recipe, IFocusGroup focuses) {
-			ElementConversionsOld conversions = DeepPocketClientApi.get().getConversions();
-			long[] value = conversions.getValue(recipe);
+			DeepPocketClientApi api = DeepPocketClientApi.get();
+			ElementConversions conversions = api.getConversions();
+			ClientElementIndices elementIndices = api.getElementIndices();
+			long[] value = conversions.getValue(elementIndices.getIndex(recipe));
 			if (value == null) {
 				LOGGER.warn("Jei displays empty recipe");
 				return;

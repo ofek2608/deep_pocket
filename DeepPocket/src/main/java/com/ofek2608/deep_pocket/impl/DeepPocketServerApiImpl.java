@@ -5,19 +5,18 @@ import com.ofek2608.deep_pocket.api.DeepPocketHelper;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.enums.PocketSecurityMode;
-import com.ofek2608.deep_pocket.api.struct.ElementConversionsOld;
+import com.ofek2608.deep_pocket.api.struct.ElementConversions;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.PocketInfo;
 import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
+import com.ofek2608.deep_pocket.api.struct.server.ServerElementIndices;
 import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.items.PocketItem;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
 import com.ofek2608.deep_pocket.registry.process_screen.ProcessMenu;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -38,27 +37,43 @@ import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 
 final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, ServerPocket> implements DeepPocketServerApi {
 	private static final Logger LOGGER = LogUtils.getLogger();
 	private final MinecraftServer server;
 	private final Map<ServerPlayer, Set<UUID>> viewedPockets = new HashMap<>();
 	private final Map<UUID, Knowledge.Snapshot> knowledge = new HashMap<>();
+	private final ServerElementIndices elementIndices;
 
-	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversionsOld conversions) {
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ServerElementIndices elementIndices, ElementConversions conversions) {
 		super(helper);
 		this.server = server;
 		this.conversions = conversions;
+		this.elementIndices = elementIndices;
 	}
 
-	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ElementConversionsOld conversions, CompoundTag tag) {
-		this(helper, server, conversions);
+	DeepPocketServerApiImpl(DeepPocketHelper helper, MinecraftServer server, ServerElementIndices elementIndices, ElementConversions conversions, CompoundTag tag) {
+		this(helper, server, elementIndices, conversions);
 		boolean errors = false;
+		// Loading: OldElementIndexes
+		Map<Integer,ElementType> oldElementIndexes = new HashMap<>();
+		for (Tag savedIndex : tag.getList("elementIndexes", 10)) {
+			try {
+				oldElementIndexes.put(
+						((CompoundTag)savedIndex).getInt("index"),
+						ElementType.load(((CompoundTag)savedIndex).getCompound("type"))
+				);
+			} catch (Exception e) {
+				errors = true;
+			}
+		}
+		IntUnaryOperator elementIdGetter = oldId -> elementIndices.getIndexOrCreate(oldElementIndexes.getOrDefault(oldId, ElementType.empty()));
 		// Loading: Pockets
 		boolean allowPublicPockets = DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get();
 		for (Tag savedPocket : tag.getList("pockets", 10)) {
 			try {
-				ServerPocket readPocket = ServerPocket.load((CompoundTag)savedPocket, allowPublicPockets, conversions);
+				ServerPocket readPocket = ServerPocket.load((CompoundTag)savedPocket, allowPublicPockets, conversions, elementIdGetter);
 				pockets.put(readPocket.getPocketId(), readPocket);
 			} catch (Exception e) {
 				errors = true;
@@ -76,7 +91,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		for (Tag savedKnowledge : tag.getList("knowledge", 10)) {
 			try {
 				UUID playerId = ((CompoundTag)savedKnowledge).getUUID("player");
-				Knowledge readKnowledge = loadKnowledge((CompoundTag)savedKnowledge);
+				Knowledge readKnowledge = loadKnowledge((CompoundTag)savedKnowledge, elementIdGetter);
 				knowledge.put(playerId, readKnowledge.createSnapshot());
 			} catch (Exception e) {
 				errors = true;
@@ -138,10 +153,21 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 //		} catch (Exception ignored) {}
 //		return null;
 //	}
-
-	private Knowledge loadKnowledge(CompoundTag saved) {
+	
+	
+	@Override
+	public ServerElementIndices getElementIndices() {
+		return elementIndices;
+	}
+	
+	private Knowledge loadKnowledge(CompoundTag saved, IntUnaryOperator elementIdGetter) {
 		Knowledge knowledge = helper.createKnowledge(conversions);
-		knowledge.add(loadElementArray(saved.getList("items", 10)));
+		knowledge.add(saved.getList("elements", Tag.TAG_INT)
+				.stream()
+				.mapToInt(tag -> tag instanceof NumericTag nTag ? nTag.getAsInt() : 0)
+				.map(elementIdGetter)
+				.toArray()
+		);
 		return knowledge;
 	}
 
@@ -190,15 +216,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 //						.filter(type->!type.isEmpty())
 //						.toArray(ItemType[]::new);
 //	}
-
-	private ElementType[] loadElementArray(ListTag saved) {
-		return saved.stream()
-						.map(tag->tag instanceof CompoundTag compound ? compound : null)
-						.filter(Objects::nonNull)
-						.map(ElementType::load)
-						.filter(type->!type.isEmpty())
-						.toArray(ElementType[]::new);
-	}
 
 
 
@@ -261,7 +278,11 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 	private static CompoundTag saveKnowledge(UUID playerId, Knowledge knowledge) {
 		CompoundTag saved = new CompoundTag();
 		saved.putUUID("player", playerId);
-		saved.put("items", saveElementArray(knowledge.asSet().toArray(ElementType[]::new)));
+		ListTag savedElements = new ListTag();
+		for (Integer elementId : knowledge.asSet()) {
+			savedElements.add(IntTag.valueOf(elementId));
+		}
+		saved.put("elements", savedElements);
 		return saved;
 	}
 
@@ -310,13 +331,6 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 //			saved.add(item.save());
 //		return saved;
 //	}
-
-	private static ListTag saveElementArray(ElementType[] types) {
-		ListTag saved = new ListTag();
-		for (ElementType type : types)
-			saved.add(ElementType.save(type));
-		return saved;
-	}
 
 
 
@@ -513,8 +527,8 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 		for (ServerPlayer player : onlinePLayers) {
 			Knowledge knowledge = getKnowledge(player.getUUID());
 			for (ItemStack item : player.getInventory().items)
-				knowledge.add(ElementType.item(item));
-			knowledge.add(ElementType.item(player.containerMenu.getCarried()));
+				knowledge.add(elementIndices.getIndex(ElementType.item(item)));
+			knowledge.add(elementIndices.getIndex(ElementType.item(player.containerMenu.getCarried())));
 		}
 		
 		//================

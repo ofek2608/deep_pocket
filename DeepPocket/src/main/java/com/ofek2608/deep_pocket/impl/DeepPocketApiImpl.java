@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper, Pocket extends PocketBase> implements DeepPocketApi<Pocket> {
 	protected final Helper helper;
-	protected @Nonnull ElementConversionsOld conversions = ElementConversionsOld.EMPTY;
+	protected @Nonnull ElementConversions conversions = ElementConversions.EMPTY;
 	protected final Map<UUID, Pocket> pockets = new HashMap<>();
 	protected final Map<UUID, String> playerNameCache = new HashMap<>();
 
@@ -28,7 +28,7 @@ abstract class DeepPocketApiImpl<Helper extends DeepPocketHelper, Pocket extends
 	}
 	
 	@Override
-	public ElementConversionsOld getConversions() {
+	public ElementConversions getConversions() {
 		return conversions;
 	}
 	

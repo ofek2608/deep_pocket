@@ -164,7 +164,7 @@ public final class ElementConversions {
 					.map(builder->builder.amounts)
 					.map(Map::keySet)
 					.flatMap(Set::stream)
-					.mapToInt(Integer::valueOf)
+					.mapToInt(Integer::intValue)
 					.unordered()
 					.distinct()
 					.toArray();

@@ -11,22 +11,7 @@ import java.util.UUID;
 
 class DeepPocketHelperImpl implements DeepPocketHelper {
 	@Override
-	public Pocket createPocket(ElementConversionsOld conversions, UUID pocketId, UUID owner, PocketInfo pocketInfo) {
-		return new PocketImpl(this, conversions, pocketId, owner, pocketInfo, createProcessManager());
-	}
-	
-	@Override
-	public PocketContent createPocketContent(ElementConversionsOld conversions) {
-		return new PocketContentImpl(conversions);
-	}
-	
-	@Override
-	public PocketPatterns createPocketPatterns() {
-		return new PocketPatternsImpl();
-	}
-	
-	@Override
-	public Knowledge createKnowledge(ElementConversionsOld conversions) {
+	public Knowledge createKnowledge(ElementConversions conversions) {
 		return new KnowledgeImpl(conversions);
 	}
 
