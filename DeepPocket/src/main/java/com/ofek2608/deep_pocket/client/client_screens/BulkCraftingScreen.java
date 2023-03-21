@@ -6,8 +6,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.Knowledge;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.Minecraft;
@@ -24,7 +24,7 @@ class BulkCraftingScreen extends Screen {
 	private static final int VIEW_WIDTH = 154;
 	private static final int VIEW_HEIGHT = 50;
 	private final @Nullable Screen backScreen;
-	private final @Nonnull Pocket pocket;
+	private final @Nonnull ClientPocket pocket;
 	private final @Nonnull ElementType.TItem[] recipe;
 
 	//Update Fields
@@ -37,7 +37,7 @@ class BulkCraftingScreen extends Screen {
 	private long count;
 
 
-	BulkCraftingScreen(@Nullable Screen backScreen, @Nonnull Pocket pocket, @Nonnull ElementType.TItem[] recipe) {
+	BulkCraftingScreen(@Nullable Screen backScreen, @Nonnull ClientPocket pocket, @Nonnull ElementType.TItem[] recipe) {
 		super(Component.empty());
 		this.backScreen = backScreen;
 		this.pocket = pocket;

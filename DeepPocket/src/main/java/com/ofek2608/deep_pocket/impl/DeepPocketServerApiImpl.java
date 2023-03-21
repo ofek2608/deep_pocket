@@ -215,7 +215,7 @@ final class DeepPocketServerApiImpl extends DeepPocketApiImpl<DeepPocketHelper, 
 
 	@Override
 	public void openPocket(ServerPlayer player, UUID pocketId) {
-		open(player, pocketId, pocket -> (int id, Inventory inv, Player player0)-> new PocketMenu(id, inv, pocket));
+		open(player, pocketId, pocket -> (int id, Inventory inv, Player player0)-> new PocketMenu(id, inv, pocketId));
 	}
 
 	@Override

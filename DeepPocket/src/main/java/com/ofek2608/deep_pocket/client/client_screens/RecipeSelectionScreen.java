@@ -5,11 +5,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
 import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.Minecraft;
@@ -33,7 +33,7 @@ class RecipeSelectionScreen extends Screen {
 	private static final int VIEW_WIDTH = 218;
 	private static final int VIEW_HEIGHT = 42 + DISPLAY_PATTERN_COUNT * 16;
 	private final Player player;
-	private final Pocket pocket;
+	private final ClientPocket pocket;
 	private final ElementType requiredOutput;
 	private final Consumer<UUID> onSelect;
 
@@ -48,7 +48,7 @@ class RecipeSelectionScreen extends Screen {
 	private final UUID[] visiblePatternIds = new UUID[DISPLAY_PATTERN_COUNT];
 
 
-	RecipeSelectionScreen(Player player, Pocket pocket, ElementType requiredOutput, Consumer<UUID> onSelect) {
+	RecipeSelectionScreen(Player player, ClientPocket pocket, ElementType requiredOutput, Consumer<UUID> onSelect) {
 		super(Component.empty());
 		this.player = player;
 		this.pocket = pocket;

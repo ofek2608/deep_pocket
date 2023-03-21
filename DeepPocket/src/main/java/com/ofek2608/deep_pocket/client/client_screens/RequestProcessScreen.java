@@ -5,9 +5,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketPatterns;
-import com.ofek2608.deep_pocket.api.struct.*;
+import com.ofek2608.deep_pocket.api.struct.CraftingPattern;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
+import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternTooltip;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
@@ -33,7 +36,7 @@ class RequestProcessScreen extends Screen {
 	private static final int VIEW_WIDTH = 172;
 	private static final int VIEW_HEIGHT = 50 + DISPLAY_ROW_COUNT * 18;
 	private final @Nullable Screen backScreen;
-	private final Pocket pocket;
+	private final ClientPocket pocket;
 	private final ElementType requestedType;
 	private long requestedAmount;
 
@@ -58,7 +61,7 @@ class RequestProcessScreen extends Screen {
 	private final Map<ElementType, Optional<UUID>> selectedPatterns = new HashMap<>();
 
 
-	RequestProcessScreen(@Nullable Screen backScreen, Pocket pocket, ElementType requestedType, long requestedAmount) {
+	RequestProcessScreen(@Nullable Screen backScreen, ClientPocket pocket, ElementType requestedType, long requestedAmount) {
 		super(Component.empty());
 		this.backScreen = backScreen;
 		this.pocket = pocket;

@@ -9,6 +9,7 @@ import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.client.widget.*;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
@@ -44,8 +45,8 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	public PocketScreen(PocketMenu menu, Inventory playerInventory, Component title) {
 		super(menu, playerInventory, title);
 		menu.screen = this;
-		addRenderableWidget(pocketSearchWidget = new PocketSearchWidget(this, menu::getPocket));
-		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getPocket));
+		addRenderableWidget(pocketSearchWidget = new PocketSearchWidget(this, menu::getClientPocket));
+		addRenderableWidget(pocketTabWidget = new PocketTabWidget(40, 0, menu::getClientPocket));
 		addRenderableWidget(patternWidget = new PatternWidget(this));
 		addRenderableWidget(inventoryDisplayWidget = new InventoryDisplayWidget(0, this::renderSlotItemSingle));
 		addRenderableWidget(craftingDisplayWidget = new CraftingDisplayWidget(
@@ -54,7 +55,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 				()->DeepPocketPacketHandler.sbClearCraftingGrid(true),
 				()->DeepPocketPacketHandler.sbClearCraftingGrid(false),
 				()-> {
-					Pocket pocket = menu.getPocket();
+					ClientPocket pocket = menu.getClientPocket();
 					if (pocket != null && menu.getSlot(45).hasItem())
 						ClientScreens.bulkCrafting(pocket, menu.getCrafting());
 				},
@@ -227,8 +228,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 
 	@Override
 	protected void containerTick() {
-		Pocket pocket = menu.getPocket();
-		if (pocket != null && DeepPocketClientApi.get().getPocket(pocket.getPocketId()) == null)
+		if (menu.getClientPocket() == null)
 			onClose();
 	}
 
@@ -237,7 +237,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);
 
-		Pocket pocket = menu.getPocket();
+		ClientPocket pocket = menu.getClientPocket();
 		DeepPocketUtils.setRenderShaderColor(pocket == null ? 0xFFFFFF : pocket.getColor());
 		renderOutline(poseStack);
 		DeepPocketUtils.setRenderShaderColor(0xFFFFFF);
@@ -248,7 +248,7 @@ public class PocketScreen extends AbstractContainerScreen<PocketMenu> {
 	private boolean handleButtonClick() {
 		switch (hoverButton) {
 			case 0 -> {
-				Pocket pocket = menu.getPocket();
+				ClientPocket pocket = menu.getClientPocket();
 				if (pocket != null && pocket.getOwner().equals(menu.playerInventory.player.getUUID()))
 					ClientScreens.settingsEdit(pocket);
 			}

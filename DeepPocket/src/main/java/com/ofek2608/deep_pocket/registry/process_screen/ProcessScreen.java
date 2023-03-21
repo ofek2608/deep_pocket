@@ -9,6 +9,7 @@ import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.CraftingPatternOld;
 import com.ofek2608.deep_pocket.api.struct.ItemType;
 import com.ofek2608.deep_pocket.api.struct.ProcessUnitClientData;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -115,7 +116,7 @@ public class ProcessScreen extends AbstractContainerScreen<ProcessMenu> {
 		RenderSystem.setShaderTexture(0, TEXTURE);
 
 		//outline
-		Pocket pocket = menu.getPocket();
+		ClientPocket pocket = menu.getClientPocket();
 		DeepPocketUtils.setRenderShaderColor(pocket == null ? 0xFFFFFF : pocket.getColor());
 		Sprites.OUTLINE_TOP.blit(stack, leftPos, topPos);
 		Sprites.OUTLINE_MIDDLE.blit(stack, leftPos, topPos + Sprites.OUTLINE_TOP.h, 184, VIEW_HEIGHT - Sprites.OUTLINE_TOP.h - Sprites.OUTLINE_BOTTOM.h);

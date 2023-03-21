@@ -93,18 +93,17 @@ public class CrafterBlock extends Block implements EntityBlock {
 			return InteractionResult.SUCCESS;
 		if (!(level.getBlockEntity(pos) instanceof Ent ent))
 			return InteractionResult.CONSUME;
-		ServerPocket pocket = ent.getServerPocket();
+		UUID pocketId = ent.getPocketId();
 		MenuProvider menuprovider = new SimpleMenuProvider(
 						(id,inv,p)->{
 							CrafterMenu menu = new CrafterMenu(id, inv, ent.itemHandler, pos);
-							menu.setPocket(pocket);
+							menu.setPocketId(pocketId);
 							return menu;
 						},
 						Component.literal("Crafter")
 		);
 		player.openMenu(menuprovider);
-		if (pocket != null)
-			DeepPocketPacketHandler.cbSetViewedPocket(PacketDistributor.PLAYER.with(()->serverPlayer), pocket.getPocketId());
+		DeepPocketPacketHandler.cbSetViewedPocket(PacketDistributor.PLAYER.with(()->serverPlayer), pocketId);
 
 		return InteractionResult.CONSUME;
 	}

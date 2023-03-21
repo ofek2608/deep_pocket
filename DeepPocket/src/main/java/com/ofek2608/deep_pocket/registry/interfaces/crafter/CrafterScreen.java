@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
@@ -173,7 +174,7 @@ public class CrafterScreen extends AbstractContainerScreen<CrafterMenu> {
 		poseStack.pushPose();
 		poseStack.translate(leftPos, topPos, 0);
 
-		Pocket pocket = menu.getPocket();
+		ClientPocket pocket = menu.getClientPocket();
 
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);

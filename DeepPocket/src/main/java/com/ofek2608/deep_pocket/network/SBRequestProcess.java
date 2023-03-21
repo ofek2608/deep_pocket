@@ -1,11 +1,11 @@
 package com.ofek2608.deep_pocket.network;
 
-import com.ofek2608.deep_pocket.api.struct.ElementType;
-import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.RecipeRequest;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.registry.pocket_screen.PocketMenu;
+import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
@@ -39,9 +39,10 @@ class SBRequestProcess {
 			ServerPlayer player = ctxSupplier.get().getSender();
 			if (api == null || player == null || !(player.containerMenu instanceof PocketMenu menu))
 				return;
-			Pocket pocket = menu.getPocket();
+			ServerPocket pocket = menu.getServerPocket();
 			if (pocket == null)
 				return;
+			//FIXME
 			pocket.getPatterns().getDefaultsMap().putAll(setDefaultPatterns);
 			api.requestProcessFor(player, pocket.getPocketId(), requests);
 		});

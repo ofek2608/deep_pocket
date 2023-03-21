@@ -1,14 +1,20 @@
 package com.ofek2608.deep_pocket.registry.pocket_screen;
 
-import com.ofek2608.deep_pocket.api.*;
+import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
+import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
+import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
+import com.ofek2608.deep_pocket.api.Knowledge;
 import com.ofek2608.deep_pocket.api.enums.PocketDisplayMode;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.registry.items.crafting_pattern.CraftingPatternItem;
+import net.minecraft.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -25,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.IntStream;
 
 import static com.ofek2608.deep_pocket.utils.AdvancedLongMath.advancedMul;
@@ -37,7 +44,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	private final CraftingContainer craftSlots = new CraftingContainer(this, 3, 3);
 	private final ResultContainer resultSlots = new ResultContainer();
 	private final PocketResultSlot resultSlot;
-	private @Nullable Pocket pocket;//should not use except in get and set pocket
+	private UUID pocketId = Util.NIL_UUID;
 	public @Nullable Object screen;
 	
 	private int lastHoveredSlotIndex = -1;
@@ -63,9 +70,9 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		this(DeepPocketRegistry.POCKET_MENU.get(), containerId, playerInventory);
 	}
 
-	public PocketMenu(int containerId, Inventory playerInventory, Pocket pocket) {
+	public PocketMenu(int containerId, Inventory playerInventory, UUID pocketId) {
 		this(containerId, playerInventory);
-		setPocket(pocket);
+		this.pocketId = pocketId;
 	}
 	
 	public void setHoveredSlotIndex(int index, int mouseY) {
@@ -85,21 +92,23 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	public void clearHoverSlotIndex() {
 		setHoveredSlotIndex(-1, 0);
 	}
-
-
-
-
+	
 	@Override
-	public @Nullable Pocket getPocket() {
-		return pocket != null && pocket.canAccess(playerInventory.player) ? pocket : null;
+	public Player getPocketAccessor() {
+		return playerInventory.player;
+	}
+	
+	@Override
+	public UUID getPocketId() {
+		return pocketId;
+	}
+	
+	@Override
+	public void setPocketId(UUID pocketId) {
+		this.pocketId = pocketId;
 	}
 
-	@Override
-	public void setPocket(@Nullable Pocket pocket) {
-		this.pocket = pocket;
-	}
-
-	private void putStackInInventory(Pocket pocket, ItemStack stack) {
+	private void putStackInInventory(ServerPocket pocket, ItemStack stack) {
 		if (!stack.isEmpty()) moveItemStackTo(stack, 27, 36, false);//hotbar
 		if (!stack.isEmpty()) moveItemStackTo(stack, 0, 27, false);//inventory
 		if (!stack.isEmpty()) pocket.insertElement(ElementType.item(stack), stack.getCount());
@@ -113,15 +122,20 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		ItemStack stack = slot.getItem();
 		if (stack.isEmpty())
 			return ItemStack.EMPTY;
-		Pocket pocket = getPocket();
-		if (pocket == null)
-			return stack;
 
 		if (player.level.isClientSide) {
+			ClientPocket pocket = getClientPocket();
+			if (pocket == null)
+				return stack;
+			
 			slot.set(ItemStack.EMPTY);
 			slot.setChanged();
 			return ItemStack.EMPTY;
 		}
+		
+		ServerPocket pocket = getServerPocket();
+		if (pocket == null)
+			return stack;
 
 		if (index < slots.size() - 1) {
 			//not the result slot
@@ -198,7 +212,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	}
 
 	public void clearCraftingTable(ServerPlayer player) {
-		Pocket pocket = getPocket();
+		ServerPocket pocket = getServerPocket();
 		if (pocket == null) {
 			clearCraftingTableToInventory(player);
 			return;
@@ -211,7 +225,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		resultSlot.set(ItemStack.EMPTY);
 	}
 
-	private static ElementType requestIngredientClientBound(ItemStack[] inventoryItems, @Nullable Pocket pocket, Ingredient ingredient, boolean consume) {
+	private static ElementType requestIngredientClientBound(ItemStack[] inventoryItems, @Nullable ClientPocket pocket, Ingredient ingredient, boolean consume) {
 		//TODO support for recipes which aren't items
 		for (ItemStack stack : inventoryItems) {
 			if (stack.isEmpty() || !ingredient.test(stack))
@@ -244,7 +258,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			consume = true;
 		}
 		ItemStack[] inventoryItems = slots.stream().map(Slot::getItem).map(ItemStack::copy).toArray(ItemStack[]::new);
-		Pocket pocket = getPocket();
+		ClientPocket pocket = getClientPocket();
 		if (pocket != null)
 			pocket = pocket.copy();
 		ElementType[] requesting = new ElementType[9];
@@ -286,7 +300,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return true;
 		}
 		DeepPocketServerApi api = DeepPocketServerApi.get();
-		Pocket pocket = getPocket();
+		ServerPocket pocket = getServerPocket();
 		if (api == null || pocket == null)
 			return false;
 		return pocket.extractItem(api.getKnowledge(playerInventory.player.getUUID()), type, 1) == 1;
@@ -294,7 +308,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 	
 	public void extractType(ServerPlayer player, ElementType.TItem type, boolean toCarry, byte count) {
 		DeepPocketServerApi api = DeepPocketServerApi.get();
-		Pocket pocket = getPocket();
+		ServerPocket pocket = getServerPocket();
 		if (count <= 0 || api == null || pocket == null)
 			return;
 		Knowledge knowledge = api.getKnowledge(player.getUUID());
@@ -341,7 +355,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 		if (carried.isEmpty())
 			return;
 		DeepPocketServerApi api = DeepPocketServerApi.get();
-		Pocket pocket = getPocket();
+		ServerPocket pocket = getServerPocket();
 		if (api == null || pocket == null)
 			return;
 		if (count <= 0 || carried.getCount() <= count) {
@@ -366,7 +380,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 			return;
 
 		DeepPocketServerApi api = DeepPocketServerApi.get();
-		Pocket pocket = getPocket();
+		ServerPocket pocket = getServerPocket();
 		if (api == null || pocket == null)
 			return;
 		if (toCarry && !getCarried().isEmpty())
@@ -392,7 +406,7 @@ public class PocketMenu extends AbstractContainerMenu implements MenuWithPocket 
 
 	public void bulkCrafting(ServerPlayer player, long count) {
 		DeepPocketServerApi api = DeepPocketServerApi.get();
-		Pocket pocket = getPocket();
+		ServerPocket pocket = getServerPocket();
 		if (api == null || pocket == null) return;
 
 		Optional<CraftingRecipe> recipe = player.server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, craftSlots, player.level);

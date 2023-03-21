@@ -4,9 +4,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
@@ -98,7 +98,7 @@ public class PatternPartWidget implements WidgetWithTooltip, GuiEventListener, N
 		long currentAmount = items[clickedSlot].getCount();
 		if (currentAmount == 0)
 			return true;
-		Pocket pocket = screen.getMenu().getPocket();
+		ClientPocket pocket = screen.getMenu().getClientPocket();
 		ClientScreens.selectNumber(Component.literal("Select Amount"), pocket == null ? 0 : pocket.getColor(), currentAmount, newAmount->{
 			items[clickedSlot] = ElementTypeStack.of(items[clickedSlot].getType(), newAmount);
 			Minecraft.getInstance().setScreen(screen);

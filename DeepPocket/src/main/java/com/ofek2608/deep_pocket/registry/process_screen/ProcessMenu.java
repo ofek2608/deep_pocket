@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
 public class ProcessMenu extends AbstractContainerMenu implements MenuWithPocket {
-	private @Nullable Pocket pocket;
+	private UUID pocketId = Util.NIL_UUID;
 	private final Player player;
 	//server
 	private final @Nullable PocketProcessManager processManager;
@@ -65,18 +65,23 @@ public class ProcessMenu extends AbstractContainerMenu implements MenuWithPocket
 			return true;//on client is always valid
 		return pocket != null && pocket.canAccess(player);
 	}
-
-
+	
+	
 	@Override
-	public @Nullable Pocket getPocket() {
-		return pocket != null && pocket.canAccess(player) ? pocket : null;
+	public Player getPocketAccessor() {
+		return player;
 	}
-
+	
 	@Override
-	public void setPocket(@Nullable Pocket pocket) {
-		this.pocket = pocket;
+	public void setPocketId(UUID pocketId) {
+		this.pocketId = pocketId;
 	}
-
+	
+	@Override
+	public UUID getPocketId() {
+		return pocketId;
+	}
+	
 	public void sendUpdate() {
 		if (processManager == null || !(player instanceof ServerPlayer serverPlayer) || pocket == null || !pocket.canAccess(player))
 			return;

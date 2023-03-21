@@ -3,6 +3,7 @@ package com.ofek2608.deep_pocket.registry.pocket_screen;
 import com.ofek2608.deep_pocket.api.DeepPocketServerApi;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.server.ServerPocket;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -31,7 +32,7 @@ public class PocketResultSlot extends ResultSlot {
 		}
 
 		DeepPocketServerApi api = DeepPocketServerApi.get();
-		Pocket pocket = menu.getPocket();
+		ServerPocket pocket = menu.getServerPocket();
 		if (api == null || pocket == null) {
 			super.onTake(player, stack);
 			return;

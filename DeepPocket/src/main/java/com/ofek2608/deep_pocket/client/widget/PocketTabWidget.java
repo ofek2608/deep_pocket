@@ -3,8 +3,8 @@ package com.ofek2608.deep_pocket.client.widget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -24,9 +24,9 @@ public class PocketTabWidget implements WidgetWithTooltip, GuiEventListener, Non
 	public int offY;
 	private PocketTab currentTab = PocketTab.ITEMS;
 	private PocketTab hoverTab = null;
-	private final Supplier<Pocket> pocketSupplier;
+	private final Supplier<ClientPocket> pocketSupplier;
 	
-	public PocketTabWidget(int offX, int offY, Supplier<Pocket> pocketSupplier) {
+	public PocketTabWidget(int offX, int offY, Supplier<ClientPocket> pocketSupplier) {
 		this.offX = offX;
 		this.offY = offY;
 		this.pocketSupplier = pocketSupplier;
@@ -34,7 +34,7 @@ public class PocketTabWidget implements WidgetWithTooltip, GuiEventListener, Non
 	
 	@Override
 	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
-		Pocket pocket = pocketSupplier.get();
+		ClientPocket pocket = pocketSupplier.get();
 		if (!currentTab.isActive(pocket))
 			currentTab = PocketTab.ITEMS;
 		
@@ -130,7 +130,7 @@ public class PocketTabWidget implements WidgetWithTooltip, GuiEventListener, Non
 			this.text = Component.literal(text).withStyle(style);
 		}
 		
-		boolean isActive(@Nullable Pocket pocket) {
+		boolean isActive(@Nullable ClientPocket pocket) {
 			return true;
 		}
 	}

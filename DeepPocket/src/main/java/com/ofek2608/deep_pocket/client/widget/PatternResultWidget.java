@@ -5,9 +5,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.api.DeepPocketClientApi;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
 import com.ofek2608.deep_pocket.api.struct.ElementTypeStack;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocketData;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
@@ -73,8 +74,13 @@ public class PatternResultWidget implements WidgetWithTooltip, GuiEventListener,
 	}
 	
 	private boolean canCreatePattern() {
-		Pocket pocket = screen.getMenu().getPocket();
-		return pocket != null && pocket.getMaxExtract(
+		ClientPocket pocket = screen.getMenu().getClientPocket();
+		if (pocket == null || pocket.isDataEmpty()) {
+			return false;
+		}
+		ClientPocketData data = pocket.getData();
+		//FIXME
+		return data.getMaxExtract(
 				DeepPocketClientApi.get().getKnowledge(),
 				ElementType.item(DeepPocketRegistry.EMPTY_CRAFTING_PATTERN_ITEM.get())
 		) != 0;

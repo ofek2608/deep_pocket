@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -16,7 +17,7 @@ public class PocketSearchWidget extends SearchWidget {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/widget/pocket_search.png");
 	public final PocketWidget pocketWidget;
 	
-	public PocketSearchWidget(AbstractContainerScreen<?> screen, Supplier<Pocket> pocketSupplier) {
+	public PocketSearchWidget(AbstractContainerScreen<?> screen, Supplier<ClientPocket> pocketSupplier) {
 		children.add(pocketWidget = new PocketWidget(screen, pocketSupplier));
 	}
 	

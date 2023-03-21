@@ -1,6 +1,5 @@
 package com.ofek2608.deep_pocket.registry.interfaces.crafter;
 
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.registry.DeepPocketRegistry;
 import com.ofek2608.deep_pocket.registry.MenuWithPocket;
 import net.minecraft.core.BlockPos;
@@ -17,6 +16,8 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.UUID;
 
 public class CrafterMenu extends AbstractContainerMenu implements MenuWithPocket {
 	public static class FilteredItemStackHandler extends ItemStackHandler {
@@ -36,10 +37,11 @@ public class CrafterMenu extends AbstractContainerMenu implements MenuWithPocket
 			return stack.is(DeepPocketRegistry.CRAFTING_PATTERN_ITEM.get());
 		}
 	}
-
+	
+	protected final Player player;
 	protected final ContainerLevelAccess access;
 	private final int rowCount;
-	private Pocket pocket;
+	private UUID pocketId;
 
 	public CrafterMenu(int containerId, Inventory playerInventory) {
 		this(containerId, playerInventory, new FilteredItemStackHandler(9), BlockPos.ZERO);
@@ -51,7 +53,8 @@ public class CrafterMenu extends AbstractContainerMenu implements MenuWithPocket
 
 	public CrafterMenu(@Nullable MenuType<?> menuType, int containerId, Inventory playerInventory, IItemHandler slots, BlockPos pos, int containerRows) {
 		super(menuType, containerId);
-		this.access = ContainerLevelAccess.create(playerInventory.player.level, pos);
+		this.player = playerInventory.player;
+		this.access = ContainerLevelAccess.create(player.level, pos);
 		this.rowCount = containerRows;
 
 		int i = containerRows * 16;
@@ -95,22 +98,24 @@ public class CrafterMenu extends AbstractContainerMenu implements MenuWithPocket
 
 	@Override
 	public boolean stillValid(Player player) {
-		if (!stillValid(access, player, DeepPocketRegistry.CRAFTER_BLOCK.get()))
-			return false;
-		return pocket == null || pocket.canAccess(player);
+		return stillValid(access, player, DeepPocketRegistry.CRAFTER_BLOCK.get());
 	}
-
-	@Nullable
+	
 	@Override
-	public Pocket getPocket() {
-		return pocket;
+	public Player getPocketAccessor() {
+		return player;
 	}
-
+	
 	@Override
-	public void setPocket(@Nullable Pocket pocket) {
-		this.pocket = pocket;
+	public UUID getPocketId() {
+		return pocketId;
 	}
-
+	
+	@Override
+	public void setPocketId(@Nullable UUID pocketId) {
+		this.pocketId = pocketId;
+	}
+	
 	public int getRowCount() {
 		return rowCount;
 	}

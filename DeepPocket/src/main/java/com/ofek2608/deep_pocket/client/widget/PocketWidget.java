@@ -7,6 +7,7 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DeepPocketClientHelper;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.struct.ElementType;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import com.ofek2608.deep_pocket.client.client_screens.ClientScreens;
 import com.ofek2608.deep_pocket.network.DeepPocketPacketHandler;
 import com.ofek2608.deep_pocket.utils.DeepPocketUtils;
@@ -37,7 +38,7 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	public int height;
 	public float targetScroll;
 	public float displayedScroll;
-	public Supplier<Pocket> pocketSupplier;
+	public Supplier<ClientPocket> pocketSupplier;
 	
 	private int maxScroll;
 	private boolean holdCraft;
@@ -47,7 +48,7 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	private @Nullable Pocket.Entry hoveredEntry;
 	
 	
-	public PocketWidget(AbstractContainerScreen<?> screen, Supplier<Pocket> pocketSupplier) {
+	public PocketWidget(AbstractContainerScreen<?> screen, Supplier<ClientPocket> pocketSupplier) {
 		this.screen = screen;
 		this.pocketSupplier = pocketSupplier;
 	}
@@ -60,7 +61,7 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 		hoverScroll = false;
 		if (height <= 0)
 			return;
-		Pocket pocket = pocketSupplier.get();
+		ClientPocket pocket = pocketSupplier.get();
 		if (pocket == null)
 			return;
 		
@@ -240,7 +241,7 @@ public class PocketWidget implements WidgetWithTooltip, GuiEventListener, NonNar
 	}
 	
 	private boolean extract(int button) {
-		Pocket pocket = pocketSupplier.get();
+		ClientPocket pocket = pocketSupplier.get();
 		if (pocket == null)
 			return false;
 		

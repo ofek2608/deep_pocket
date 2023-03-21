@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.client.client_screens;
 
 import com.ofek2608.deep_pocket.api.struct.*;
-import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.struct.client.ClientPocket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -25,7 +25,7 @@ public final class ClientScreens {
 		settings(null, new PocketInfo());
 	}
 
-	public static void settingsEdit(Pocket pocket) {
+	public static void settingsEdit(ClientPocket pocket) {
 		settings(pocket.getPocketId(), pocket.getInfo());
 	}
 
@@ -50,7 +50,7 @@ public final class ClientScreens {
 			minecraft.setScreen(new NumberSelectionScreen(title, color, initialValue, onSelect));
 	}
 
-	public static void selectRecipe(Pocket pocket, ElementType requiredOutput, Consumer<UUID> onSelect) {
+	public static void selectRecipe(ClientPocket pocket, ElementType requiredOutput, Consumer<UUID> onSelect) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)
@@ -64,14 +64,14 @@ public final class ClientScreens {
 			minecraft.setScreen(new SignalSettingsScreen(minecraft.screen, player, color, pos, settings));
 	}
 
-	public static void bulkCrafting(Pocket pocket, ElementType.TItem[] recipe) {
+	public static void bulkCrafting(ClientPocket pocket, ElementType.TItem[] recipe) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)
 			minecraft.setScreen(new BulkCraftingScreen(minecraft.screen, pocket, recipe));
 	}
 
-	public static void processRequest(Pocket pocket, ElementType requestedType, long requestedAmount) {
+	public static void processRequest(ClientPocket pocket, ElementType requestedType, long requestedAmount) {
 		Minecraft minecraft = Minecraft.getInstance();
 		Player player = minecraft.player;
 		if (player != null)
