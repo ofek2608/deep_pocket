@@ -33,4 +33,10 @@ public interface DPClientAPI {
 	 * @see DPClientAPI#getPocket(UUID)
 	 */
 	Stream<UUID> getVisiblePockets();
+	
+	/**
+	 * The config defined on the server, may not be updated when the client just joins the world
+	 * @return The server config
+	 */
+	ServerConfig getServerConfig();
 }

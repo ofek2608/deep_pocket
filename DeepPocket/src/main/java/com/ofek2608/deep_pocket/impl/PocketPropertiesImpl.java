@@ -4,6 +4,7 @@ import com.ofek2608.deep_pocket.api.enums.PocketAccess;
 import com.ofek2608.deep_pocket.api.pocket.ModifiablePocketProperties;
 import com.ofek2608.deep_pocket.api.types.EntryType;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.UUID;
 
@@ -23,6 +24,7 @@ public final class PocketPropertiesImpl implements ModifiablePocketProperties {
 		this.access = access;
 		this.icon = icon;
 		this.color = color & 0xFFFFFF;
+		this.isChanged = true;
 	}
 	
 	public static PocketPropertiesImpl load(CompoundTag data) {
@@ -45,6 +47,26 @@ public final class PocketPropertiesImpl implements ModifiablePocketProperties {
 		result.put("icon", EntryType.save(properties.icon));
 		result.putInt("color", properties.color);
 		return result;
+	}
+	
+	public static void encode(FriendlyByteBuf buf, PocketPropertiesImpl properties) {
+		buf.writeUUID(properties.getPocketId());
+		buf.writeUUID(properties.getOwner());
+		buf.writeUtf(properties.getName());
+		buf.writeEnum(properties.getAccess());
+		EntryType.encode(buf, properties.getIcon());
+		buf.writeInt(properties.getColor());
+	}
+	
+	public static PocketPropertiesImpl decode(FriendlyByteBuf buf) {
+		return new PocketPropertiesImpl(
+				buf.readUUID(),
+				buf.readUUID(),
+				buf.readUtf(),
+				buf.readEnum(PocketAccess.class),
+				EntryType.decode(buf),
+				buf.readInt()
+		);
 	}
 	
 	@Override
@@ -98,6 +120,14 @@ public final class PocketPropertiesImpl implements ModifiablePocketProperties {
 	@Override
 	public void setColor(int color) {
 		this.color = color & 0xFFFFFF;
+		this.isChanged = true;
+	}
+	
+	public void setFrom(PocketPropertiesImpl that) {
+		this.name = that.name;
+		this.access = that.access;
+		this.icon = that.icon;
+		this.color = that.color;
 		this.isChanged = true;
 	}
 }

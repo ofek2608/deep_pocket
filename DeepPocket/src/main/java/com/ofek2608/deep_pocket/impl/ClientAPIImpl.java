@@ -3,6 +3,7 @@ package com.ofek2608.deep_pocket.impl;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DPClientAPI;
+import com.ofek2608.deep_pocket.api.ServerConfig;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
@@ -21,11 +22,12 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-public final class DPClientAPIImpl implements DPClientAPI {
+public final class ClientAPIImpl implements DPClientAPI {
 	private static final Logger LOGGER = LogUtils.getLogger();
-	private static DPClientAPIImpl instance;
-	private final Map<UUID, PocketPropertiesImpl> properties = new HashMap<>();
-	private final Map<UUID, PocketImpl> pockets = new HashMap<>();
+	public static ClientAPIImpl instance;
+	public final Map<UUID, PocketPropertiesImpl> properties = new HashMap<>();
+	public final Map<UUID, PocketImpl> pockets = new HashMap<>();
+	public ServerConfigImpl serverConfig = ServerConfigImpl.DEFAULT;
 	
 	@Override
 	public PocketProperties getProperties(UUID pocketId) {
@@ -58,8 +60,18 @@ public final class DPClientAPIImpl implements DPClientAPI {
 		return pockets.keySet().stream();
 	}
 	
+	@Override
+	public ServerConfig getServerConfig() {
+		return serverConfig;
+	}
+	
 	public void putProperties(PocketPropertiesImpl properties) {
-		this.properties.put(properties.getPocketId(), properties);
+		PocketPropertiesImpl oldProperties = this.properties.get(properties.getPocketId());
+		if (oldProperties == null) {
+			this.properties.put(properties.getPocketId(), properties);
+		} else {
+			oldProperties.setFrom(properties);
+		}
 	}
 	
 	public Optional<PocketImpl> getOrCreatePocket(UUID id) {
@@ -98,7 +110,7 @@ public final class DPClientAPIImpl implements DPClientAPI {
 				if (instance != null) {
 					LOGGER.error("LevelEvent.Load was called when instance is nonnull");
 				}
-				instance = new DPClientAPIImpl();
+				instance = new ClientAPIImpl();
 			}
 		}
 		

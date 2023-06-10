@@ -9,4 +9,5 @@ public interface DPServerAPI {
 	Optional<ModifiablePocket> getPocket(UUID pocketId);
 	ModifiablePocket createPocket(UUID owner);
 	void deletePocket(UUID pocketId);
+	ServerConfig getServerConfig();
 }

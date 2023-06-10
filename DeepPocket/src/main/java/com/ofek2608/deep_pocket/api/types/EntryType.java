@@ -2,6 +2,7 @@ package com.ofek2608.deep_pocket.api.types;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,11 +11,11 @@ public record EntryType(ResourceLocation category, ResourceLocation id, @Nullabl
 		this(category, id, null);
 	}
 	
-	public static final ResourceLocation CATEGORY_EMPTY = DeepPocketMod.loc("minecraft:empty");
-	public static final ResourceLocation CATEGORY_ENERGY = DeepPocketMod.loc("forge:energy");
-	public static final ResourceLocation CATEGORY_ITEM = DeepPocketMod.loc("minecraft:item");
-	public static final ResourceLocation CATEGORY_FLUID = DeepPocketMod.loc("minecraft:fluid");
-	public static final ResourceLocation CATEGORY_GENERIC = DeepPocketMod.loc("minecraft:generic");
+	public static final ResourceLocation CATEGORY_EMPTY = DeepPocketMod.loc("empty");
+	public static final ResourceLocation CATEGORY_ENERGY = DeepPocketMod.loc("energy");
+	public static final ResourceLocation CATEGORY_ITEM = DeepPocketMod.loc("item");
+	public static final ResourceLocation CATEGORY_FLUID = DeepPocketMod.loc("fluid");
+	public static final ResourceLocation CATEGORY_GENERIC = DeepPocketMod.loc("generic");
 	
 	
 	public static final EntryType EMPTY = new EntryType(CATEGORY_EMPTY, CATEGORY_EMPTY, null);
@@ -36,5 +37,19 @@ public record EntryType(ResourceLocation category, ResourceLocation id, @Nullabl
 			result.put("tag", type.tag);
 		}
 		return result;
+	}
+	
+	public static void encode(FriendlyByteBuf buf, EntryType entryType) {
+		buf.writeResourceLocation(entryType.category);
+		buf.writeResourceLocation(entryType.id);
+		buf.writeNbt(entryType.tag);
+	}
+	
+	public static EntryType decode(FriendlyByteBuf buf) {
+		return new EntryType(
+				buf.readResourceLocation(),
+				buf.readResourceLocation(),
+				buf.readNbt()
+		);
 	}
 }
