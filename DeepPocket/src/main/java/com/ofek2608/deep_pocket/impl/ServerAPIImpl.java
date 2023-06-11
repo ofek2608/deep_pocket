@@ -44,14 +44,15 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 	public static ServerAPIImpl instance;
 	
 	
-	private final MinecraftServer server;
-	private final Random random = new Random();
-	private final Map<UUID, PocketImpl> pockets = new HashMap<>();
-	private final Map<UUID, Set<ServerPlayer>> viewingPlayers = new HashMap<>();
-	private final ServerConfigImpl serverConfig = new ServerConfigImpl(
+	public final MinecraftServer server;
+	public final Random random = new Random();
+	public final Map<UUID, PocketImpl> pockets = new HashMap<>();
+	public final Map<UUID, Set<ServerPlayer>> viewingPlayers = new HashMap<>();
+	public final ServerConfigImpl serverConfig = new ServerConfigImpl(
 			DeepPocketConfig.Common.ALLOW_PUBLIC_POCKETS.get(),
 			DeepPocketConfig.Common.REQUIRE_POCKET_FACTORY.get()
 	);
+	public boolean valid;
 	
 	public ServerAPIImpl(MinecraftServer server) {
 		this.server = server;
@@ -80,6 +81,11 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 		saved.put("pockets", savedPockets);
 		
 		return saved;
+	}
+	
+	@Override
+	public boolean isValid() {
+		return valid;
 	}
 	
 	@Override
@@ -223,6 +229,7 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 		public static void event(ServerStartedEvent event) {
 			if (instance != null) {
 				LOGGER.error("ServerStartedEvent was called when instance is nonnull");
+				instance.valid = false;
 			}
 			MinecraftServer server = event.getServer();
 			var dataStorage = server.overworld().getDataStorage();
@@ -237,6 +244,8 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 		public static void event(ServerStoppedEvent event) {
 			if (instance == null) {
 				LOGGER.error("ServerStoppedEvent was called when instance is null");
+			} else {
+				instance.valid = false;
 			}
 			instance = null;
 		}

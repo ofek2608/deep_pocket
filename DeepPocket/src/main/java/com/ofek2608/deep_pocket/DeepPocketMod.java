@@ -1,5 +1,6 @@
 package com.ofek2608.deep_pocket;
 
+import com.ofek2608.deep_pocket.client.KeyBinds;
 import com.ofek2608.deep_pocket.impl.DeepPocketConfig;
 import com.ofek2608.deep_pocket.impl.PacketHandler;
 import net.minecraft.resources.ResourceLocation;
@@ -16,5 +17,6 @@ public final class DeepPocketMod {
 	public DeepPocketMod() {
 		PacketHandler.loadClass();
 		DeepPocketConfig.loadClass();
+		KeyBinds.loadClass();
 	}
 }

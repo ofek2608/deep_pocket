@@ -27,7 +27,13 @@ public final class ClientAPIImpl implements DPClientAPI {
 	public static ClientAPIImpl instance;
 	public final Map<UUID, PocketPropertiesImpl> properties = new HashMap<>();
 	public final Map<UUID, PocketImpl> pockets = new HashMap<>();
+	public boolean valid = true;
 	public ServerConfigImpl serverConfig = ServerConfigImpl.DEFAULT;
+	
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
 	
 	@Override
 	public PocketProperties getProperties(UUID pocketId) {
@@ -109,6 +115,7 @@ public final class ClientAPIImpl implements DPClientAPI {
 			if (loadedLevels == 1) {
 				if (instance != null) {
 					LOGGER.error("LevelEvent.Load was called when instance is nonnull");
+					instance.valid = false;
 				}
 				instance = new ClientAPIImpl();
 			}
@@ -126,6 +133,8 @@ public final class ClientAPIImpl implements DPClientAPI {
 			if (loadedLevels == 0) {
 				if (instance == null) {
 					LOGGER.error("LevelEvent.Unload was called when instance is null");
+				} else {
+					instance.valid = false;
 				}
 				instance = null;
 			}

@@ -9,6 +9,11 @@ import java.util.stream.Stream;
 
 public interface DPClientAPI {
 	/**
+	 * @return weather the client had already left the server.
+	 */
+	boolean isValid();
+	
+	/**
 	 * @param pocketId the pocketId
 	 * @return   the pocket properties corresponding to pocketId
 	 * @see DPClientAPI#getKnownPockets()
