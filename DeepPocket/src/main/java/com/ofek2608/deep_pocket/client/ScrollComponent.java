@@ -7,7 +7,8 @@ import java.util.function.IntConsumer;
 
 public class ScrollComponent {
 	public float scrollValue;
-	public int elementHeight, elementCount;
+	public int elementHeight, rowElementCount;//TODO use row element count
+	public int elementCount;
 	public int minX, maxX, minY, maxY;
 	public int hoveredIndex = -1;
 	

@@ -30,9 +30,11 @@ public final class PacketHandler {
 	static {
 		register(CBSetServerConfig.class, CBSetServerConfig::new);
 		register(CBAddProperties.class, CBAddProperties::new);
+		register(CBAddPocket.class, CBAddPocket::new);
 		register(CBClearPocket.class, CBClearPocket::new);
 		register(CBDeletePocket.class, CBDeletePocket::new);
 		register(CBSetTypeCount.class, CBSetTypeCount::new);
+		register(SBCreatePocket.class, SBCreatePocket::new);
 		
 //		register(CBPermitPublicPocket.class, CBPermitPublicPocket::new);
 //		register(CBConversions.class, CBConversions::new);
@@ -74,9 +76,12 @@ public final class PacketHandler {
 	
 	public static void cbSetServerConfig(PacketTarget target, ServerConfigImpl config) { send(target, new CBSetServerConfig(config)); }
 	public static void cbAddProperties(PacketTarget target, PocketPropertiesImpl properties) { send(target, new CBAddProperties(properties)); }
+	public static void cbAddPocket(PacketTarget target, UUID pocketId) { send(target, new CBAddPocket(pocketId)); }
 	public static void cbClearPocket(PacketTarget target, UUID pocketId) { send(target, new CBClearPocket(pocketId)); }
 	public static void cbDeletePocket(PacketTarget target, UUID pocketId) { send(target, new CBDeletePocket(pocketId)); }
 	public static void cbSetTypeCount(PacketTarget target, UUID pocketId, EntryType type, long count) { send(target, new CBSetTypeCount(pocketId, type, count)); }
+	
+	public static void sbCreatePocket() { send(new SBCreatePocket()); }
 	
 	
 	
@@ -182,6 +187,22 @@ public final class PacketHandler {
 		}
 	}
 	
+	public record CBAddPocket(UUID pocketId) implements CBPacketBase {
+		public CBAddPocket(FriendlyByteBuf buf) {
+			this(buf.readUUID());
+		}
+		
+		@Override
+		public void encode(FriendlyByteBuf buf) {
+			buf.writeUUID(pocketId);
+		}
+		
+		@Override
+		public void handle(ClientAPIImpl api) {
+			api.getOrCreatePocket(pocketId);
+		}
+	}
+	
 	public record CBClearPocket(UUID pocketId) implements CBPacketBase {
 		public CBClearPocket(FriendlyByteBuf buf) {
 			this(buf.readUUID());
@@ -194,7 +215,7 @@ public final class PacketHandler {
 		
 		@Override
 		public void handle(ClientAPIImpl api) {
-			api.deletePocket(pocketId);
+			api.clearPocket(pocketId);
 		}
 	}
 	
@@ -233,6 +254,21 @@ public final class PacketHandler {
 		@Override
 		public void handle(ClientAPIImpl api) {
 			api.getOrCreatePocket(pocketId).ifPresent(pocket -> pocket.getTypeData(type).count = count);
+		}
+	}
+	
+	public record SBCreatePocket() implements SBPacketBase {
+		public SBCreatePocket(FriendlyByteBuf buf) {
+			this();
+		}
+		
+		@Override
+		public void encode(FriendlyByteBuf buf) {
+		}
+		
+		@Override
+		public void handle(ServerAPIImpl api, ServerPlayer player) {
+			api.payAndCreatePocket(player);
 		}
 	}
 }

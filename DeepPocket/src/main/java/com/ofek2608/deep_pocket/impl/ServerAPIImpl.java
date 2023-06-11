@@ -8,6 +8,7 @@ import com.ofek2608.deep_pocket.api.ServerConfig;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
 import com.ofek2608.deep_pocket.api.pocket.ModifiablePocket;
 import com.ofek2608.deep_pocket.api.types.EntryType;
+import com.ofek2608.deep_pocket.registry.ModItems;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -15,6 +16,10 @@ import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -107,6 +112,46 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 		PocketImpl pocket = new PocketImpl(properties);
 		pockets.put(pocketId, pocket);
 		return pocket;
+	}
+	
+	@Override
+	public Optional<ModifiablePocket> payAndCreatePocket(ServerPlayer player) {
+		OptionalInt pocketFactorySlot;
+		if (serverConfig.requirePocketFactory()) {
+			pocketFactorySlot = getPocketFactorySlot(player);
+			if (pocketFactorySlot.isEmpty()) {
+				return Optional.empty();
+			}
+		} else {
+			pocketFactorySlot = OptionalInt.empty();
+		}
+		ModifiablePocket pocket = createPocket(player.getUUID());
+		PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> player);
+		PacketHandler.cbAddPocket(target, pocket.getProperties().getPocketId());
+		//TODO send created packet packet
+		
+		if (pocketFactorySlot.isPresent()) {
+			player.getInventory().setItem(
+					pocketFactorySlot.getAsInt(),
+					new ItemStack(Items.STONE) //TODO set as pocket item instead
+			);
+		}
+		
+		return Optional.of(pocket);
+	}
+	
+	private OptionalInt getPocketFactorySlot(ServerPlayer player) {
+		Inventory inventory = player.getInventory();
+		Item pocketFactory = ModItems.POCKET_FACTORY.get();
+		if (inventory.getItem(inventory.selected).is(pocketFactory)) {
+			return OptionalInt.of(inventory.selected);
+		}
+		for (int i = inventory.getContainerSize() - 1; i >= 0; i--) {
+			if (inventory.getItem(i).is(pocketFactory)) {
+				return OptionalInt.of(i);
+			}
+		}
+		return OptionalInt.empty();
 	}
 	
 	@Override
@@ -204,6 +249,7 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 			return;
 		}
 		PacketDistributor.PacketTarget target = PacketDistributor.NMLIST.with(() -> connections);
+		PacketHandler.cbAddPocket(target, pocketId);
 		for (TypeData typeData : pocket.typeData.values()) {
 			PacketHandler.cbSetTypeCount(target, pocketId, typeData.type, typeData.count);
 		}

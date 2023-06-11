@@ -3,10 +3,13 @@ package com.ofek2608.deep_pocket.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.impl.ClientAPIImpl;
+import com.ofek2608.deep_pocket.impl.PacketHandler;
+import com.ofek2608.deep_pocket.impl.PocketImpl;
+import com.ofek2608.deep_pocket.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -14,19 +17,21 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.function.IntConsumer;
+
+import static com.ofek2608.deep_pocket.client.Sprite.rect;
 
 public final class PocketSelectionScreen extends Screen {
 	private final ClientAPIImpl api;
 	
 	private int offX, minY, maxY;
-	private List<PocketProperties> pockets = new ArrayList<>();
+	private final List<PocketProperties> pockets = new ArrayList<>();
 	private final ScrollComponent scroll = new ScrollComponent();
 	private final SimpleEditBox searchText;
 	private boolean hoveringScroll;
@@ -43,6 +48,8 @@ public final class PocketSelectionScreen extends Screen {
 				0, 0, 88, 10,
 				Component.translatable("gui.search_box")
 		);
+		scroll.elementHeight = 16;
+		scroll.rowElementCount = 1;
 	}
 	
 	@Override
@@ -88,27 +95,26 @@ public final class PocketSelectionScreen extends Screen {
 	}
 	
 	private boolean matchesSearch(PocketProperties properties) {
-		return properties.getName().contains(searchText.getValue());
+		return properties.getName().toLowerCase(Locale.ROOT).contains(searchText.getValue().toLowerCase(Locale.ROOT));
 	}
 	
 	private void renderPocketList(int mx, int my) {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderTexture(0, Sprite.Pockets.TEXTURE);
+		RenderSystem.setShaderTexture(0, Sprites.TEXTURE);
 		
-		int width = Sprite.Pockets.WIDTH;
+		int width = Sprites.WIDTH;
 		int x = offX - width / 2;
 		
 		RenderSystem.setShaderColor(1, 1, 1, 1);
-		scroll.setRect(x + 5, x + 149, minY + Sprite.Pockets.FRAME_TOP.h, maxY - Sprite.Pockets.FRAME_BOT.h);
-		scroll.elementHeight = 16;
-		scroll.elementCount = 14;
+		scroll.setRect(x + 5, x + 149, minY + Sprites.FRAME_TOP.h, maxY - Sprites.FRAME_BOT.h);
+		scroll.elementCount = pockets.size();
 		
 		int scrollHeight = scroll.getH();
 		
 		int y = minY;
-		y = Sprite.Pockets.FRAME_TOP.blit(x, y);
-		y = Sprite.Pockets.FRAME_ROW.blit(x, y, width, scrollHeight);
-		y = Sprite.Pockets.FRAME_BOT.blit(x, y);
+		y = Sprites.FRAME_TOP.blit(x, y);
+		y = Sprites.FRAME_ROW.blit(x, y, width, scrollHeight);
+		y = Sprites.FRAME_BOT.blit(x, y);
 		
 		hoveringScroll = isHover(mx, my, x + 153, x + 161, minY + 19, minY + 19 + scrollHeight);
 		hoveringSearch = isHover(mx, my, x + 61, x + 149, minY + 5, minY + 17);
@@ -120,9 +126,9 @@ public final class PocketSelectionScreen extends Screen {
 		searchText.setHeight(12);
 		searchText.setBordered(true);
 		
-		(hoveringScroll || draggingScroll ? Sprite.Pockets.SCROLL_H : Sprite.Pockets.SCROLL_N).blit(x, scroll.getScrollbarY());
-		(hoveringSearch ? Sprite.Pockets.CONTENT_SEARCH_H : Sprite.Pockets.CONTENT_SEARCH_N).blit(x, minY + 5);
-		(canCreatePocket() ? hoveringCreate ? Sprite.Pockets.BTN_ADD_H : Sprite.Pockets.BTN_ADD_N : Sprite.Pockets.BTN_ADD_D).blit(x + 133, maxY - 21);
+		(hoveringScroll || draggingScroll ? Sprites.SCROLL_H : Sprites.SCROLL_N).blit(x, scroll.getScrollbarY());
+		(hoveringSearch ? Sprites.CONTENT_SEARCH_H : Sprites.CONTENT_SEARCH_N).blit(x, minY + 5);
+		(canCreatePocket() ? hoveringCreate ? Sprites.BTN_ADD_H : Sprites.BTN_ADD_N : Sprites.BTN_ADD_D).blit(x + 133, maxY - 21);
 		
 		Minecraft minecraft = Minecraft.getInstance();
 		ItemRenderer itemRenderer = minecraft.getItemRenderer();
@@ -130,17 +136,21 @@ public final class PocketSelectionScreen extends Screen {
 		
 		
 		scrollFunction = i -> {
-			Random random = new Random(0x102030 + i);
+			PocketProperties pocket = pockets.get(i);
 			boolean hovering = i == scroll.hoveredIndex;
 			int displayY = i * 16;
-			RenderSystem.setShader(GameRenderer::getPositionTexShader);
-			RenderSystem.setShaderTexture(0, Sprite.Pockets.TEXTURE);
-			RenderSystem.setShaderColor(1, 1, 1, 1);
-			(hovering ? Sprite.Pockets.CONTENT_POCKET_H : Sprite.Pockets.CONTENT_POCKET_N).blit(x, displayY);
-			RenderSystem.setShaderColor(random.nextFloat(), random.nextFloat(), random.nextFloat(), 1);
-			Sprite.Pockets.CONTENT_POCKET_COLOR.blit(x, displayY);
 			
-			itemRenderer.renderGuiItem(new ItemStack(hovering ? Items.FURNACE : Items.CRAFTING_TABLE), x + 5, displayY);
+			RenderSystem.setShader(GameRenderer::getPositionTexShader);
+			RenderSystem.setShaderTexture(0, Sprites.TEXTURE);
+			RenderSystem.setShaderColor(1, 1, 1, 1);
+			(hovering ? Sprites.CONTENT_POCKET_H : Sprites.CONTENT_POCKET_N).blit(x, displayY);
+			GuiUtils.setShaderColor(pocket.getColor());
+			Sprites.CONTENT_POCKET_COLOR.blit(x, displayY);
+			
+			Item item = ForgeRegistries.ITEMS.getValue(pocket.getIcon().id());
+			
+			itemRenderer.renderGuiItem(new ItemStack(item), x + 5, displayY);
+			font.draw(new PoseStack(), pocket.getName(), x + 26, displayY + 4, 0xFFFFFF);
 		};
 	}
 	
@@ -153,7 +163,7 @@ public final class PocketSelectionScreen extends Screen {
 			return false;
 		}
 		for (ItemStack stack : localPlayer.getInventory().items) {
-			if (stack.is(Items.STONE)) {//TODO change to pocket factory item
+			if (stack.is(ModItems.POCKET_FACTORY.get())) {
 				return true;
 			}
 		}
@@ -195,10 +205,11 @@ public final class PocketSelectionScreen extends Screen {
 				return true;
 			}
 			if (hoveringCreate) {
-				if (!canCreatePocket()) {
-					return true;
-				}
 				createPocket();
+				return true;
+			}
+			if (scroll.hoveredIndex >= 0) {
+				openPocket(pockets.get(scroll.hoveredIndex).getPocketId());
 				return true;
 			}
 		}
@@ -210,7 +221,16 @@ public final class PocketSelectionScreen extends Screen {
 	}
 	
 	private void createPocket() {
+		if (!canCreatePocket()) {
+			return;
+		}
+		GuiUtils.playClickSound();
+		PacketHandler.sbCreatePocket();
+	}
 	
+	private void openPocket(UUID pocketId) {
+		GuiUtils.playClickSound();
+		//TODO
 	}
 	
 	@Override
@@ -242,73 +262,21 @@ public final class PocketSelectionScreen extends Screen {
 		return true;
 	}
 	
-	private record Sprite(int x, int y, int w, int h, int u0, int v0, int u1, int v1) {
-		private static Sprite of(int x, int y, int w, int h) {
-			return new Sprite(
-					x, y, w, h,
-					x, y, x + w, y + h
-			);
-		}
-		
-		private static ResourceLocation texture(String name) {
-			return DeepPocketMod.loc("textures/gui/pocket/" + name + ".png");
-		}
-		
-		public int blit(int x, int y) {
-			return blit(x, y, w, h);
-		}
-		
-		public int blit(int x0, int y0, int w, int h) {
-			BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-			bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-			int x1 = x0 + w;
-			int y1 = y0 + h;
-			
-			bufferbuilder.vertex(x0, y1, 0).uv(u0 / 256f, v1 / 256f).endVertex();
-			bufferbuilder.vertex(x1, y1, 0).uv(u1 / 256f, v1 / 256f).endVertex();
-			bufferbuilder.vertex(x1, y0, 0).uv(u1 / 256f, v0 / 256f).endVertex();
-			bufferbuilder.vertex(x0, y0, 0).uv(u0 / 256f, v0 / 256f).endVertex();
-			BufferUploader.drawWithShader(bufferbuilder.end());
-			
-			return y1;
-		}
-		
-		public float blit(float x, float y) {
-			return blit(x, y, u1 - u0, v1 - v0);
-		}
-		
-		public float blit(float x0, float y0, float w, float h) {
-			RenderSystem.setShader(GameRenderer::getPositionTexShader);
-			BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-			bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-			float x1 = x0 + w;
-			float y1 = y0 + h;
-			
-			bufferbuilder.vertex(x0, y1, 0).uv(u0 / 256f, v1 / 256f).endVertex();
-			bufferbuilder.vertex(x1, y1, 0).uv(u1 / 256f, v1 / 256f).endVertex();
-			bufferbuilder.vertex(x1, y0, 0).uv(u1 / 256f, v0 / 256f).endVertex();
-			bufferbuilder.vertex(x0, y0, 0).uv(u0 / 256f, v0 / 256f).endVertex();
-			BufferUploader.drawWithShader(bufferbuilder.end());
-			
-			return y1;
-		}
-		
-		interface Pockets {
-			ResourceLocation TEXTURE = texture("pockets");
-			int WIDTH = 166;
-			Sprite FRAME_TOP = of(0, 0, WIDTH, 21);
-			Sprite FRAME_ROW = of(0, 21, WIDTH, 16);
-			Sprite FRAME_BOT = of(0, 37, WIDTH, 25);
-			Sprite CONTENT_SEARCH_N = of(0, 62, WIDTH, 12);
-			Sprite CONTENT_SEARCH_H = of(0, 74, WIDTH, 12);
-			Sprite CONTENT_POCKET_N = of(0, 86, WIDTH, 16);
-			Sprite CONTENT_POCKET_H = of(0, 102, WIDTH, 16);
-			Sprite CONTENT_POCKET_COLOR = of(0, 118, WIDTH, 16);
-			Sprite SCROLL_N = of(0, 134, WIDTH, 2);
-			Sprite SCROLL_H = of(0, 136, WIDTH, 2);
-			Sprite BTN_ADD_D = of(208, 0, 16, 16);
-			Sprite BTN_ADD_N = of(224, 0, 16, 16);
-			Sprite BTN_ADD_H = of(240, 0, 16, 16);
-		}
+	private interface Sprites {
+		ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/pocket_list.png");
+		int WIDTH = 166;
+		Sprite FRAME_TOP = rect(0, 0, WIDTH, 21);
+		Sprite FRAME_ROW = rect(0, 21, WIDTH, 16);
+		Sprite FRAME_BOT = rect(0, 37, WIDTH, 25);
+		Sprite CONTENT_SEARCH_N = rect(0, 62, WIDTH, 12);
+		Sprite CONTENT_SEARCH_H = rect(0, 74, WIDTH, 12);
+		Sprite CONTENT_POCKET_N = rect(0, 86, WIDTH, 16);
+		Sprite CONTENT_POCKET_H = rect(0, 102, WIDTH, 16);
+		Sprite CONTENT_POCKET_COLOR = rect(0, 118, WIDTH, 16);
+		Sprite SCROLL_N = rect(0, 134, WIDTH, 2);
+		Sprite SCROLL_H = rect(0, 136, WIDTH, 2);
+		Sprite BTN_ADD_D = rect(208, 0, 16, 16);
+		Sprite BTN_ADD_N = rect(224, 0, 16, 16);
+		Sprite BTN_ADD_H = rect(240, 0, 16, 16);
 	}
 }
