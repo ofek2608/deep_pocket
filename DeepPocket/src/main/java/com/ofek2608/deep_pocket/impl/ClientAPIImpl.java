@@ -4,10 +4,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.LNUtils;
-import com.ofek2608.deep_pocket.api.client.DPClientAPI;
 import com.ofek2608.deep_pocket.api.ServerConfig;
 import com.ofek2608.deep_pocket.api.client.ClientEntryCategory;
+import com.ofek2608.deep_pocket.api.client.DPClientAPI;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
+import com.ofek2608.deep_pocket.api.events.DPClientAPIEvent;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.api.types.EntryStack;
@@ -19,6 +20,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -151,6 +153,7 @@ public final class ClientAPIImpl implements DPClientAPI {
 					instance.valid = false;
 				}
 				instance = new ClientAPIImpl();
+				MinecraftForge.EVENT_BUS.post(new DPClientAPIEvent(instance));
 			}
 		}
 		
@@ -170,6 +173,7 @@ public final class ClientAPIImpl implements DPClientAPI {
 					instance.valid = false;
 				}
 				instance = null;
+				MinecraftForge.EVENT_BUS.post(new DPClientAPIEvent(null));
 			}
 		}
 	}

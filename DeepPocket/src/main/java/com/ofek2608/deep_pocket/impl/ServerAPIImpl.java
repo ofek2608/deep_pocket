@@ -6,6 +6,7 @@ import com.ofek2608.deep_pocket.api.DPServerAPI;
 import com.ofek2608.deep_pocket.api.RandomUtils;
 import com.ofek2608.deep_pocket.api.ServerConfig;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
+import com.ofek2608.deep_pocket.api.events.DPServerAPIEvent;
 import com.ofek2608.deep_pocket.api.pocket.ModifiablePocket;
 import com.ofek2608.deep_pocket.api.types.EntryType;
 import com.ofek2608.deep_pocket.def.registry.ModItems;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -126,10 +128,6 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 			pocketFactorySlot = OptionalInt.empty();
 		}
 		ModifiablePocket pocket = createPocket(player.getUUID());
-		PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> player);
-		PacketHandler.cbAddPocket(target, pocket.getProperties().getPocketId());
-		//TODO send created packet packet
-		
 		if (pocketFactorySlot.isPresent()) {
 			player.getInventory().setItem(
 					pocketFactorySlot.getAsInt(),
@@ -284,6 +282,7 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 					() -> new ServerAPIImpl(server),
 					DeepPocketMod.ID + "-server_api"
 			);
+			MinecraftForge.EVENT_BUS.post(new DPServerAPIEvent(instance));
 		}
 		
 		@SubscribeEvent
@@ -294,6 +293,7 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 				instance.valid = false;
 			}
 			instance = null;
+			MinecraftForge.EVENT_BUS.post(new DPServerAPIEvent(null));
 		}
 		
 		@SubscribeEvent
