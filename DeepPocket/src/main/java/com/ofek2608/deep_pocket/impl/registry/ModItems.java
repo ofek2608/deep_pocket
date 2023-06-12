@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.registry;
+package com.ofek2608.deep_pocket.impl.registry;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import net.minecraft.world.item.Item;

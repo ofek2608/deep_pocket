@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.integration;
+package com.ofek2608.deep_pocket.impl.integration;
 
 import dev.ftb.mods.ftbteams.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.data.ClientTeamManager;

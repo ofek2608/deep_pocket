@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.client;
+package com.ofek2608.deep_pocket.impl.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
@@ -8,8 +8,7 @@ import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.impl.ClientAPIImpl;
 import com.ofek2608.deep_pocket.impl.PacketHandler;
-import com.ofek2608.deep_pocket.impl.PocketImpl;
-import com.ofek2608.deep_pocket.registry.ModItems;
+import com.ofek2608.deep_pocket.impl.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -19,13 +18,12 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
 import java.util.function.IntConsumer;
 
-import static com.ofek2608.deep_pocket.client.Sprite.rect;
+import static com.ofek2608.deep_pocket.impl.client.Sprite.rect;
 
 public final class PocketSelectionScreen extends Screen {
 	private final ClientAPIImpl api;

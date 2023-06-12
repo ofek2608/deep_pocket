@@ -1,9 +1,9 @@
 package com.ofek2608.deep_pocket;
 
-import com.ofek2608.deep_pocket.client.KeyBinds;
+import com.ofek2608.deep_pocket.impl.client.KeyBinds;
 import com.ofek2608.deep_pocket.impl.DeepPocketConfig;
 import com.ofek2608.deep_pocket.impl.PacketHandler;
-import com.ofek2608.deep_pocket.registry.ModItems;
+import com.ofek2608.deep_pocket.impl.registry.ModItems;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;

@@ -1,6 +1,6 @@
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.ofek2608.deep_pocket.client;
+package com.ofek2608.deep_pocket.impl.client;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 

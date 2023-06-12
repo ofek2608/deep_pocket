@@ -8,7 +8,7 @@ import com.ofek2608.deep_pocket.api.ServerConfig;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
 import com.ofek2608.deep_pocket.api.pocket.ModifiablePocket;
 import com.ofek2608.deep_pocket.api.types.EntryType;
-import com.ofek2608.deep_pocket.registry.ModItems;
+import com.ofek2608.deep_pocket.impl.registry.ModItems;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
