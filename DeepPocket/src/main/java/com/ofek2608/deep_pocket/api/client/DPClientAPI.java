@@ -1,7 +1,11 @@
-package com.ofek2608.deep_pocket.api;
+package com.ofek2608.deep_pocket.api.client;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.ofek2608.deep_pocket.api.ServerConfig;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
+import com.ofek2608.deep_pocket.api.types.EntryStack;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -44,4 +48,17 @@ public interface DPClientAPI {
 	 * @return The server config
 	 */
 	ServerConfig getServerConfig();
+	
+	/**
+	 * @param id the category id
+	 * @param category the implementation of the category
+	 * @see DPClientAPI#getEntryCategory(ResourceLocation)
+	 */
+	void setEntryCategory(ResourceLocation id, ClientEntryCategory category);
+	
+	/**
+	 * @param id the category id
+	 * @see DPClientAPI#setEntryCategory(ResourceLocation, ClientEntryCategory)
+	 */
+	ClientEntryCategory getEntryCategory(ResourceLocation id);
 }

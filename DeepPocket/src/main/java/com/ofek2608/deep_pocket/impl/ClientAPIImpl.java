@@ -1,19 +1,28 @@
 package com.ofek2608.deep_pocket.impl;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.DPClientAPI;
+import com.ofek2608.deep_pocket.api.LNUtils;
+import com.ofek2608.deep_pocket.api.client.DPClientAPI;
 import com.ofek2608.deep_pocket.api.ServerConfig;
+import com.ofek2608.deep_pocket.api.client.ClientEntryCategory;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
+import com.ofek2608.deep_pocket.api.types.EntryStack;
 import com.ofek2608.deep_pocket.api.types.EntryType;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -27,8 +36,17 @@ public final class ClientAPIImpl implements DPClientAPI {
 	public static ClientAPIImpl instance;
 	public final Map<UUID, PocketPropertiesImpl> properties = new HashMap<>();
 	public final Map<UUID, PocketImpl> pockets = new HashMap<>();
+	public final Map<ResourceLocation, ClientEntryCategory> entryTypeRenderer = new HashMap<>();
 	public boolean valid = true;
 	public ServerConfigImpl serverConfig = ServerConfigImpl.DEFAULT;
+	
+	public ClientAPIImpl() {
+		setEntryCategory(EntryType.CATEGORY_EMPTY, EMPTY_CATEGORY);
+		setEntryCategory(EntryType.CATEGORY_ENERGY, ENERGY_CATEGORY);
+		setEntryCategory(EntryType.CATEGORY_ITEM, ITEM_CATEGORY);
+		setEntryCategory(EntryType.CATEGORY_FLUID, FLUID_CATEGORY);
+		setEntryCategory(EntryType.CATEGORY_GENERIC, GENERIC_CATEGORY);
+	}
 	
 	@Override
 	public boolean isValid() {
@@ -69,6 +87,16 @@ public final class ClientAPIImpl implements DPClientAPI {
 	@Override
 	public ServerConfig getServerConfig() {
 		return serverConfig;
+	}
+	
+	@Override
+	public void setEntryCategory(ResourceLocation id, ClientEntryCategory category) {
+		entryTypeRenderer.put(id, category);
+	}
+	
+	@Override
+	public ClientEntryCategory getEntryCategory(ResourceLocation id) {
+		return entryTypeRenderer.getOrDefault(id, UNKNOWN_CATEGORY);
 	}
 	
 	public void putProperties(PocketPropertiesImpl properties) {
@@ -140,4 +168,76 @@ public final class ClientAPIImpl implements DPClientAPI {
 			}
 		}
 	}
+	
+	
+	
+	
+	private static final ClientEntryCategory UNKNOWN_CATEGORY = new ClientEntryCategory() {
+		@Override
+		public void render(EntryStack entryStack, int x, int y) {
+			//TODO
+		}
+		
+		@Override
+		public void render(EntryStack entryStack, PoseStack poseStack) {
+			//TODO
+		}
+	};
+	private static final ClientEntryCategory EMPTY_CATEGORY = new ClientEntryCategory() {
+		@Override
+		public void render(EntryStack entryStack, int x, int y) {}
+		
+		@Override
+		public void render(EntryStack entryStack, PoseStack poseStack) {}
+	};
+	private static final ClientEntryCategory ENERGY_CATEGORY = new ClientEntryCategory() {
+		@Override
+		public void render(EntryStack entryStack, int x, int y) {
+			//TODO
+		}
+		
+		@Override
+		public void render(EntryStack entryStack, PoseStack poseStack) {
+			//TODO
+		}
+	};
+	private static final ClientEntryCategory ITEM_CATEGORY = new ClientEntryCategory() {
+		@Override
+		public void render(EntryStack entryStack, int x, int y) {
+			Item item = ForgeRegistries.ITEMS.getValue(entryStack.type().id());
+			if (item == null) {
+				UNKNOWN_CATEGORY.render(entryStack, x, y);
+				return;
+			}
+			ItemStack itemStack = new ItemStack(item, LNUtils.closestInt(entryStack.count()));
+			Minecraft.getInstance().getItemRenderer().renderGuiItem(itemStack, x, y);
+		}
+		
+		@Override
+		public void render(EntryStack entryStack, PoseStack poseStack) {
+			//TODO
+		}
+	};
+	private static final ClientEntryCategory FLUID_CATEGORY = new ClientEntryCategory() {
+		@Override
+		public void render(EntryStack entryStack, int x, int y) {
+			//TODO
+		}
+		
+		@Override
+		public void render(EntryStack entryStack, PoseStack poseStack) {
+			//TODO
+		}
+	};
+	private static final ClientEntryCategory GENERIC_CATEGORY = new ClientEntryCategory() {
+		@Override
+		public void render(EntryStack entryStack, int x, int y) {
+			//TODO
+		}
+		
+		@Override
+		public void render(EntryStack entryStack, PoseStack poseStack) {
+			//TODO
+		}
+	};
 }

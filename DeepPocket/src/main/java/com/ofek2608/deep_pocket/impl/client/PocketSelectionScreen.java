@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
+import com.ofek2608.deep_pocket.api.types.EntryStack;
 import com.ofek2608.deep_pocket.impl.ClientAPIImpl;
 import com.ofek2608.deep_pocket.impl.PacketHandler;
 import com.ofek2608.deep_pocket.impl.registry.ModItems;
@@ -16,11 +17,12 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 import java.util.function.IntConsumer;
 
 import static com.ofek2608.deep_pocket.impl.client.Sprite.rect;
@@ -145,9 +147,10 @@ public final class PocketSelectionScreen extends Screen {
 			GuiUtils.setShaderColor(pocket.getColor());
 			Sprites.CONTENT_POCKET_COLOR.blit(x, displayY);
 			
-			Item item = ForgeRegistries.ITEMS.getValue(pocket.getIcon().id());
-			
-			itemRenderer.renderGuiItem(new ItemStack(item), x + 5, displayY);
+			api.getEntryCategory(pocket.getIcon().category()).render(
+					new EntryStack(pocket.getIcon()),
+					x + 5, displayY
+			);
 			font.draw(new PoseStack(), pocket.getName(), x + 26, displayY + 4, 0xFFFFFF);
 		};
 	}

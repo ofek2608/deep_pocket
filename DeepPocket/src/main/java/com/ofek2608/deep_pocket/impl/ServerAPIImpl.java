@@ -319,7 +319,11 @@ public final class ServerAPIImpl extends SavedData implements DPServerAPI {
 			if (!(event.getEntity() instanceof ServerPlayer player)) {
 				return;
 			}
-			PacketHandler.cbSetServerConfig(PacketDistributor.PLAYER.with(() -> player), instance.serverConfig);
+			PacketDistributor.PacketTarget target = PacketDistributor.PLAYER.with(() -> player);
+			PacketHandler.cbSetServerConfig(target, instance.serverConfig);
+			for (PocketImpl pocket : instance.pockets.values()) {
+				PacketHandler.cbAddProperties(target, pocket.properties);
+			}
 		}
 	}
 }
