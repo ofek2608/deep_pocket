@@ -61,4 +61,9 @@ public interface DPClientAPI {
 	 * @see DPClientAPI#setEntryCategory(ResourceLocation, ClientEntryCategory)
 	 */
 	ClientEntryCategory getEntryCategory(ResourceLocation id);
+	
+	/**
+	 * Sends the server a packet that identifies the client want to create a pocket.
+	 */
+	void requestCreatePocket();
 }

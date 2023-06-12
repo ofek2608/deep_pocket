@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.impl.client;
+package com.ofek2608.deep_pocket.def.client;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.impl.ClientAPIImpl;

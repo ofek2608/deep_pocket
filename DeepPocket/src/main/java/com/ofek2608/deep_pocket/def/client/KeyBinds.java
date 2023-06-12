@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.impl.client;
+package com.ofek2608.deep_pocket.def.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.ofek2608.deep_pocket.DeepPocketMod;

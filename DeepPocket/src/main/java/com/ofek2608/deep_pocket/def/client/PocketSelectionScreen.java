@@ -1,20 +1,18 @@
-package com.ofek2608.deep_pocket.impl.client;
+package com.ofek2608.deep_pocket.def.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
+import com.ofek2608.deep_pocket.api.client.DPClientAPI;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.api.types.EntryStack;
-import com.ofek2608.deep_pocket.impl.ClientAPIImpl;
-import com.ofek2608.deep_pocket.impl.PacketHandler;
-import com.ofek2608.deep_pocket.impl.registry.ModItems;
+import com.ofek2608.deep_pocket.def.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -25,10 +23,10 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.function.IntConsumer;
 
-import static com.ofek2608.deep_pocket.impl.client.Sprite.rect;
+import static com.ofek2608.deep_pocket.def.client.Sprite.rect;
 
 public final class PocketSelectionScreen extends Screen {
-	private final ClientAPIImpl api;
+	private final DPClientAPI api;
 	
 	private int offX, minY, maxY;
 	private final List<PocketProperties> pockets = new ArrayList<>();
@@ -40,7 +38,7 @@ public final class PocketSelectionScreen extends Screen {
 	private boolean draggingScroll;
 	private IntConsumer scrollFunction = null;
 	
-	public PocketSelectionScreen(ClientAPIImpl api) {
+	public PocketSelectionScreen(DPClientAPI api) {
 		super(Component.empty());
 		this.api = api;
 		this.searchText = new SimpleEditBox(
@@ -114,7 +112,7 @@ public final class PocketSelectionScreen extends Screen {
 		int y = minY;
 		y = Sprites.FRAME_TOP.blit(x, y);
 		y = Sprites.FRAME_ROW.blit(x, y, width, scrollHeight);
-		y = Sprites.FRAME_BOT.blit(x, y);
+		Sprites.FRAME_BOT.blit(x, y);
 		
 		hoveringScroll = isHover(mx, my, x + 153, x + 161, minY + 19, minY + 19 + scrollHeight);
 		hoveringSearch = isHover(mx, my, x + 61, x + 149, minY + 5, minY + 17);
@@ -129,11 +127,6 @@ public final class PocketSelectionScreen extends Screen {
 		(hoveringScroll || draggingScroll ? Sprites.SCROLL_H : Sprites.SCROLL_N).blit(x, scroll.getScrollbarY());
 		(hoveringSearch ? Sprites.CONTENT_SEARCH_H : Sprites.CONTENT_SEARCH_N).blit(x, minY + 5);
 		(canCreatePocket() ? hoveringCreate ? Sprites.BTN_ADD_H : Sprites.BTN_ADD_N : Sprites.BTN_ADD_D).blit(x + 133, maxY - 21);
-		
-		Minecraft minecraft = Minecraft.getInstance();
-		ItemRenderer itemRenderer = minecraft.getItemRenderer();
-		
-		
 		
 		scrollFunction = i -> {
 			PocketProperties pocket = pockets.get(i);
@@ -226,7 +219,7 @@ public final class PocketSelectionScreen extends Screen {
 			return;
 		}
 		GuiUtils.playClickSound();
-		PacketHandler.sbCreatePocket();
+		api.requestCreatePocket();
 	}
 	
 	private void openPocket(UUID pocketId) {

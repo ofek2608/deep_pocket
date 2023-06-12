@@ -99,6 +99,11 @@ public final class ClientAPIImpl implements DPClientAPI {
 		return entryTypeRenderer.getOrDefault(id, UNKNOWN_CATEGORY);
 	}
 	
+	@Override
+	public void requestCreatePocket() {
+		PacketHandler.sbCreatePocket();
+	}
+	
 	public void putProperties(PocketPropertiesImpl properties) {
 		PocketPropertiesImpl oldProperties = this.properties.get(properties.getPocketId());
 		if (oldProperties == null) {
