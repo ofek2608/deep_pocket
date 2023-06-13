@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.api.utils;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;

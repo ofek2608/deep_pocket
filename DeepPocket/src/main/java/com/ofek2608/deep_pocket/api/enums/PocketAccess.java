@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.api.enums;
 
-import com.ofek2608.deep_pocket.impl.integration.DeepPocketFTBTeams;
+import com.ofek2608.deep_pocket.integration.DeepPocketFTBTeams;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Objects;

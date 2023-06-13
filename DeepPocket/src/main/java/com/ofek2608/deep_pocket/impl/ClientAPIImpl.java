@@ -3,18 +3,20 @@ package com.ofek2608.deep_pocket.impl;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.LNUtils;
+import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.ServerConfig;
-import com.ofek2608.deep_pocket.api.client.ClientEntryCategory;
-import com.ofek2608.deep_pocket.api.client.DPClientAPI;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
 import com.ofek2608.deep_pocket.api.events.DPClientAPIEvent;
+import com.ofek2608.deep_pocket.api.implementable.ClientEntryCategory;
+import com.ofek2608.deep_pocket.api.implementable.PocketTabDefinition;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.api.types.EntryStack;
 import com.ofek2608.deep_pocket.api.types.EntryType;
+import com.ofek2608.deep_pocket.api.utils.LNUtils;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -27,10 +29,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public final class ClientAPIImpl implements DPClientAPI {
@@ -39,6 +39,8 @@ public final class ClientAPIImpl implements DPClientAPI {
 	public final Map<UUID, PocketPropertiesImpl> properties = new HashMap<>();
 	public final Map<UUID, PocketImpl> pockets = new HashMap<>();
 	public final Map<ResourceLocation, ClientEntryCategory> entryTypeRenderer = new HashMap<>();
+	public final List<RegisteredPocketTab> registeredPocketTabsList = new ArrayList<>();
+	public final Map<ResourceLocation,RegisteredPocketTab> registeredPocketTabsMap = new HashMap<>();
 	public boolean valid = true;
 	public ServerConfigImpl serverConfig = ServerConfigImpl.DEFAULT;
 	
@@ -48,6 +50,8 @@ public final class ClientAPIImpl implements DPClientAPI {
 		setEntryCategory(EntryType.CATEGORY_ITEM, ITEM_CATEGORY);
 		setEntryCategory(EntryType.CATEGORY_FLUID, FLUID_CATEGORY);
 		setEntryCategory(EntryType.CATEGORY_GENERIC, GENERIC_CATEGORY);
+		registerPocketTab(DeepPocketMod.loc("items"), ITEM_TAB, "a");
+		registerPocketTab(DeepPocketMod.loc("settings"), SETTINGS_TAB, "z");
 	}
 	
 	@Override
@@ -104,6 +108,36 @@ public final class ClientAPIImpl implements DPClientAPI {
 	@Override
 	public void requestCreatePocket() {
 		PacketHandler.sbCreatePocket();
+	}
+	
+	@Override
+	public void registerPocketTab(ResourceLocation id, PocketTabDefinition<?> tab, String order) {
+		if (registeredPocketTabsMap.containsKey(id)) {
+			throw new IllegalArgumentException("Duplicate id detected");
+		}
+		RegisteredPocketTab toAdd = new RegisteredPocketTab(id, tab, order);
+		registeredPocketTabsMap.put(id, toAdd);
+		
+		for (int i = 0; i < registeredPocketTabsList.size(); i++) {
+			if (registeredPocketTabsList.get(i).order.compareTo(order) >= 0) {
+				registeredPocketTabsList.add(i, toAdd);
+				return;
+			}
+		}
+		registeredPocketTabsList.add(toAdd);
+	}
+	
+	@Override
+	public Optional<PocketTabDefinition<?>> getPocketTab(ResourceLocation id) {
+		return Optional.of(registeredPocketTabsMap.get(id)).map(RegisteredPocketTab::tab);
+	}
+	
+	@Override
+	public List<ResourceLocation> getVisiblePocketTabs(LocalPlayer player, Pocket pocket) {
+		return registeredPocketTabsList.stream()
+				.filter(r -> r.tab.isVisible(this, player, pocket))
+				.map(RegisteredPocketTab::id)
+				.collect(Collectors.toList());
 	}
 	
 	public void putProperties(PocketPropertiesImpl properties) {
@@ -178,6 +212,8 @@ public final class ClientAPIImpl implements DPClientAPI {
 		}
 	}
 	
+	private record RegisteredPocketTab(ResourceLocation id, PocketTabDefinition<?> tab, String order) {}
+	
 	
 	
 	
@@ -247,6 +283,38 @@ public final class ClientAPIImpl implements DPClientAPI {
 		@Override
 		public void render(EntryStack entryStack, PoseStack poseStack) {
 			//TODO
+		}
+	};
+	private static final PocketTabDefinition<?> ITEM_TAB = new PocketTabDefinition<Void>() {
+		@Override
+		public boolean isVisible(DPClientAPI api, LocalPlayer player, Pocket pocket) {
+			return true;
+		}
+		
+		@Override
+		public Void onOpen(DPClientAPI api, LocalPlayer player, Pocket pocket) {
+			return null;
+		}
+		
+		@Override
+		public int getLeftWidth(Void unused) {
+			return 1;
+		}
+		
+		@Override
+		public int getRightWidth(Void unused) {
+			return 2;
+		}
+	};
+	private static final PocketTabDefinition<?> SETTINGS_TAB = new PocketTabDefinition<Void>() {
+		@Override
+		public boolean isVisible(DPClientAPI api, LocalPlayer player, Pocket pocket) {
+			return Objects.equals(player.getUUID(), pocket.getProperties().getOwner());
+		}
+		
+		@Override
+		public Void onOpen(DPClientAPI api, LocalPlayer player, Pocket pocket) {
+			return null;
 		}
 	};
 }

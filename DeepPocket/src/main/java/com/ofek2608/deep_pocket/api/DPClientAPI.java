@@ -1,12 +1,13 @@
-package com.ofek2608.deep_pocket.api.client;
+package com.ofek2608.deep_pocket.api;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.ofek2608.deep_pocket.api.ServerConfig;
+import com.ofek2608.deep_pocket.api.implementable.ClientEntryCategory;
+import com.ofek2608.deep_pocket.api.implementable.PocketTabDefinition;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
-import com.ofek2608.deep_pocket.api.types.EntryStack;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -66,4 +67,29 @@ public interface DPClientAPI {
 	 * Sends the server a packet that identifies the client want to create a pocket.
 	 */
 	void requestCreatePocket();
+	
+	/**
+	 * @param id    the id of the tab
+	 * @param tab   the implementation
+	 * @param order the order in which to show the tabs
+	 * @see DPClientAPI#getPocketTab(ResourceLocation)
+	 * @see DPClientAPI#getVisiblePocketTabs(LocalPlayer, Pocket)
+	 */
+	void registerPocketTab(ResourceLocation id, PocketTabDefinition<?> tab, String order);
+	
+	/**
+	 * @param id the id assigned in registerPocketTab
+	 * @return the implementation assigned in registerPocketTab
+	 * @see DPClientAPI#registerPocketTab(ResourceLocation, PocketTabDefinition, String)
+	 */
+	Optional<PocketTabDefinition<?>> getPocketTab(ResourceLocation id);
+	
+	/**
+	 * @param player the player which see the tabs
+	 * @param pocket the pocket which the player look for tabs in
+	 * @return the tab ids in the order
+	 * @see DPClientAPI#registerPocketTab(ResourceLocation, PocketTabDefinition, String)
+	 * @see DPClientAPI#getPocketTab(ResourceLocation)
+	 */
+	List<ResourceLocation> getVisiblePocketTabs(LocalPlayer player, Pocket pocket);
 }

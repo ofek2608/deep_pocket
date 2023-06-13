@@ -3,7 +3,7 @@ package com.ofek2608.deep_pocket.impl;
 import com.mojang.logging.LogUtils;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DPServerAPI;
-import com.ofek2608.deep_pocket.api.RandomUtils;
+import com.ofek2608.deep_pocket.api.utils.RandomUtils;
 import com.ofek2608.deep_pocket.api.ServerConfig;
 import com.ofek2608.deep_pocket.api.enums.PocketAccess;
 import com.ofek2608.deep_pocket.api.events.DPServerAPIEvent;

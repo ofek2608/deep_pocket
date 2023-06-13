@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.impl;
 
 import com.mojang.logging.LogUtils;
-import com.ofek2608.deep_pocket.api.LNUtils;
+import com.ofek2608.deep_pocket.api.utils.LNUtils;
 import com.ofek2608.deep_pocket.api.pocket.ModifiablePocket;
 import com.ofek2608.deep_pocket.api.pocket.ModifiablePocketEntry;
 import com.ofek2608.deep_pocket.api.pocket.ModifiablePocketProperties;

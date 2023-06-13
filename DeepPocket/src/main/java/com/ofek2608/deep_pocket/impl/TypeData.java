@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.impl;
 
-import com.ofek2608.deep_pocket.api.LNUtils;
+import com.ofek2608.deep_pocket.api.utils.LNUtils;
 import com.ofek2608.deep_pocket.api.types.EntryType;
 import net.minecraft.nbt.CompoundTag;
 

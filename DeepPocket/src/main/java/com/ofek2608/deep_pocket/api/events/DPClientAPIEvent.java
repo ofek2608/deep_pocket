@@ -1,6 +1,6 @@
 package com.ofek2608.deep_pocket.api.events;
 
-import com.ofek2608.deep_pocket.api.client.DPClientAPI;
+import com.ofek2608.deep_pocket.api.DPClientAPI;
 import net.minecraftforge.eventbus.api.Event;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;

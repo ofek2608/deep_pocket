@@ -5,9 +5,11 @@ import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.client.DPClientAPI;
+import com.ofek2608.deep_pocket.api.DPClientAPI;
+import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.api.types.EntryStack;
+import com.ofek2608.deep_pocket.api.utils.GuiUtils;
 import com.ofek2608.deep_pocket.def.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,10 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.IntConsumer;
 
 import static com.ofek2608.deep_pocket.def.client.Sprite.rect;
@@ -32,11 +31,7 @@ public final class PocketSelectionScreen extends Screen {
 	private final List<PocketProperties> pockets = new ArrayList<>();
 	private final ScrollComponent scroll = new ScrollComponent();
 	private final SimpleEditBox searchText;
-	private boolean hoveringScroll;
-	private boolean hoveringSearch;
 	private boolean hoveringCreate;
-	private boolean draggingScroll;
-	private IntConsumer scrollFunction = null;
 	
 	public PocketSelectionScreen(DPClientAPI api) {
 		super(Component.empty());
@@ -74,11 +69,7 @@ public final class PocketSelectionScreen extends Screen {
 		updateWindowSize();
 		renderBackground(poseStack);
 		updatePocketList();
-		renderPocketList(mx, my);
-		
-		if (scrollFunction != null) {
-			renderScroll(mx, my, partialTick, scrollFunction);
-		}
+		renderPocketList(mx, my, partialTick);
 		
 		RenderSystem.applyModelViewMatrix();
 		super.render(poseStack, mx, my, partialTick);
@@ -96,7 +87,7 @@ public final class PocketSelectionScreen extends Screen {
 		return properties.getName().toLowerCase(Locale.ROOT).contains(searchText.getValue().toLowerCase(Locale.ROOT));
 	}
 	
-	private void renderPocketList(int mx, int my) {
+	private void renderPocketList(int mx, int my, float partialTick) {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, Sprites.TEXTURE);
 		
@@ -106,6 +97,7 @@ public final class PocketSelectionScreen extends Screen {
 		RenderSystem.setShaderColor(1, 1, 1, 1);
 		scroll.setRect(x + 5, x + 149, minY + Sprites.FRAME_TOP.h, maxY - Sprites.FRAME_BOT.h);
 		scroll.elementCount = pockets.size();
+		scroll.scrollbarX = x + 153;
 		
 		int scrollHeight = scroll.getH();
 		
@@ -114,8 +106,7 @@ public final class PocketSelectionScreen extends Screen {
 		y = Sprites.FRAME_ROW.blit(x, y, width, scrollHeight);
 		Sprites.FRAME_BOT.blit(x, y);
 		
-		hoveringScroll = isHover(mx, my, x + 153, x + 161, minY + 19, minY + 19 + scrollHeight);
-		hoveringSearch = isHover(mx, my, x + 61, x + 149, minY + 5, minY + 17);
+		boolean hoveringSearch = isHover(mx, my, x + 61, x + 149, minY + 5, minY + 17);
 		hoveringCreate = isHover(mx, my, x + 133, maxY - 21);
 		
 		searchText.x = x + 61;
@@ -124,11 +115,10 @@ public final class PocketSelectionScreen extends Screen {
 		searchText.setHeight(12);
 		searchText.setBordered(true);
 		
-		(hoveringScroll || draggingScroll ? Sprites.SCROLL_H : Sprites.SCROLL_N).blit(x, scroll.getScrollbarY());
 		(hoveringSearch ? Sprites.CONTENT_SEARCH_H : Sprites.CONTENT_SEARCH_N).blit(x, minY + 5);
 		(canCreatePocket() ? hoveringCreate ? Sprites.BTN_ADD_H : Sprites.BTN_ADD_N : Sprites.BTN_ADD_D).blit(x + 133, maxY - 21);
 		
-		scrollFunction = i -> {
+		scroll.render(mx, my, partialTick, i -> {
 			PocketProperties pocket = pockets.get(i);
 			boolean hovering = i == scroll.hoveredIndex;
 			int displayY = i * 16;
@@ -145,7 +135,7 @@ public final class PocketSelectionScreen extends Screen {
 					x + 5, displayY
 			);
 			font.draw(new PoseStack(), pocket.getName(), x + 26, displayY + 4, 0xFFFFFF);
-		};
+		});
 	}
 	
 	private boolean canCreatePocket() {
@@ -164,10 +154,6 @@ public final class PocketSelectionScreen extends Screen {
 		return false;
 	}
 	
-	public void renderScroll(double mx, double my, float partialTick, IntConsumer renderIndex) {
-		scroll.render(mx, my, partialTick, renderIndex);
-	}
-	
 	public static boolean isHover(double mx, double my, float x0, float x1, float y0, float y1) {
 		return x0 <= mx && mx < x1 && y0 <= my && my < y1;
 	}
@@ -182,22 +168,17 @@ public final class PocketSelectionScreen extends Screen {
 	
 	@Override
 	public void mouseMoved(double mx, double my) {
-		if (draggingScroll) {
-			scroll.updateScroll(my);
-		}
-		
+		scroll.mouseMoved(mx, my);
 	}
 	
 	@Override
 	public boolean mouseClicked(double mx, double my, int btn) {
+		if (scroll.mouseClicked(mx, my, btn)) {
+			return true;
+		}
 		Minecraft minecraft = Minecraft.getInstance();
 		if (btn == 0) {
 			minecraft.keyboardHandler.setSendRepeatsToGui(false);
-			if (hoveringScroll) {
-				draggingScroll = true;
-				scroll.updateScroll(my);
-				return true;
-			}
 			if (hoveringCreate) {
 				createPocket();
 				return true;
@@ -207,7 +188,7 @@ public final class PocketSelectionScreen extends Screen {
 				return true;
 			}
 		}
-		boolean result = super.mouseClicked(mx, my, btn);;
+		boolean result = super.mouseClicked(mx, my, btn);
 		if (searchText.isFocused()) {
 			minecraft.keyboardHandler.setSendRepeatsToGui(true);
 		}
@@ -224,7 +205,15 @@ public final class PocketSelectionScreen extends Screen {
 	
 	private void openPocket(UUID pocketId) {
 		GuiUtils.playClickSound();
-		//TODO
+		
+		LocalPlayer player = Minecraft.getInstance().player;
+		Optional<Pocket> pocket = api.getPocket(pocketId);
+		
+		if (player == null || pocket.isEmpty()) {
+			return;
+		}
+		
+		PocketScreen.open(api, player, pocket.get());
 	}
 	
 	@Override
@@ -239,21 +228,13 @@ public final class PocketSelectionScreen extends Screen {
 	
 	@Override
 	public boolean mouseReleased(double mx, double my, int btn) {
-		boolean result = super.mouseReleased(mx, my, btn);
-		if (btn == 0) {
-			if (draggingScroll) {
-				draggingScroll = false;
-				result = true;
-			}
-		}
-		return result;
+		scroll.mouseReleased(mx, my, btn);
+		return super.mouseReleased(mx, my, btn);
 	}
 	
 	@Override
 	public boolean mouseScrolled(double mx, double my, double delta) {
-		super.mouseScrolled(mx, my, delta);
-		scroll.onScroll(delta);
-		return true;
+		return scroll.mouseScrolled(mx, my, delta);
 	}
 	
 	private interface Sprites {
@@ -267,8 +248,6 @@ public final class PocketSelectionScreen extends Screen {
 		Sprite CONTENT_POCKET_N = rect(0, 86, WIDTH, 16);
 		Sprite CONTENT_POCKET_H = rect(0, 102, WIDTH, 16);
 		Sprite CONTENT_POCKET_COLOR = rect(0, 118, WIDTH, 16);
-		Sprite SCROLL_N = rect(0, 134, WIDTH, 2);
-		Sprite SCROLL_H = rect(0, 136, WIDTH, 2);
 		Sprite BTN_ADD_D = rect(208, 0, 16, 16);
 		Sprite BTN_ADD_N = rect(224, 0, 16, 16);
 		Sprite BTN_ADD_H = rect(240, 0, 16, 16);

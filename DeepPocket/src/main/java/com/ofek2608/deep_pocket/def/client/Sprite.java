@@ -6,11 +6,11 @@ import net.minecraft.client.renderer.GameRenderer;
 
 final class Sprite {
 	public final int x, y, w, h;
-	public final int u0, v0, u1, v1;
+	public final float u0, v0, u1, v1;
 	
 	private Sprite(
 			int x, int y, int w, int h,
-			int u0, int v0, int u1, int v1
+			float u0, float v0, float u1, float v1
 	) {
 		this.x = x;
 		this.y = y;
@@ -24,16 +24,14 @@ final class Sprite {
 	
 	
 	public static Sprite rect(int x, int y, int w, int h) {
-		return new Sprite(
-				x, y, w, h,
-				x, y, x + w, y + h
-		);
+		return rect(x, y, w, h, 256);
 	}
 	
-	public static Sprite uv(int u0, int v0, int u1, int v1) {
+	public static Sprite rect(int x, int y, int w, int h, int textureSize) {
 		return new Sprite(
-				u0, v0, u1 - u0, v1 - v0,
-				u0, v0, u1, v1
+				x, y, w, h,
+				(float)x / textureSize, (float)y / textureSize,
+				(float)(x + w) / textureSize, (float)(y + h) / textureSize
 		);
 	}
 	
@@ -47,17 +45,17 @@ final class Sprite {
 		int x1 = x0 + w;
 		int y1 = y0 + h;
 		
-		bufferbuilder.vertex(x0, y1, 0).uv(u0 / 256f, v1 / 256f).endVertex();
-		bufferbuilder.vertex(x1, y1, 0).uv(u1 / 256f, v1 / 256f).endVertex();
-		bufferbuilder.vertex(x1, y0, 0).uv(u1 / 256f, v0 / 256f).endVertex();
-		bufferbuilder.vertex(x0, y0, 0).uv(u0 / 256f, v0 / 256f).endVertex();
+		bufferbuilder.vertex(x0, y1, 0).uv(u0, v1).endVertex();
+		bufferbuilder.vertex(x1, y1, 0).uv(u1, v1).endVertex();
+		bufferbuilder.vertex(x1, y0, 0).uv(u1, v0).endVertex();
+		bufferbuilder.vertex(x0, y0, 0).uv(u0, v0).endVertex();
 		BufferUploader.drawWithShader(bufferbuilder.end());
 		
 		return y1;
 	}
 	
 	public float blit(float x, float y) {
-		return blit(x, y, u1 - u0, v1 - v0);
+		return blit(x, y, w, h);
 	}
 	
 	public float blit(float x0, float y0, float w, float h) {
@@ -67,10 +65,10 @@ final class Sprite {
 		float x1 = x0 + w;
 		float y1 = y0 + h;
 		
-		bufferbuilder.vertex(x0, y1, 0).uv(u0 / 256f, v1 / 256f).endVertex();
-		bufferbuilder.vertex(x1, y1, 0).uv(u1 / 256f, v1 / 256f).endVertex();
-		bufferbuilder.vertex(x1, y0, 0).uv(u1 / 256f, v0 / 256f).endVertex();
-		bufferbuilder.vertex(x0, y0, 0).uv(u0 / 256f, v0 / 256f).endVertex();
+		bufferbuilder.vertex(x0, y1, 0).uv(u0, v1).endVertex();
+		bufferbuilder.vertex(x1, y1, 0).uv(u1, v1).endVertex();
+		bufferbuilder.vertex(x1, y0, 0).uv(u1, v0).endVertex();
+		bufferbuilder.vertex(x0, y0, 0).uv(u0, v0).endVertex();
 		BufferUploader.drawWithShader(bufferbuilder.end());
 		
 		return y1;

@@ -1,8 +1,6 @@
 package com.ofek2608.deep_pocket.api;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
-import com.ofek2608.deep_pocket.api.DPServerAPI;
-import com.ofek2608.deep_pocket.api.client.DPClientAPI;
 import com.ofek2608.deep_pocket.api.events.DPClientAPIEvent;
 import com.ofek2608.deep_pocket.api.events.DPServerAPIEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

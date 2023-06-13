@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.api.client;
+package com.ofek2608.deep_pocket.api.implementable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.api.types.EntryStack;

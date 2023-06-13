@@ -2,7 +2,7 @@ package com.ofek2608.deep_pocket.def.client;
 
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.APIs;
-import com.ofek2608.deep_pocket.api.client.DPClientAPI;
+import com.ofek2608.deep_pocket.api.DPClientAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -12,9 +12,8 @@ import net.minecraftforge.fml.common.Mod;
 import java.util.Optional;
 
 @Mod.EventBusSubscriber(modid = DeepPocketMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-final class PocketScreenOpener {
-	private PocketScreenOpener() {
-	}
+final class ForgeClientEvents {
+	private ForgeClientEvents() {}
 	
 	@SubscribeEvent
 	public static void event(TickEvent.ClientTickEvent event) {

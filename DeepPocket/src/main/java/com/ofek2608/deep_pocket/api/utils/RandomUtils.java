@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.api;
+package com.ofek2608.deep_pocket.api.utils;
 
 import java.util.Random;
 
