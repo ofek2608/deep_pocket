@@ -50,8 +50,6 @@ public final class ClientAPIImpl implements DPClientAPI {
 		setEntryCategory(EntryType.CATEGORY_ITEM, ITEM_CATEGORY);
 		setEntryCategory(EntryType.CATEGORY_FLUID, FLUID_CATEGORY);
 		setEntryCategory(EntryType.CATEGORY_GENERIC, GENERIC_CATEGORY);
-		registerPocketTab(DeepPocketMod.loc("items"), ITEM_TAB, "a");
-		registerPocketTab(DeepPocketMod.loc("settings"), SETTINGS_TAB, "z");
 	}
 	
 	@Override
@@ -283,38 +281,6 @@ public final class ClientAPIImpl implements DPClientAPI {
 		@Override
 		public void render(EntryStack entryStack, PoseStack poseStack) {
 			//TODO
-		}
-	};
-	private static final PocketTabDefinition<?> ITEM_TAB = new PocketTabDefinition<Void>() {
-		@Override
-		public boolean isVisible(DPClientAPI api, LocalPlayer player, Pocket pocket) {
-			return true;
-		}
-		
-		@Override
-		public Void onOpen(DPClientAPI api, LocalPlayer player, Pocket pocket) {
-			return null;
-		}
-		
-		@Override
-		public int getLeftWidth(Void unused) {
-			return 1;
-		}
-		
-		@Override
-		public int getRightWidth(Void unused) {
-			return 2;
-		}
-	};
-	private static final PocketTabDefinition<?> SETTINGS_TAB = new PocketTabDefinition<Void>() {
-		@Override
-		public boolean isVisible(DPClientAPI api, LocalPlayer player, Pocket pocket) {
-			return Objects.equals(player.getUUID(), pocket.getProperties().getOwner());
-		}
-		
-		@Override
-		public Void onOpen(DPClientAPI api, LocalPlayer player, Pocket pocket) {
-			return null;
 		}
 	};
 }

@@ -10,6 +10,7 @@ import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.api.types.EntryStack;
 import com.ofek2608.deep_pocket.api.utils.GuiUtils;
+import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.def.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -20,7 +21,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.*;
-import java.util.function.IntConsumer;
 
 import static com.ofek2608.deep_pocket.def.client.Sprite.rect;
 
@@ -116,7 +116,7 @@ public final class PocketSelectionScreen extends Screen {
 		searchText.setBordered(true);
 		
 		(hoveringSearch ? Sprites.CONTENT_SEARCH_H : Sprites.CONTENT_SEARCH_N).blit(x, minY + 5);
-		(canCreatePocket() ? hoveringCreate ? Sprites.BTN_ADD_H : Sprites.BTN_ADD_N : Sprites.BTN_ADD_D).blit(x + 133, maxY - 21);
+		PocketWidgetsRenderer.renderButtonPlus(x + 133, maxY - 21, canCreatePocket() ? hoveringCreate ? 2 : 1 : 0);
 		
 		scroll.render(mx, my, partialTick, i -> {
 			PocketProperties pocket = pockets.get(i);
@@ -248,8 +248,5 @@ public final class PocketSelectionScreen extends Screen {
 		Sprite CONTENT_POCKET_N = rect(0, 86, WIDTH, 16);
 		Sprite CONTENT_POCKET_H = rect(0, 102, WIDTH, 16);
 		Sprite CONTENT_POCKET_COLOR = rect(0, 118, WIDTH, 16);
-		Sprite BTN_ADD_D = rect(208, 0, 16, 16);
-		Sprite BTN_ADD_N = rect(224, 0, 16, 16);
-		Sprite BTN_ADD_H = rect(240, 0, 16, 16);
 	}
 }

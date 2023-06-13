@@ -8,11 +8,11 @@ import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.implementable.PocketTabDefinition;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.utils.GuiUtils;
+import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.api.utils.Rect;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -30,8 +30,10 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 	private ResourceLocation currentTabId;
 	private PocketTabDefinition.TabHandler<?> currentTabHandler;
 	//render fields
-	private int renderMidX, renderX, renderY, renderW, renderH;
+	private int renderMidX;
+	private Rect renderRect, contentRect;
 	private final ScrollComponent scrollComponent = new ScrollComponent();
+	private int hoveredSlotIndex;
 	
 	public static boolean open(DPClientAPI api, LocalPlayer player, Pocket pocket) {
 		try {
@@ -111,8 +113,14 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		fireBackgroundEvent(poseStack, mx, my);
 		renderOutline(poseStack, mx, my, partialTick);
 		renderTabs(poseStack, mx, my, partialTick);
-		renderWindow(poseStack, mx, my, partialTick);
+		renderContent(poseStack, mx, my, partialTick);
+		renderInventory(mx, my);
 		renderScroll(mx, my, partialTick);
+		
+		PocketWidgetsRenderer.renderBackground(
+				renderRect.x0() + 1, renderRect.y1() - 5,
+				renderRect.x1() - 1, renderRect.y1() - 1
+		);
 		
 		fireForegroundEvent(poseStack, mx, my);
 	}
@@ -121,47 +129,95 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		Window window = Minecraft.getInstance().getWindow();
 		int width = window.getGuiScaledWidth();
 		int height = window.getGuiScaledHeight();
+		
+		int leftWidth = currentTabHandler.getLeftWidth();
+		int rightWidth = currentTabHandler.getLeftWidth();
 		renderMidX = width / 2;
-		renderY = height / 8 + 1;
-		renderH = height * 7 / 8 - 1 - renderY;
-		int leftW = currentTabHandler.getLeftWidth();
-		int rightW = currentTabHandler.getRightWidth();
-		renderX = renderMidX - leftW;
-		renderW = leftW + rightW;
+		renderRect = new Rect(
+				renderMidX - (Math.max(leftWidth, 72) + 5),
+				renderMidX + (Math.max(rightWidth, 72) + 5),
+				height / 8,
+				height * 7 / 8
+		);
+		contentRect = new Rect(
+				renderMidX - leftWidth,
+				renderMidX + rightWidth,
+				renderRect.y0() + 5,
+				renderRect.y1() - 77
+		);
 		
 		scrollComponent.rowElementCount = currentTabHandler.getScrollRowElementCount();
 		scrollComponent.elementHeight = currentTabHandler.getScrollElementHeight();
 		scrollComponent.elementCount = currentTabHandler.getScrollElementCount();
 		
-		Rect scrollRect = currentTabHandler.getScrollRect();
-		scrollComponent.minX = scrollRect.x0() + renderX;
-		scrollComponent.maxX = scrollRect.x1() + renderX;
-		scrollComponent.minY = scrollRect.y0() + renderY;
-		scrollComponent.maxY = scrollRect.y1() + renderY;
+		Rect scrollRect = currentTabHandler.getScrollRect(renderRect.h());
+		scrollComponent.minX = scrollRect.x0() + renderRect.x();
+		scrollComponent.maxX = scrollRect.x1() + renderRect.x();
+		scrollComponent.minY = scrollRect.y0() + renderRect.y();
+		scrollComponent.maxY = scrollRect.y1() + renderRect.y();
 		
-		scrollComponent.scrollbarX = currentTabHandler.getScrollbarX() + renderX;
+		scrollComponent.scrollbarX = currentTabHandler.getScrollbarX() + renderRect.x();
 		
 		
 	}
 	
 	private void renderOutline(PoseStack poseStack, int mx, int my, float partialTick) {
 		GuiUtils.setShaderColor(pocket.getProperties().getColor());
-		GuiUtils.renderOutline(renderX - 1, renderX + renderW + 1, renderY - 1, renderY + renderH + 1);
-		//TODO implement
+		GuiUtils.renderOutline(renderRect.x0(), renderRect.x1(), renderRect.y0(), renderRect.y1());
 	}
 	
 	private void renderTabs(PoseStack poseStack, int mx, int my, float partialTick) {
 		//TODO implement
 	}
 	
-	private void renderWindow(PoseStack poseStack, int mx, int my, float partialTick) {
-		//TODO implement
+	private void renderContent(PoseStack poseStack, int mx, int my, float partialTick) {
+		currentTabHandler.render(poseStack, partialTick, mx, my, contentRect);
+	}
+	
+	private void renderInventory(int mx, int my) {
+		if (!currentTabHandler.isDisplayInventory()) {
+			return;
+		}
+		//items
+		hoveredSlotIndex = -1;
+		renderInventoryRow(mx, my, renderRect.y1() - 21, 0);
+		renderInventoryRow(mx, my, renderRect.y1() - 73, 9);
+		renderInventoryRow(mx, my, renderRect.y1() - 57, 18);
+		renderInventoryRow(mx, my, renderRect.y1() - 41, 27);
+		
+		//rows
+		PocketWidgetsRenderer.renderBackground(
+				renderMidX - 72, renderRect.y1() - 77,
+				renderMidX + 72, renderRect.y1() - 73
+		);
+		PocketWidgetsRenderer.renderBackground(
+				renderMidX - 72, renderRect.y1() - 25,
+				renderMidX + 72, renderRect.y1() - 21
+		);
+		
+		//sides
+		PocketWidgetsRenderer.renderBackground(
+				renderRect.x0() + 1, renderRect.y1() - 77,
+				renderMidX - 72, renderRect.y1() - 5
+		);
+		PocketWidgetsRenderer.renderBackground(
+				renderMidX + 72, renderRect.y1() - 77,
+				renderRect.x1() - 1, renderRect.y1() - 5
+		);
+	}
+	
+	private void renderInventoryRow(int mx, int my, int y, int inventoryOffset) {
+		for (int i = 0; i < 9; i++) {
+			int x = renderMidX - 72 + 16 * i;
+			boolean hover = x <= mx && mx < x + 16 && y <= my && my < y + 16;
+			PocketWidgetsRenderer.renderSlot(x, y, hover);
+			if (hover) {
+				hoveredSlotIndex = inventoryOffset + i;
+			}
+		}
 	}
 	
 	private void renderScroll(int mx, int my, float partialTick) {
-		if (scrollComponent.elementCount <= 0) {
-			return;
-		}
 		PoseStack modelViewStack = RenderSystem.getModelViewStack();
 		scrollComponent.render(mx, my, partialTick, i -> {
 			currentTabHandler.renderScrollElement(
@@ -180,19 +236,21 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 	@Override
 	public void mouseMoved(double mx, double my) {
 		super.mouseMoved(mx, my);
-		
-		
+		scrollComponent.mouseMoved(mx, my);
 	}
 	
 	@Override
 	public boolean mouseClicked(double mx, double my, int button) {
-		
+		if (scrollComponent.mouseClicked(mx, my, button)) {
+			return true;
+		}
 		return super.mouseClicked(mx, my, button);
 	}
 	
 	@Override
-	public boolean mouseReleased(double pMouseX, double pMouseY, int pButton) {
-		return super.mouseReleased(pMouseX, pMouseY, pButton);
+	public boolean mouseReleased(double mx, double my, int button) {
+		scrollComponent.mouseReleased(mx, my, button);
+		return super.mouseReleased(mx, my, button);
 	}
 	
 	@SuppressWarnings("UnstableApiUsage")
