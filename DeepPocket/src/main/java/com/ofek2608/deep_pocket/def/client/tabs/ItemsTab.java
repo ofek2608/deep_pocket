@@ -1,9 +1,11 @@
 package com.ofek2608.deep_pocket.def.client.tabs;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.implementable.PocketTabDefinition;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
+import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.api.utils.Rect;
 import net.minecraft.client.player.LocalPlayer;
 
@@ -71,7 +73,13 @@ public final class ItemsTab implements PocketTabDefinition<ItemsTab.Data> {
 	}
 	
 	@Override
-	public void render(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
+	public void renderBackground(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
+		PocketWidgetsRenderer.renderBackground(rect.x0(), rect.y0(), rect.x1(), rect.y1());
+		//FIXME
+	}
+	
+	@Override
+	public void renderForeground(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
 		//FIXME
 	}
 	

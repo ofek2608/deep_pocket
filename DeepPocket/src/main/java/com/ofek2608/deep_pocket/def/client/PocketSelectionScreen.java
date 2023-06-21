@@ -57,11 +57,12 @@ public final class PocketSelectionScreen extends Screen {
 	
 	private void updateWindowSize() {
 		Window window = Minecraft.getInstance().getWindow();
-		int width = window.getGuiScaledWidth();
-		int height = window.getGuiScaledHeight();
-		offX = width / 2;
-		minY = height / 8;
-		maxY = height * 7 / 8;
+		int windowWidth = window.getGuiScaledWidth();
+		int windowHeight = window.getGuiScaledHeight();
+		int height = Math.min(windowHeight * 3 / 4, 360);
+		offX = windowWidth / 2;
+		minY = (windowHeight - height) / 2;
+		maxY = minY + height;
 	}
 	
 	@Override

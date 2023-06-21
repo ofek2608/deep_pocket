@@ -20,7 +20,8 @@ public interface PocketTabDefinition<Data> {
 	default Rect getScrollRect(Data data, int height) { return new Rect(0, 0, 0, 0); }
 	default int getScrollbarX(Data data) { return 0; }
 	
-	default void render(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {}
+	default void renderBackground(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {}
+	default void renderForeground(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {}
 	default void renderScrollElement(Data data, PoseStack poseStack, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {}
 	
 	
@@ -44,8 +45,12 @@ public interface PocketTabDefinition<Data> {
 		public Rect getScrollRect(int height) { return definition.getScrollRect(data, height); }
 		public int getScrollbarX() { return definition.getScrollbarX(data); }
 		
-		public void render(PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
-			definition.render(data, poseStack, partialTick, mx, my, rect);
+		public void renderBackground(PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
+			definition.renderBackground(data, poseStack, partialTick, mx, my, rect);
+		}
+		
+		public void renderForeground(PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
+			definition.renderForeground(data, poseStack, partialTick, mx, my, rect);
 		}
 		
 		public void renderScrollElement(PoseStack poseStack, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {

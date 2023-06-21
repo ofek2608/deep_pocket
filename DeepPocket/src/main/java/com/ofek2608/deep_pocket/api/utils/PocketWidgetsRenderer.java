@@ -26,6 +26,20 @@ public final class PocketWidgetsRenderer {
 		renderGeneric(x, y, 3 + state);
 	}
 	
+	public static void renderButtonLeft(int x, int y, int state) {
+		if (state < 0 || 2 < state) {
+			throw new IllegalArgumentException();
+		}
+		renderGeneric(x, y, 6 + state);
+	}
+	
+	public static void renderButtonRight(int x, int y, int state) {
+		if (state < 0 || 2 < state) {
+			throw new IllegalArgumentException();
+		}
+		renderGeneric(x, y, 9 + state);
+	}
+	
 	
 	private static void renderGeneric(int x, int y, int index) {
 		int u = index % 16 * 16;
