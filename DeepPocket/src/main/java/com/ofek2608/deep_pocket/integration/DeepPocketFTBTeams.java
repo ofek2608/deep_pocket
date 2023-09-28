@@ -1,17 +1,15 @@
 package com.ofek2608.deep_pocket.integration;
 
-import dev.ftb.mods.ftbteams.FTBTeamsAPI;
-import dev.ftb.mods.ftbteams.data.ClientTeamManager;
-import dev.ftb.mods.ftbteams.data.KnownClientPlayer;
-import dev.ftb.mods.ftbteams.data.Team;
-import dev.ftb.mods.ftbteams.data.TeamBase;
+import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import dev.ftb.mods.ftbteams.api.Team;
+import dev.ftb.mods.ftbteams.api.client.ClientTeamManager;
+import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.server.ServerLifecycleHooks;
 
-import javax.annotation.Nullable;
 import java.util.*;
 
 public final class DeepPocketFTBTeams {
@@ -25,11 +23,11 @@ public final class DeepPocketFTBTeams {
 	}
 	
 	//Only for server
-	public static List<ServerPlayer> getOnlinePlayers(UUID teamMember) {
+	public static Collection<ServerPlayer> getOnlinePlayers(UUID teamMember) {
 		{
-			List<ServerPlayer> onlineMembers = hasMod() ? Integrator.getOnlineMembers(teamMember) : null;
-			if (onlineMembers != null)
-				return onlineMembers;
+			Optional<Collection<ServerPlayer>> onlineMembers = hasMod() ? Integrator.getOnlineMembers(teamMember) : Optional.empty();
+			if (onlineMembers.isPresent())
+				return onlineMembers.get();
 		}
 		//creating a list only with this player
 		MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
@@ -62,31 +60,29 @@ public final class DeepPocketFTBTeams {
 	private static final class Integrator {
 		private Integrator() {}
 		
-		private static @Nullable TeamBase getPlayerTeam(boolean clientSide, UUID teamMember) {
+		private static Optional<Team> getPlayerTeam(boolean clientSide, UUID teamMember) {
 			if (clientSide) {
-				ClientTeamManager manager = FTBTeamsAPI.getClientManager();
-				KnownClientPlayer knownClientPlayer = manager.getKnownPlayer(teamMember);
-				if (knownClientPlayer == null)
-					return null;
-				return manager.getTeam(knownClientPlayer.teamId);
+				ClientTeamManager manager = FTBTeamsAPI.api().getClientManager();
+				Optional<KnownClientPlayer> knownClientPlayer = manager.getKnownPlayer(teamMember);
+				return knownClientPlayer.flatMap(player -> manager.getTeamByID(player.teamId()));
 			} else {
-				return FTBTeamsAPI.getManager().getPlayerTeam(teamMember);
+				return FTBTeamsAPI.api().getManager().getPlayerTeamForPlayerID(teamMember);
 			}
 		}
 		
-		private static @Nullable List<ServerPlayer> getOnlineMembers(UUID teamMember) {
-			Team team = FTBTeamsAPI.getPlayerTeam(teamMember);
-			return team == null ? null : team.getOnlineMembers();
+		private static Optional<Collection<ServerPlayer>> getOnlineMembers(UUID teamMember) {
+			Optional<Team> team = FTBTeamsAPI.api().getManager().getPlayerTeamForPlayerID(teamMember);
+			return team.map(Team::getOnlineMembers);
 		}
 		
 		private static Set<UUID> getTeamMembers(boolean clientSide, UUID teamMember) {
-			TeamBase team = getPlayerTeam(clientSide, teamMember);
-			return team == null ? Set.of(teamMember) : team.getMembers();
+			Optional<Team> team = getPlayerTeam(clientSide, teamMember);
+			return team.map(Team::getMembers).orElseGet(() -> Set.of(teamMember));
 		}
 		
 		private static Optional<UUID> getTeamId(boolean clientSide, UUID teamMember) {
-			TeamBase team = getPlayerTeam(clientSide, teamMember);
-			return Optional.ofNullable(team).map(TeamBase::getId);
+			Optional<Team> team = getPlayerTeam(clientSide, teamMember);
+			return team.map(Team::getId);
 		}
 	}
 	

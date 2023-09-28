@@ -2,7 +2,6 @@ package com.ofek2608.deep_pocket.def.client;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.implementable.PocketTabDefinition;
@@ -11,10 +10,10 @@ import com.ofek2608.deep_pocket.api.utils.GuiUtils;
 import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.api.utils.Rect;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -66,7 +65,7 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		if (visibleTabs.contains(currentTabId)) {
 			return true;
 		}
-		if (visibleTabs.size() == 0) {
+		if (visibleTabs.isEmpty()) {
 			return false;
 		}
 		return setTab(visibleTabs.get(0));
@@ -85,7 +84,7 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 			return false;
 		}
 		// this case is when we just started, and the required id isn't available
-		if (visibleTabs.size() > 0) {
+		if (!visibleTabs.isEmpty()) {
 			id = visibleTabs.get(0);
 			definition = api.getPocketTab(id);
 			if (definition.isPresent()) { //should always be true
@@ -107,26 +106,24 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 	
 	
 	
-	
-	
 	@Override
-	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
+	public void render(GuiGraphics graphics, int mx, int my, float partialTick) {
 		visibleTabs = api.getVisiblePocketTabs(player, pocket);
 		if (!validateCurrentTab()) {
 			return;
 		}
-		renderBackground(poseStack);
+		renderBackground(graphics);
 		updateRenderFields(mx, my, partialTick);
-		fireBackgroundEvent(poseStack, mx, my);
+		fireBackgroundEvent(graphics, mx, my);
 		renderOutline();
 		renderTabs(mx, my);
 		renderHeader(mx, my);
 		renderInventory(mx, my);
-		renderScroll(mx, my, partialTick);
-		renderContentBackground(poseStack, mx, my, partialTick);
+		renderScroll(graphics, mx, my, partialTick);
+		renderContentBackground(graphics, mx, my, partialTick);
 		//TODO render pocket name and icon
-		renderInventoryItems();
-		renderContentForeground(poseStack, mx, my, partialTick);
+		renderInventoryItems(graphics);
+		renderContentForeground(graphics, mx, my, partialTick);
 		//TODO render hover
 		//TODO render content hover
 		//TODO render dragging slot
@@ -136,7 +133,7 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 				renderRect.x1() - 1, renderRect.y1() - 1
 		);
 		
-		fireForegroundEvent(poseStack, mx, my);
+		fireForegroundEvent(graphics, mx, my);
 	}
 	
 	private void updateRenderFields(int mx, int my, float partialTick) {
@@ -257,7 +254,7 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		//TODO render a button for PocketSelectionScreen
 	}
 	
-	private void renderContentBackground(PoseStack poseStack, int mx, int my, float partialTick) {
+	private void renderContentBackground(GuiGraphics graphics, int mx, int my, float partialTick) {
 		PocketWidgetsRenderer.renderBackground(
 						renderRect.x0() + 1, renderRect.y0() + 1,
 						contentRect.x0(), contentRect.y1()
@@ -267,11 +264,11 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 						renderRect.x1() - 1, contentRect.y1()
 		);
 		
-		currentTabHandler.renderBackground(poseStack, partialTick, mx, my, contentRect);
+		currentTabHandler.renderBackground(graphics, partialTick, mx, my, contentRect);
 	}
 	
-	private void renderContentForeground(PoseStack poseStack, int mx, int my, float partialTick) {
-		currentTabHandler.renderForeground(poseStack, partialTick, mx, my, contentRect);
+	private void renderContentForeground(GuiGraphics graphics, int mx, int my, float partialTick) {
+		currentTabHandler.renderForeground(graphics, partialTick, mx, my, contentRect);
 	}
 	
 	private void renderInventory(int mx, int my) {
@@ -317,25 +314,23 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		}
 	}
 	
-	private void renderInventoryItems() {
+	private void renderInventoryItems(GuiGraphics graphics) {
 		if (!currentTabHandler.isDisplayInventory()) {
 			return;
 		}
-		renderInventoryItemsRow(renderRect.y1() - 21, 0);
-		renderInventoryItemsRow(renderRect.y1() - 73, 9);
-		renderInventoryItemsRow(renderRect.y1() - 57, 18);
-		renderInventoryItemsRow(renderRect.y1() - 41, 27);
+		renderInventoryItemsRow(graphics, renderRect.y1() - 21, 0);
+		renderInventoryItemsRow(graphics, renderRect.y1() - 73, 9);
+		renderInventoryItemsRow(graphics, renderRect.y1() - 57, 18);
+		renderInventoryItemsRow(graphics, renderRect.y1() - 41, 27);
 	}
 	
-	private void renderInventoryItemsRow(int y, int inventoryOffset) {
-		Minecraft minecraft = Minecraft.getInstance();
-		ItemRenderer renderer = minecraft.getItemRenderer();
+	private void renderInventoryItemsRow(GuiGraphics graphics, int y, int inventoryOffset) {
 		Inventory inventory = player.getInventory();
 		for (int i = 0; i < 9; i++) {
 			int x = renderMidX - 72 + 16 * i;
 			int slotIndex = inventoryOffset + i;
 			boolean hover = hoveredSlotIndex == slotIndex;
-			renderer.renderGuiItem(inventory.getItem(slotIndex), x, y);
+			graphics.renderItem(inventory.getItem(slotIndex), x, y);
 			if (hover) {
 				RenderSystem.setShaderColor(1, 1, 1, 0.2f);
 				GuiUtils.renderRect(x, x + 16, y, y + 16);
@@ -343,20 +338,17 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		}
 	}
 	
-	private void renderScroll(int mx, int my, float partialTick) {
-		PoseStack modelViewStack = RenderSystem.getModelViewStack();
-		scrollComponent.render(mx, my, partialTick, i -> {
-			currentTabHandler.renderScrollElement(
-					modelViewStack,
-					partialTick,
-					mx,
-					my,
-					scrollComponent.minX,
-					scrollComponent.minY,
-					i,
-					i == scrollComponent.hoveredIndex
-			);
-		});
+	private void renderScroll(GuiGraphics graphics, int mx, int my, float partialTick) {
+		scrollComponent.render(mx, my, partialTick, i -> currentTabHandler.renderScrollElement(
+				graphics,
+				partialTick,
+				mx,
+				my,
+				scrollComponent.minX,
+				scrollComponent.minY,
+				i,
+				i == scrollComponent.hoveredIndex
+		));
 	}
 	
 	@Override
@@ -382,14 +374,13 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 				return true;
 			}
 			int listIndex = hoverTabIndex - 1 + tabPage * 7;
-			if (listIndex < visibleTabs.size()) {
+			if (0 <= listIndex && listIndex < visibleTabs.size()) {
 				if (setTab(visibleTabs.get(listIndex))) {
 					GuiUtils.playClickSound();
 				}
 				return true;
 			}
 		}
-//		return super.mouseClicked(mx, my, button);
 		return false;
 	}
 	
@@ -400,13 +391,13 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 	}
 	
 	@SuppressWarnings("UnstableApiUsage")
-	private void fireBackgroundEvent(PoseStack poseStack, int mx, int my) {
-		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, poseStack, mx, my));
+	private void fireBackgroundEvent(GuiGraphics graphics, int mx, int my) {
+		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Background(this, graphics, mx, my));
 	}
 	
 	@SuppressWarnings("UnstableApiUsage")
-	private void fireForegroundEvent(PoseStack poseStack, int mx, int my) {
-		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, poseStack, mx, my));
+	private void fireForegroundEvent(GuiGraphics graphics, int mx, int my) {
+		MinecraftForge.EVENT_BUS.post(new ContainerScreenEvent.Render.Foreground(this, graphics, mx, my));
 	}
 	
 	
@@ -433,7 +424,7 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 	
 	// This function is disabled since I don't call super.render in this.render
 	@Override
-	public void renderBg(PoseStack poseStack, float partialTick, int mx, int my) {
+	public void renderBg(GuiGraphics graphics, float partialTick, int mx, int my) {
 		throw new UnsupportedOperationException("Disabled");
 	}
 }

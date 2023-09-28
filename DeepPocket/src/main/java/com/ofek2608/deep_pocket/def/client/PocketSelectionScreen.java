@@ -3,7 +3,6 @@ package com.ofek2608.deep_pocket.def.client;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
@@ -13,6 +12,7 @@ import com.ofek2608.deep_pocket.api.utils.GuiUtils;
 import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.def.registry.ModItems;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
@@ -66,14 +66,14 @@ public final class PocketSelectionScreen extends Screen {
 	}
 	
 	@Override
-	public void render(PoseStack poseStack, int mx, int my, float partialTick) {
+	public void render(GuiGraphics graphics, int mx, int my, float partialTick) {
 		updateWindowSize();
-		renderBackground(poseStack);
+		renderBackground(graphics);
 		updatePocketList();
-		renderPocketList(mx, my, partialTick);
+		renderPocketList(graphics, mx, my, partialTick);
 		
 		RenderSystem.applyModelViewMatrix();
-		super.render(poseStack, mx, my, partialTick);
+		super.render(graphics, mx, my, partialTick);
 	}
 	
 	private void updatePocketList() {
@@ -88,7 +88,7 @@ public final class PocketSelectionScreen extends Screen {
 		return properties.getName().toLowerCase(Locale.ROOT).contains(searchText.getValue().toLowerCase(Locale.ROOT));
 	}
 	
-	private void renderPocketList(int mx, int my, float partialTick) {
+	private void renderPocketList(GuiGraphics graphics, int mx, int my, float partialTick) {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, Sprites.TEXTURE);
 		
@@ -110,8 +110,8 @@ public final class PocketSelectionScreen extends Screen {
 		boolean hoveringSearch = isHover(mx, my, x + 61, x + 149, minY + 5, minY + 17);
 		hoveringCreate = isHover(mx, my, x + 133, maxY - 21);
 		
-		searchText.x = x + 61;
-		searchText.y = minY + 5;
+		searchText.setX(x + 61);
+		searchText.setY(minY + 5);
 		searchText.setWidth(88);
 		searchText.setHeight(12);
 		searchText.setBordered(true);
@@ -126,16 +126,20 @@ public final class PocketSelectionScreen extends Screen {
 			
 			RenderSystem.setShader(GameRenderer::getPositionTexShader);
 			RenderSystem.setShaderTexture(0, Sprites.TEXTURE);
+			
 			RenderSystem.setShaderColor(1, 1, 1, 1);
 			(hovering ? Sprites.CONTENT_POCKET_H : Sprites.CONTENT_POCKET_N).blit(x, displayY);
+			
 			GuiUtils.setShaderColor(pocket.getColor());
 			Sprites.CONTENT_POCKET_COLOR.blit(x, displayY);
 			
+			RenderSystem.setShaderColor(1, 1, 1, 1);
 			api.getEntryCategory(pocket.getIcon().category()).render(
+					graphics,
 					new EntryStack(pocket.getIcon()),
 					x + 5, displayY
 			);
-			font.draw(new PoseStack(), pocket.getName(), x + 26, displayY + 4, 0xFFFFFF);
+			graphics.drawString(font, pocket.getName(), x + 26, displayY + 4, 0xFFFFFF);
 		});
 	}
 	
@@ -177,9 +181,7 @@ public final class PocketSelectionScreen extends Screen {
 		if (scroll.mouseClicked(mx, my, btn)) {
 			return true;
 		}
-		Minecraft minecraft = Minecraft.getInstance();
 		if (btn == 0) {
-			minecraft.keyboardHandler.setSendRepeatsToGui(false);
 			if (hoveringCreate) {
 				createPocket();
 				return true;
@@ -189,11 +191,7 @@ public final class PocketSelectionScreen extends Screen {
 				return true;
 			}
 		}
-		boolean result = super.mouseClicked(mx, my, btn);
-		if (searchText.isFocused()) {
-			minecraft.keyboardHandler.setSendRepeatsToGui(true);
-		}
-		return result;
+		return super.mouseClicked(mx, my, btn);
 	}
 	
 	private void createPocket() {

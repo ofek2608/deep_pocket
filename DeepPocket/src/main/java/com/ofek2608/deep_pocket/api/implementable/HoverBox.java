@@ -47,7 +47,8 @@ public interface HoverBox {
 		
 		@Override
 		public void render(PoseStack stack, int color) {
-			font.draw(stack, value, 0, 0, 0xFFFFFF);
+			//TODO convert to GuiGraphics.drawString
+//			font.draw(stack, value, 0, 0, 0xFFFFFF);
 		}
 		
 		@Override

@@ -17,8 +17,7 @@ println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty '
 
 minecraft {
     accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-    mappings channel: 'parchment', version: '2022.09.18-1.19.2'
-    //mappings channel: 'official', version: '1.19.2'
+    mappings channel: 'parchment', version: '2023.09.03-1.20.1'
 
     runs {
         client {
@@ -110,7 +109,7 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.2-43.1.30'
+    minecraft 'net.minecraftforge:forge:1.20.1-47.2.1'
 
     // compile against the JEI API but do not include it at runtime
     compileOnly(fg.deobf("mezz.jei:jei-${mc_version}-common-api:${jei_version}"))
@@ -118,14 +117,14 @@ dependencies {
     // at runtime, use the full JEI jar for Forge
     runtimeOnly(fg.deobf("mezz.jei:jei-${mc_version}-forge:${jei_version}"))
 
-    implementation fg.deobf("curse.maven:architectury-419699:3984018")
-    implementation fg.deobf("curse.maven:ftb-library-404465:3963543")
-    implementation fg.deobf("curse.maven:ftb-teams-404468:3963573")
+    implementation fg.deobf("curse.maven:architectury-419699:4663010")
+    implementation fg.deobf("curse.maven:ftb-library-404465:4720056")
+    implementation fg.deobf("curse.maven:ftb-teams-404468:4623116")
 
-    compileOnly(fg.deobf("curse.maven:curios-api-309927:3924522"))
-    runtimeOnly(fg.deobf("curse.maven:curios-compiled-309927:3924518"))
+    compileOnly(fg.deobf("curse.maven:curios-api-309927:4766349"))
+    runtimeOnly(fg.deobf("curse.maven:curios-compiled-309927:4766347"))
 
-    implementation fg.deobf("curse.maven:theoneprobe-245211:3965693")
+    implementation fg.deobf("curse.maven:theoneprobe-245211:4629624")
 }
 
 // Example for how to get properties into the manifest for reading at runtime.

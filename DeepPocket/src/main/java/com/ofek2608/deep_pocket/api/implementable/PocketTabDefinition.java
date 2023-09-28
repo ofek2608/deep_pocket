@@ -1,9 +1,9 @@
 package com.ofek2608.deep_pocket.api.implementable;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.utils.Rect;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 
 public interface PocketTabDefinition<Data> {
@@ -20,9 +20,9 @@ public interface PocketTabDefinition<Data> {
 	default Rect getScrollRect(Data data, int height) { return new Rect(0, 0, 0, 0); }
 	default int getScrollbarX(Data data) { return 0; }
 	
-	default void renderBackground(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {}
-	default void renderForeground(Data data, PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {}
-	default void renderScrollElement(Data data, PoseStack poseStack, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {}
+	default void renderBackground(Data data, GuiGraphics graphics, float partialTick, int mx, int my, Rect rect) {}
+	default void renderForeground(Data data, GuiGraphics graphics, float partialTick, int mx, int my, Rect rect) {}
+	default void renderScrollElement(Data data, GuiGraphics graphics, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {}
 	
 	
 	final class TabHandler<Data> {
@@ -45,16 +45,16 @@ public interface PocketTabDefinition<Data> {
 		public Rect getScrollRect(int height) { return definition.getScrollRect(data, height); }
 		public int getScrollbarX() { return definition.getScrollbarX(data); }
 		
-		public void renderBackground(PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
-			definition.renderBackground(data, poseStack, partialTick, mx, my, rect);
+		public void renderBackground(GuiGraphics graphics, float partialTick, int mx, int my, Rect rect) {
+			definition.renderBackground(data, graphics, partialTick, mx, my, rect);
 		}
 		
-		public void renderForeground(PoseStack poseStack, float partialTick, int mx, int my, Rect rect) {
-			definition.renderForeground(data, poseStack, partialTick, mx, my, rect);
+		public void renderForeground(GuiGraphics graphics, float partialTick, int mx, int my, Rect rect) {
+			definition.renderForeground(data, graphics, partialTick, mx, my, rect);
 		}
 		
-		public void renderScrollElement(PoseStack poseStack, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {
-			definition.renderScrollElement(data, poseStack, partialTick, mx, my, x, y, index, hovered);
+		public void renderScrollElement(GuiGraphics graphics, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {
+			definition.renderScrollElement(data, graphics, partialTick, mx, my, x, y, index, hovered);
 		}
 	}
 }

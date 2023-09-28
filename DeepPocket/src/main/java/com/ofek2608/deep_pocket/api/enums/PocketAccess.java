@@ -21,7 +21,7 @@ public enum PocketAccess {
 			if (Objects.equals(playerUuid, owner) || player.hasPermissions(2)) {
 				return true;
 			}
-			boolean isClientSide = player.getLevel().isClientSide();
+			boolean isClientSide = player.level().isClientSide();
 			Optional<UUID> ownerTeam = DeepPocketFTBTeams.getPlayerTeamId(isClientSide, owner);
 			Optional<UUID> playerTeam = DeepPocketFTBTeams.getPlayerTeamId(isClientSide, playerUuid);
 			return ownerTeam.isPresent() && ownerTeam.equals(playerTeam);

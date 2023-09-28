@@ -1,7 +1,7 @@
 package com.ofek2608.deep_pocket.def.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -16,22 +16,22 @@ public class SimpleEditBox extends EditBox {
 	}
 	
 	@Override
-	public void render(PoseStack pPoseStack, int pMouseX, int pMouseY, float pPartialTick) {
-		int oldX = this.x;
-		int oldY = this.y;
+	public void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+		int oldX = this.getX();
+		int oldY = this.getY();
 		int oldW = this.width;
 		int oldH = this.height;
 		
-		x += 4;
-		y += (height - 8) / 2;
+		setX(oldX + 4);
+		setY(oldY + (height - 8) / 2);
 		width = width - 8;
 		height = 8;
 		setBordered(false);
 		
-		super.render(pPoseStack, pMouseX, pMouseY, pPartialTick);
+		super.render(graphics, pMouseX, pMouseY, pPartialTick);
 		
-		x = oldX;
-		y = oldY;
+		setX(oldX);
+		setY(oldY);
 		width = oldW;
 		height = oldH;
 		
