@@ -118,8 +118,9 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		renderBackground(poseStack);
 		updateRenderFields(mx, my, partialTick);
 		fireBackgroundEvent(poseStack, mx, my);
-		renderTabs(mx, my, partialTick);
-		renderOutline(mx, my, partialTick);
+		renderOutline();
+		renderTabs(mx, my);
+		renderHeader(mx, my);
 		renderInventory(mx, my);
 		renderScroll(mx, my, partialTick);
 		renderContentBackground(poseStack, mx, my, partialTick);
@@ -160,7 +161,7 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		contentRect = new Rect(
 				renderMidX - leftWidth,
 				renderMidX + rightWidth,
-				renderRect.y0() + 5,
+				renderRect.y0() + 1 + 4 + 12 + 4,
 				renderRect.y1() - (isDisplayInventory ? 77 : 5)
 		);
 		
@@ -177,12 +178,12 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		scrollComponent.scrollbarX = currentTabHandler.getScrollbarX() + contentRect.x();
 	}
 	
-	private void renderOutline(int mx, int my, float partialTick) {
+	private void renderOutline() {
 		GuiUtils.setShaderColor(pocket.getProperties().getColor());
 		GuiUtils.renderOutline(renderRect.x0(), renderRect.x1(), renderRect.y0(), renderRect.y1());
 	}
 	
-	private void renderTabs(int mx, int my, float partialTick) {
+	private void renderTabs(int mx, int my) {
 		int dmx = mx - (renderMidX - 72);
 		int dmy = my - renderRect.y0();
 		if (dmx < 0 || 144 <= dmx || dmy < -24 || 0 <= dmy) {
@@ -247,11 +248,16 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		}
 	}
 	
-	private void renderContentBackground(PoseStack poseStack, int mx, int my, float partialTick) {
+	private void renderHeader(int mx, int my) {
 		PocketWidgetsRenderer.renderBackground(
 						contentRect.x0(), renderRect.y0() + 1,
 						contentRect.x1(), contentRect.y0()
 		);
+		//TODO render pocket name
+		//TODO render a button for PocketSelectionScreen
+	}
+	
+	private void renderContentBackground(PoseStack poseStack, int mx, int my, float partialTick) {
 		PocketWidgetsRenderer.renderBackground(
 						renderRect.x0() + 1, renderRect.y0() + 1,
 						contentRect.x0(), contentRect.y1()
