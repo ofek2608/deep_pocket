@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.def.client.screen;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
@@ -10,6 +10,10 @@ import com.ofek2608.deep_pocket.api.pocket.PocketProperties;
 import com.ofek2608.deep_pocket.api.types.EntryStack;
 import com.ofek2608.deep_pocket.api.utils.GuiUtils;
 import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
+import com.ofek2608.deep_pocket.def.client.ScrollComponent;
+import com.ofek2608.deep_pocket.def.client.Sprite;
+import com.ofek2608.deep_pocket.def.client.widget.CompactEditBox;
+import com.ofek2608.deep_pocket.def.client.widget.SimpleEditBox;
 import com.ofek2608.deep_pocket.def.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -36,9 +40,9 @@ public final class PocketSelectionScreen extends Screen {
 	public PocketSelectionScreen(DPClientAPI api) {
 		super(Component.empty());
 		this.api = api;
-		this.searchText = new SimpleEditBox(
+		this.searchText = new CompactEditBox(
 				Minecraft.getInstance().font,
-				0, 0, 88, 10,
+				0, 0, 88, 12,
 				Component.translatable("gui.search_box")
 		);
 		scroll.elementHeight = 16;

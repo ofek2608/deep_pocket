@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.def.client.widget;
 
 import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.api.utils.Rect;

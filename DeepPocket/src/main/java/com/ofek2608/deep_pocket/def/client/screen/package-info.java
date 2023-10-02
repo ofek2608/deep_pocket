@@ -1,7 +1,7 @@
 @ApiStatus.Internal
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package com.ofek2608.deep_pocket.def.client.tabs;
+package com.ofek2608.deep_pocket.def.client.screen;
 
 import net.minecraft.MethodsReturnNonnullByDefault;
 import org.jetbrains.annotations.ApiStatus;

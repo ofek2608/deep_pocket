@@ -1,10 +1,15 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.def.client.screen;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.implementable.TabContentWidget;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.utils.Rect;
+import com.ofek2608.deep_pocket.def.client.widget.InventoryWidget;
+import com.ofek2608.deep_pocket.def.client.widget.PocketBackgroundWidget;
+import com.ofek2608.deep_pocket.def.client.widget.PocketScrollWidget;
+import com.ofek2608.deep_pocket.def.client.widget.TabSelectionWidget;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Renderable;
@@ -15,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraftforge.client.event.ContainerScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import org.jetbrains.annotations.Nullable;
 
 public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 	private final TabSelectionWidget tabSelectionWidget;
@@ -142,6 +148,26 @@ public final class PocketScreen extends AbstractContainerScreen<InventoryMenu> {
 		for(GuiEventListener child : this.children()) {
 			child.mouseMoved(mx, my);
 		}
+	}
+	
+	@Override
+	public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+		if (keyCode == InputConstants.KEY_ESCAPE) {
+			onClose();
+			return true;
+		}
+		for (GuiEventListener child : this.children()) {
+			if (child.keyPressed(keyCode, scanCode, modifiers)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Nullable
+	@Override
+	public GuiEventListener getFocused() {
+		return tabContentWidget;
 	}
 	
 	@SuppressWarnings("UnstableApiUsage")

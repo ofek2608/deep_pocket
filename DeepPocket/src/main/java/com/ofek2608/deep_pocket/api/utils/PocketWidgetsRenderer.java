@@ -11,14 +11,15 @@ public final class PocketWidgetsRenderer {
 	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/widgets.png");
 	
 	public static void renderBackground(int x0, int y0, int x1, int y1) {
-		renderGeneric(
-				x0, y0, x1, y1,
-				0, 0, 16, 16
-		);
+		renderGeneric(x0, y0, x1, y1, 0);
+	}
+	
+	public static void renderButtonBackground(int x0, int y0, int x1, int y1, boolean hover) {
+		renderGeneric(x0, y0, x1, y1, hover ? 2 : 1);
 	}
 	
 	public static void renderSlot(int x, int y, boolean hover) {
-		renderGeneric(x, y, hover ? 1 : 2);
+		renderGeneric(x, y, hover ? 2 : 1);
 	}
 	
 	public static void renderButtonPlus(int x, int y, int state) {
@@ -44,19 +45,17 @@ public final class PocketWidgetsRenderer {
 	
 	
 	private static void renderGeneric(int x, int y, int index) {
-		int u = index % 16 * 16;
-		int v = index / 16 * 16;
-		renderGeneric(x, y, x + 16, y + 16, u, v, u + 16, v + 16);
+		renderGeneric(x, y, x + 16, y + 16, index);
 	}
-	
-//	private static void renderGeneric(int x, int y, int u, int v, int w, int h) {
-//		renderGeneric(x, y, x + w, y + h, u, v, u + w, v + h);
-//	}
 	
 	private static void renderGeneric(
 			int x0, int y0, int x1, int y1,
-			int u0, int v0, int u1, int v1
+			int index
 	) {
+		int u0 = index % 16 * 16;
+		int v0 = index / 16 * 16;
+		int u1 = u0 + 16;
+		int v1 = v0 + 16;
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
 		RenderSystem.setShaderTexture(0, TEXTURE);
 		RenderSystem.setShaderColor(1, 1, 1, 1);

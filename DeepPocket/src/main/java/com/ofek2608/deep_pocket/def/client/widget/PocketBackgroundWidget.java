@@ -1,10 +1,11 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.def.client.widget;
 
 import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.utils.GuiUtils;
 import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.api.utils.Rect;
+import com.ofek2608.deep_pocket.def.client.screen.PocketSelectionScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;

@@ -1,7 +1,8 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.def.client.widget;
 
 import com.ofek2608.deep_pocket.api.implementable.TabContentWidget;
 import com.ofek2608.deep_pocket.api.utils.Rect;
+import com.ofek2608.deep_pocket.def.client.ScrollComponent;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;

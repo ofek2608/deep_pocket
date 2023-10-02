@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.def.client.widget;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -7,16 +7,16 @@ import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 public class SimpleEditBox extends EditBox {
-	public SimpleEditBox(Font pFont, int pX, int pY, int pWidth, int pHeight, Component pMessage) {
-		super(pFont, pX, pY, pWidth, pHeight, pMessage);
+	public SimpleEditBox(Font font, int x, int y, int width, int height, Component message) {
+		super(font, x, y, width, height, message);
 	}
 	
-	public SimpleEditBox(Font pFont, int pX, int pY, int pWidth, int pHeight, @Nullable EditBox p_94111_, Component pMessage) {
-		super(pFont, pX, pY, pWidth, pHeight, p_94111_, pMessage);
+	public SimpleEditBox(Font font, int x, int y, int width, int height, @Nullable EditBox copy, Component message) {
+		super(font, x, y, width, height, copy, message);
 	}
 	
 	@Override
-	public void render(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
+	public void renderWidget(GuiGraphics graphics, int mx, int my, float partialTick) {
 		int oldX = this.getX();
 		int oldY = this.getY();
 		int oldW = this.width;
@@ -28,7 +28,7 @@ public class SimpleEditBox extends EditBox {
 		height = 8;
 		setBordered(false);
 		
-		super.render(graphics, pMouseX, pMouseY, pPartialTick);
+		super.renderWidget(graphics, mx, my, partialTick);
 		
 		setX(oldX);
 		setY(oldY);

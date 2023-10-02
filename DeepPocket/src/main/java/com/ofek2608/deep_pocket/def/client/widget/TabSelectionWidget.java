@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.def.client;
+package com.ofek2608.deep_pocket.def.client.widget;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.ofek2608.deep_pocket.DeepPocketMod;
@@ -9,6 +9,7 @@ import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.utils.GuiUtils;
 import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.api.utils.Rect;
+import com.ofek2608.deep_pocket.def.client.Sprite;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -145,6 +146,9 @@ public class TabSelectionWidget extends AbstractWidget {
 	}
 	
 	public boolean setTab(ResourceLocation id) {
+		if (id.equals(currentTabId)) {
+			return false;
+		}
 		Optional<PocketTabDefinition> definition = api.getPocketTab(id);
 		if (visibleTabs.contains(id) && definition.isPresent()) {
 			if (tabContentWidget != null) {

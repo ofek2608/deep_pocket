@@ -1,4 +1,4 @@
-package com.ofek2608.deep_pocket.def.client.tabs;
+package com.ofek2608.deep_pocket.def.client.tab;
 
 import com.ofek2608.deep_pocket.api.DPClientAPI;
 import com.ofek2608.deep_pocket.api.implementable.TabContentWidget;

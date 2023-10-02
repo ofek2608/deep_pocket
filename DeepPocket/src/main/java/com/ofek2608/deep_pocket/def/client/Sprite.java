@@ -4,7 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.renderer.GameRenderer;
 
-final class Sprite {
+public final class Sprite {
 	public final int x, y, w, h;
 	public final float u0, v0, u1, v1;
 	
