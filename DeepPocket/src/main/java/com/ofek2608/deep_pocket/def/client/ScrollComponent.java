@@ -140,10 +140,12 @@ public final class ScrollComponent {
 		return false;
 	}
 	
-	public void mouseReleased(double mx, double my, int button) {
-		if (button == 0) {
+	public boolean mouseReleased(double mx, double my, int button) {
+		if (draggingScrollbar && button == 0) {
 			draggingScrollbar = false;
+			return true;
 		}
+		return false;
 	}
 	
 	public boolean mouseScrolled(double mx, double my, double delta) {

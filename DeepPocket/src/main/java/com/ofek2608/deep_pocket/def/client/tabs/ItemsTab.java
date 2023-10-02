@@ -1,60 +1,66 @@
 package com.ofek2608.deep_pocket.def.client.tabs;
 
 import com.ofek2608.deep_pocket.api.DPClientAPI;
-import com.ofek2608.deep_pocket.api.implementable.PocketTabDefinition;
+import com.ofek2608.deep_pocket.api.implementable.TabContentWidget;
 import com.ofek2608.deep_pocket.api.pocket.Pocket;
 import com.ofek2608.deep_pocket.api.utils.PocketWidgetsRenderer;
 import com.ofek2608.deep_pocket.api.utils.Rect;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 
-public final class ItemsTab implements PocketTabDefinition<ItemsTab.Data> {
-	private ItemsTab() {}
-	public static final ItemsTab INSTANCE = new ItemsTab();
+public final class ItemsTab extends AbstractWidget implements TabContentWidget {
+	private final DPClientAPI api;
+	private final LocalPlayer player;
+	private final Pocket pocket;
+	private Rect rect = Rect.ZERO;
 	
-	
-	@Override
-	public boolean isVisible(DPClientAPI api, LocalPlayer player, Pocket pocket) {
-		return true;
+	public ItemsTab(DPClientAPI api, LocalPlayer player, Pocket pocket) {
+		super(0, 0, 0, 0, Component.literal("items"));
+		this.api = api;
+		this.player = player;
+		this.pocket = pocket;
 	}
 	
 	@Override
-	public Data onOpen(DPClientAPI api, LocalPlayer player, Pocket pocket) {
-		return new Data(api, player, pocket);
+	public void setRect(Rect rect) {
+		this.rect = rect;
 	}
 	
 	@Override
-	public void onClose(Data data) {
+	public void onClose() {
 		//FIXME
 	}
 	
 	@Override
-	public int getLeftWidth(Data data) {
+	public int getLeftWidth() {
 		return 50; //FIXME
 	}
 	
 	@Override
-	public int getRightWidth(Data data) {
+	public int getRightWidth() {
 		return 58; //FIXME
 	}
 	
 	@Override
-	public int getScrollRowElementCount(Data data) {
+	public int getScrollRowElementCount() {
 		return 9;
 	}
 	
 	@Override
-	public int getScrollElementHeight(Data data) {
+	public int getScrollElementHeight() {
 		return 16;
 	}
 	
 	@Override
-	public int getScrollbarX(Data data) {
+	public int getScrollbarX() {
 		return 96; //FIXME
 	}
 	
 	@Override
-	public Rect getScrollRect(Data data, int height) {
+	public Rect getScrollRect(int height) {
 		return new Rect(
 				4, 92,
 				4, height - 8
@@ -62,41 +68,25 @@ public final class ItemsTab implements PocketTabDefinition<ItemsTab.Data> {
 	}
 	
 	@Override
-	public int getScrollElementCount(Data data) {
+	public int getScrollElementCount() {
 		return 0; //FIXME
 	}
 	
 	@Override
-	public void renderScrollElement(Data data, GuiGraphics graphics, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {
+	public void renderScrollElement(GuiGraphics graphics, float partialTick, int mx, int my, int x, int y, int index, boolean hovered) {
 		//FIXME
 	}
 	
 	@Override
-	public void renderBackground(Data data, GuiGraphics graphics, float partialTick, int mx, int my, Rect rect) {
-		PocketWidgetsRenderer.renderBackground(rect.x0(), rect.y0(), rect.x1(), rect.y1());
-		//FIXME
-	}
-	
-	@Override
-	public void renderForeground(Data data, GuiGraphics graphics, float partialTick, int mx, int my, Rect rect) {
-		//FIXME
-	}
-	
-	@Override
-	public boolean isDisplayInventory(Data data) {
+	public boolean isDisplayInventory() {
 		return true;
 	}
 	
-	public static final class Data {
-		private final DPClientAPI api;
-		private final LocalPlayer player;
-		private final Pocket pocket;
-		
-		
-		private Data(DPClientAPI api, LocalPlayer player, Pocket pocket) {
-			this.api = api;
-			this.player = player;
-			this.pocket = pocket;
-		}
+	@Override
+	protected void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+		PocketWidgetsRenderer.renderBackground(rect.x0(), rect.y0(), rect.x1(), rect.y1());
 	}
+	
+	@Override
+	protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {}
 }

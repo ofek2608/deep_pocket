@@ -108,7 +108,7 @@ public final class ClientAPIImpl implements DPClientAPI {
 	}
 	
 	@Override
-	public void registerPocketTab(ResourceLocation id, PocketTabDefinition<?> tab, String order) {
+	public void registerPocketTab(ResourceLocation id, PocketTabDefinition tab, String order) {
 		if (registeredPocketTabsMap.containsKey(id)) {
 			throw new IllegalArgumentException("Duplicate id detected");
 		}
@@ -125,7 +125,7 @@ public final class ClientAPIImpl implements DPClientAPI {
 	}
 	
 	@Override
-	public Optional<PocketTabDefinition<?>> getPocketTab(ResourceLocation id) {
+	public Optional<PocketTabDefinition> getPocketTab(ResourceLocation id) {
 		return Optional.of(registeredPocketTabsMap.get(id)).map(RegisteredPocketTab::tab);
 	}
 	
@@ -209,7 +209,7 @@ public final class ClientAPIImpl implements DPClientAPI {
 		}
 	}
 	
-	private record RegisteredPocketTab(ResourceLocation id, PocketTabDefinition<?> tab, String order) {}
+	private record RegisteredPocketTab(ResourceLocation id, PocketTabDefinition tab, String order) {}
 	
 	
 	

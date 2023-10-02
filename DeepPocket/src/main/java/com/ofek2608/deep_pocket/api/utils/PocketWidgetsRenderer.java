@@ -4,9 +4,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import com.ofek2608.deep_pocket.DeepPocketMod;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.resources.ResourceLocation;
 
 public final class PocketWidgetsRenderer {
 	private PocketWidgetsRenderer() {}
+	private static final ResourceLocation TEXTURE = DeepPocketMod.loc("textures/gui/widgets.png");
 	
 	public static void renderBackground(int x0, int y0, int x1, int y1) {
 		renderGeneric(
@@ -56,7 +58,7 @@ public final class PocketWidgetsRenderer {
 			int u0, int v0, int u1, int v1
 	) {
 		RenderSystem.setShader(GameRenderer::getPositionTexShader);
-		RenderSystem.setShaderTexture(0, DeepPocketMod.loc("textures/gui/widgets.png"));
+		RenderSystem.setShaderTexture(0, TEXTURE);
 		RenderSystem.setShaderColor(1, 1, 1, 1);
 		
 		BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();

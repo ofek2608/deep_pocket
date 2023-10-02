@@ -75,14 +75,14 @@ public interface DPClientAPI {
 	 * @see DPClientAPI#getPocketTab(ResourceLocation)
 	 * @see DPClientAPI#getVisiblePocketTabs(LocalPlayer, Pocket)
 	 */
-	void registerPocketTab(ResourceLocation id, PocketTabDefinition<?> tab, String order);
+	void registerPocketTab(ResourceLocation id, PocketTabDefinition tab, String order);
 	
 	/**
 	 * @param id the id assigned in registerPocketTab
 	 * @return the implementation assigned in registerPocketTab
 	 * @see DPClientAPI#registerPocketTab(ResourceLocation, PocketTabDefinition, String)
 	 */
-	Optional<PocketTabDefinition<?>> getPocketTab(ResourceLocation id);
+	Optional<PocketTabDefinition> getPocketTab(ResourceLocation id);
 	
 	/**
 	 * @param player the player which see the tabs
